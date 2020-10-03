@@ -129,6 +129,7 @@ dmypy.json
 .pyre/
 
 # SSH Keys
+ssh_host_key
 *.pub
 
 # Config file
