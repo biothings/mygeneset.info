@@ -1,0 +1,4 @@
+-e git+https://github.com/biothings/biothings.api.git#egg=biothings[hub]
+asyncssh==1.18.0    # asyncssh==1.7.1 from biothings does not work with Py3.8
+elasticsearch>=7, <8
+elasticsearch-dsl>=7, <8

@@ -127,3 +127,10 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# SSH Keys
+ssh_host_key
+*.pub
+
+# Config file
+config.py
