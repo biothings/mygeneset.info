@@ -4,13 +4,12 @@ MyGeneset.info is a web API for accessing gene set data.
 
 ## Setting Up and Running BioThings Hub
 
-
 #### 1. Pre-requisites:
 
-- Python (Python 3.8 is recommended)
+- Python>=3.6
 - Git
 - MongoDB
-- Elasticsearch (7.9.2)
+- Elasticsearch>=7.0.0
 
 Elasticsearch and MongoDB can be installed locally, or run from Docker containers:
 
@@ -43,7 +42,7 @@ Alternatively, using miniconda:
     conda activate biothings-hub
 
 
-#### 4. Install required python modules:
+#### 4. Install required Python modules:
 
 
     pip install -r ./requirements_hub.txt
@@ -56,8 +55,7 @@ Alternatively, using miniconda:
     vim config.py
     
    >from config_web import *  
-   >from config_hub import *  
-   >&#35; And additional customizations
+   >\# Add additional customizations
 
 #### 6. Generate SSH keys
 
@@ -68,3 +66,7 @@ Alternatively, using miniconda:
 
     # from src folder:
     python -m bin.hub
+
+#### 8. Connect to the Hub from web interface (BioThings Studio)
+
+Navigate to https://studio.biothings.io/ and create a connection to http://localhost:HUB_API_PORT
