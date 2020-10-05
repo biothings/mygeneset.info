@@ -2,7 +2,7 @@
 
 MyGeneset.info is a web API for accessing gene set data.
 
-## Setting up and running BioThings Hub
+## Setting Up and Running BioThings Hub
 
 
 #### 1. Pre-requisites:
