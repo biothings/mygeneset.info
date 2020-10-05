@@ -10,15 +10,17 @@ MyGeneset.info is a web API for accessing gene set data.
 - Python (Python 3.8 is recommended)
 - Git
 - MongoDB
-- Elasticsearch
+- Elasticsearch (7.9.2)
 
-Elasticsearch and MongoDB can be run locally, or from Docker containers:
+Elasticsearch and MongoDB can be installed locally, or run from Docker containers:
 
-    # MongoDB
-    docker run -d --rm -p 27017-27019:27017-27019 --name mongodb_env mongo:latest
+MongoDB:
 
-    # Elasticsearch 
-    docker run -d --rm -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" --name elasticsearch_env docker.elastic.co/elasticsearch/elasticsearch:7.9.2
+    docker run -d -p 27017-27019:27017-27019 --name mongodb mongo:latest
+
+Elasticsearch:
+
+    docker run -d -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" --name elasticsearch docker.elastic.co/elasticsearch/elasticsearch:7.9.2
 
 #### 2. Clone this repo:
 
