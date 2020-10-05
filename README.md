@@ -59,8 +59,12 @@ Alternatively, using miniconda:
    >from config_hub import *  
    >&#35; And additional customizations
 
+#### 6. Generate SSH keys
 
-#### 6. Start BioThings Hub
+    # from src folder:
+    ssh-keygen -f bin/ssh_host_key
 
-    cd src
+#### 7. Start BioThings Hub
+
+    # from src folder:
     python -m bin.hub
