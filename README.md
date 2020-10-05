@@ -54,7 +54,7 @@ Alternatively, using miniconda:
     cd src
     vim config.py
     
-   >from config_web import *  
+   >from config_hub import *  
    >\# Add additional customizations
 
 #### 6. Generate SSH keys
