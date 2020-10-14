@@ -69,4 +69,5 @@ Alternatively, using miniconda:
 
 #### 8. Connect to the Hub from web interface (BioThings Studio)
 
-Navigate to https://studio.biothings.io/ and create a connection to `http://localhost:HUB_API_PORT`
+Navigate to https://studio.biothings.io/ and create a connection to `http://localhost:HUB_API_PORT`,
+in which `HUB_API_PORT` is the port number specified in your configuration (default is 19480).
