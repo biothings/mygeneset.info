@@ -74,7 +74,7 @@ INDEX_CONFIG = {
         #None : "path.to.special.Indexer",
     },
     "env" : {
-        "test": {
+        "local": {
             "host": "localhost:9200",
             "indexer": {
                 "args": {
@@ -83,7 +83,12 @@ INDEX_CONFIG = {
                     "max_retries": 10,
                     },
                 },
-            "index": [],
+            "index": [
+                        {
+                    "doc_type": "geneset",
+                    "index": "mygeneset_current"
+                    }
+                ],
         }
     },
 }
