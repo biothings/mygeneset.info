@@ -25,7 +25,7 @@ GA_ACTION_ANNOTATION_POST = 'geneset_post'
 GA_TRACKER_URL = 'MyGeneset.info'
 
 STATUS_CHECK = {
-    'id': 'example_id',
+    'id': 'WP4966',
     'index': 'mygeneset_current',
     'doc_type': 'geneset'
 }
