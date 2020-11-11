@@ -6,10 +6,10 @@ MyGeneset.info is a web API for accessing gene set data.
 
 #### 1. Pre-requisites:
 
-- Python>=3.6
+- Python>=3.6  (Python versions lower than 3.8 also require PyPI package `singledispatchmethod`)
 - Git
 - MongoDB
-- Elasticsearch>=7.0.0, <8.0.0
+- Elasticsearch>=6.0.0, <7.0.0
 
 Elasticsearch and MongoDB can be installed locally, or run from Docker containers:
 
@@ -19,7 +19,7 @@ MongoDB:
 
 Elasticsearch:
 
-    docker run -d -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" --name elasticsearch docker.elastic.co/elasticsearch/elasticsearch:7.9.2
+    docker run -d -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" --name elasticsearch docker.elastic.co/elasticsearch/elasticsearch:6.8.13
 
 #### 2. Clone this repo:
 
@@ -32,15 +32,13 @@ Elasticsearch:
 With virtualenv:
 
     mkdir -p ~/venvs
-    virtualenv ~/venvs/biothings-hub
-    source ~/venvs/biothings-hub/bin/activate
-
+    virtualenv ~/venvs/mygeneset
+    source ~/venvs/mygeneset/bin/activate
 
 Alternatively, using miniconda:
 
-    conda create -n "biothings-hub" python=3.8
-    conda activate biothings-hub
-
+    conda create -n mygeneset python=3.8
+    conda activate mygeneset
 
 #### 4. Install required Python modules:
 
@@ -71,3 +69,23 @@ Alternatively, using miniconda:
 
 Navigate to https://studio.biothings.io/ and create a connection to `http://localhost:HUB_API_PORT`,
 in which `HUB_API_PORT` is the port number specified in your configuration (default is 19480).
+
+## Running the Production API
+
+#### 1. Configure the Web Component
+
+The API configuration file is located under `/src/config_web.py`.
+
+The value of STATUS_CHECK.id should match an `_id` in the data.
+
+    STATUS_CHECK = {
+        'id': 'WP4966',
+        'index': 'mygeneset_current',
+        'doc_type': 'geneset'
+    }
+
+Optionally, edit the port number and host in ES_HOST.
+
+#### 2. Run API
+
+`python index.py`

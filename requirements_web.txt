@@ -1,3 +1,4 @@
 biothings[web_extra]>=0.7.1
 elasticsearch>=6.3.1
 elasticsearch-dsl>=6.3.1
+aiohttp==3.6.2
