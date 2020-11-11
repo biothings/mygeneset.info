@@ -31,20 +31,18 @@ Elasticsearch:
 
 With virtualenv:
 
-    mkdir ~/venvs
+    mkdir -p ~/venvs
     virtualenv ~/venvs/mygeneset
     source ~/venvs/mygeneset/bin/activate
-
 
 Alternatively, using miniconda:
 
     conda create -n mygeneset python=3.8
     conda activate mygeneset
 
-
 #### 4. Install required Python modules:
 
-
+    cd mygeneset.info
     pip install -r ./requirements_hub.txt
 
 
@@ -53,8 +51,8 @@ Alternatively, using miniconda:
 
     cd src
     vim config.py
-    
-   >from config_web import *  
+
+   >from config_hub import *
    >\# Add additional customizations
 
 #### 6. Generate SSH keys
@@ -69,4 +67,5 @@ Alternatively, using miniconda:
 
 #### 8. Connect to the Hub from web interface (BioThings Studio)
 
-Navigate to https://studio.biothings.io/ and create a connection to http://localhost:HUB_API_PORT
+Navigate to https://studio.biothings.io/ and create a connection to `http://localhost:HUB_API_PORT`,
+in which `HUB_API_PORT` is the port number specified in your configuration (default is 19480).
