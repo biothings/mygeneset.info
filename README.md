@@ -69,3 +69,23 @@ Alternatively, using miniconda:
 
 Navigate to https://studio.biothings.io/ and create a connection to `http://localhost:HUB_API_PORT`,
 in which `HUB_API_PORT` is the port number specified in your configuration (default is 19480).
+
+## Running the Production API
+
+#### 1. Configure the Web Component
+
+The API configuration file is located under `/src/config_web.py`.
+
+The value of STATUS_CHECK.id should match an `_id` in the data.
+
+    STATUS_CHECK = {
+        'id': 'WP4966',
+        'index': 'mygeneset_current',
+        'doc_type': 'geneset'
+    }
+
+Optionally, edit the port number and host in ES_HOST.
+
+#### 2. Run API
+
+`python index.py`
