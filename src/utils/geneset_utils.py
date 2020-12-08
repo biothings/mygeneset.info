@@ -2,13 +2,27 @@ import mygene
 
 
 class IDLookup:
+    """Query a list of IDs and scope against mygene.info.
+    Attributes:
+        species (str, int): Species common name or taxid.
+        query_cache (dict, optional): Dictionary to store queries (keys)
+            and results (values). Defaults to empty dictionary.
+        ids (iterable): Array or set of ids to query by default.
+        Todo: if scope is 'retired', make a note that original id is retired.
+    """
+
     def __init__(self, species, cache_dict={}):
         self.species = species
         self.query_cache = cache_dict
 
     def query_mygene(self, ids, id_type):
-        """Query information from mygene.info about each gene in 'ids'."""
-        # TO DO: if scope is 'retired', make a note that original id is retired.
+        """Query information from mygene.info about each gene in 'ids'.
+        Args:
+            ids (iterable): Array or set of gene ids to query.
+            id_type (str): query scope field for the ids.
+                Can be a comma-separated string for multiple scopes.
+                e.g. 'entrezgene,symbol'
+        """
         self.ids = ids
         mg = mygene.MyGeneInfo()
         # Fields to query
@@ -46,8 +60,11 @@ class IDLookup:
 
     def retry_failed_with_new_ids(self, new_ids, new_id_type):
         """Retry failed queries with a new set of ids.
-        new_ids is a list where elements match the length and order
-        of self.ids"""
+        Only retries for ids that failed using 'self.query_mygene()'.
+        Args:
+            new_ids (iterable): is a list or set where the number of elements
+                matches the length and order of self.ids.
+            new_id_type (str): query scope for the new set of ids."""
         id_map = {i: j for i, j in zip(self.ids, new_ids)}
         retry_list = [id_map[e] for e in self.missing]
         self.query_mygene(retry_list, new_id_type)
