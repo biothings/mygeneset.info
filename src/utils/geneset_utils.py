@@ -1,5 +1,5 @@
 import mygene
-
+from biothings.utils.dataload import unlist
 
 class IDLookup:
     """Query a list of IDs and scope against mygene.info.
@@ -56,6 +56,7 @@ class IDLookup:
                 gene['uniprot'] = out['uniprot']['Swiss-Prot']
             if out.get('locus_tag') is not None:
                 gene['locus_tag'] = out['locus_tag']
+            gene = unlist(gene)
             self.query_cache[query] = gene
 
     def retry_failed_with_new_ids(self, new_ids, new_id_type):
