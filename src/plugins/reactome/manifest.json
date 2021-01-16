@@ -1,0 +1,19 @@
+{
+    "version": "0.1",
+    "requires" : ["biothings", "mygene", "requests"],
+    "__metadata__": {
+        "license_url": "https://reactome.org/license",
+        "license": "Creative Commons Public Domain (CC0)",
+        "url": "http://reactome.org"},
+    "dumper": {
+        "data_url": ["https://reactome.org/download/current/ReactomePathways.gmt.zip"],
+        "uncompress": true,
+        "release": "version:get_release",
+        "schedule": "0 3 4,17 * *"
+    },
+    "uploader" : {
+        "parser": "parser:load_data",
+        "on_duplicates": "error",
+        "mapping": "mapping:get_customized_mapping"
+    }
+}
