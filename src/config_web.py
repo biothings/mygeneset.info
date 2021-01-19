@@ -1,5 +1,6 @@
 
 import copy
+import re
 from biothings.web.settings.default import APP_LIST, ANNOTATION_KWARGS, QUERY_KWARGS
 
 # *****************************************************************************
@@ -46,15 +47,23 @@ APP_LIST += [
 
 
 TAXONOMY = {
-    "human": {"tax_id": "9606"},
-    "mouse": {"tax_id": "10090"},
-    "rat": {"tax_id": "10116"},
-    "fruitfly": {"tax_id": "7227"},
-    "nematode": {"tax_id": "6239"},
-    "zebrafish": {"tax_id": "7955"},
-    "thale-cress": {"tax_id": "3702"},
-    "frog": {"tax_id": "8364"},
-    "pig": {"tax_id": "9823"}
+    "human": {"taxid": "9606"},
+    "homo sapiens": {"taxid": "9606"},
+
+    "mouse": {"taxid": "10090"},
+    "mus musculus": {"taxid": "10090"},
+
+    "fruitfly": {"taxid": "7227"},
+    "drosophila melanogaster": {"taxid": "7227"},
+
+    "rat": {"taxid": "10116"},
+    "nematode": {"taxid": "6239"},
+    "zebrafish": {"taxid": "7955"},
+    "thale-cress": {"taxid": "3702"},
+    "dog": {"taxid": "9615"},
+    "horse": {"taxid": "9796"}
+    "frog": {"taxid": "8364"},
+    "pig": {"taxid": "9823"}
 }
 
 SPECIES_TYPEDEF = {
@@ -64,7 +73,7 @@ SPECIES_TYPEDEF = {
         'max': 1000,
         'group': 'esqb',
         'translations': [
-            (re.compile(pattern, re.I), translation['tax_id'])
+            (re.compile(pattern, re.I), translation['taxid'])
             for (pattern, translation) in TAXONOMY.items()
         ]
     },
@@ -74,7 +83,7 @@ SPECIES_TYPEDEF = {
         'max': 1000,
         'group': 'esqb',
         'translations': [
-            (re.compile(pattern, re.I), translation['tax_id']) for
+            (re.compile(pattern, re.I), translation['taxid']) for
             (pattern, translation) in TAXONOMY.items()
         ]
     }
