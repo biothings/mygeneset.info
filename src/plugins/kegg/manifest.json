@@ -1,0 +1,20 @@
+{
+  "version": "0.1",
+  "requires" : ["biothings", "mygene", "requests"],
+  "__metadata__": {
+    "license": "Academic service provider license",
+    "license_url": "https://www.kegg.jp/kegg/legal.html",
+    "url": "https://www.kegg.jp"
+  },
+  "dumper": {
+    "data_url": ["http://rest.kegg.jp/list/module"],
+    "uncompress": false,
+    "release": "version:get_release",
+    "schedule": "13 2 * * 6"
+  },
+  "uploader" : {
+    "parser": "parser:load_data",
+    "on_duplicates": "error",
+    "mapping": "mapping:get_customized_mapping"
+  }
+}
