@@ -19,7 +19,7 @@ class msigdbUploader(uploader.BaseSourceUploader):
         return msigdb_docs
 
 
-    @clasmethod
+    @classmethod
     def get_mapping(cls):
         mapping = {
             "is_public": {
