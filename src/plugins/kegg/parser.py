@@ -7,11 +7,11 @@ import mygene
 from biothings.utils.dataload import dict_sweep, unlist
 
 try:                         # run as a data plugin module of Biothings SDK
-    from kegg.config_kegg import BASE_URL, LOG_LEVEL, organisms
+    from kegg.species import BASE_URL, LOG_LEVEL, organisms
     from biothings import config
     logging = config.logger
 except Exception:            # run locally as a standalone script
-    from config_kegg import BASE_URL, LOG_LEVEL, organisms
+    from species import BASE_URL, LOG_LEVEL, organisms
     import logging
     logging.basicConfig(level=LOG_LEVEL, format='%(asctime)s: %(message)s')
 
