@@ -1,0 +1,23 @@
+{
+  "version": "0.1",
+  "requires" : ["biothings", "mygene"],
+  "__metadata__": {
+    "license": "Creative Commons Public Domain Dedication CC0 1.0 Universal license",
+    "license_url": "https://github.com/DiseaseOntology/HumanDiseaseOntology/blob/main/DO_LICENSE.txt",
+    "url": "https://disease-ontology.org/"
+  },
+  "dumper": {
+    "data_url": [
+      "https://raw.githubusercontent.com/DiseaseOntology/HumanDiseaseOntology/main/src/ontology/HumanDO.obo",
+      "https://raw.githubusercontent.com/greenelab/disease_ontology_geneset/master/data/latest/genemap2.txt"
+    ],
+    "uncompress": false,
+    "release": "version:get_release",
+    "schedule": "37 23 * * *"
+  },
+  "uploader" : {
+    "parser": "parser:load_data",
+    "on_duplicates": "error",
+    "mapping": "mapping:get_customized_mapping"
+  }
+}
