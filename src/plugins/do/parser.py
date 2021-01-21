@@ -647,6 +647,12 @@ def query_mygene(entrez_set, tax_id):
     for gene in q_results['out']:
         q_str = gene["query"]
 
+        # Ensembl gene ID
+        ensembl_gene = None
+        ensembl = gene.get('ensembl', None)
+        if ensembl and 'gene' in ensembl:
+            ensembl_gene =  ensembl['gene']
+
         # Only keep 'Swiss-Prot' component in 'uniprot'
         uniprot = gene.get('uniprot', None)
         if uniprot:
@@ -655,7 +661,7 @@ def query_mygene(entrez_set, tax_id):
         genes_info[q_str] = {
             'mygene_id': gene.get('_id', None),
             'ncbigene': gene.get('entrezgene', None),
-            'ensemblgene': gene.get('ensembl', None),
+            'ensemblgene': ensembl_gene,
             'symbol': gene.get('symbol', None),
             'uniprot': uniprot
         }
