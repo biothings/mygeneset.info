@@ -99,8 +99,8 @@ RELEASE_CONFIG = {}
 
 # SSH port for hub console
 HUB_SSH_PORT = 19422
-HUB_API_PORT = 19580
-READONLY_HUB_API_PORT = 19581
+HUB_API_PORT = 19480
+READONLY_HUB_API_PORT = 19481
 
 # Hub name/icon url/version, for display purpose
 HUB_NAME = "MyGeneset.info API (backend)"
