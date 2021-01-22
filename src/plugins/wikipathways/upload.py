@@ -79,3 +79,4 @@ class WikiPathwaysUploader(uploader.BaseSourceUploader):
                 }
             }
         }
+        return mapping
