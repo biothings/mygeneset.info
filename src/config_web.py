@@ -1,6 +1,5 @@
 import copy
 import re
-import logging
 from biothings.web.settings.default import APP_LIST, ANNOTATION_KWARGS, QUERY_KWARGS
 
 # *****************************************************************************
@@ -33,7 +32,6 @@ STATUS_CHECK = {
     'doc_type': 'geneset'
 }
 
-m
 # Customizations
 
 ANNOTATION_DEFAULT_SCOPES = ['_id']
