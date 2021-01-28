@@ -28,12 +28,21 @@ class MyGenesetQueryBuilder(ESQueryBuilder):
         return search
 
     def _extra_query_options(self, search, options):
-        search = AsyncSearch().query( "function_score", query=search.query,
+        search = AsyncSearch().query(
+                "function_score",
+                query=search.query,
                 functions=[
                     {"filter": {"term": {"taxid": 9606}}, "weight": "1.55"},  # human
                     {"filter": {"term": {"taxid": 10090}}, "weight": "1.3"},  # mouse
                     {"filter": {"term": {"taxid": 10116}}, "weight": "1.1"},  # rat
                     ], score_mode="first")
         if options.species:
-            search = search.filter('terms', taxid=options.species)
+            if 'all' in options.species:
+                pass
+            elif not all(isinstance(string, str) for string in options.species):
+                raise BadRequest(reason="species must be strings or integer strings.")
+            elif not all(string.isnumeric() for string in options.species):
+                raise BadRequest(reason="cannot map some species to taxids.")
+            else:
+                search = search.filter('terms', taxid=options.species)
         return search
