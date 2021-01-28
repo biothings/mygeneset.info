@@ -34,7 +34,7 @@ class WikiPathwaysUploader(uploader.BaseSourceUploader):
                         "type": "keyword"
                     },
                     "symbol": {
-                        "type": "text"
+                        "type": "keyword"
                     },
                     "ncbigene": {
                         "normalizer": "keyword_lowercase_normalizer",

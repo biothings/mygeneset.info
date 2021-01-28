@@ -25,7 +25,7 @@ def get_customized_mapping(cls):
                     "type": "keyword"
                 },
                 "symbol": {
-                    "type": "text"
+                    "type": "keyword"
                 }
             }
         },
