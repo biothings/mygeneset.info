@@ -32,9 +32,11 @@ STATUS_CHECK = {
     'doc_type': 'geneset'
 }
 
-# Customizations
 
-ANNOTATION_DEFAULT_SCOPES = ['_id']
+# *****************************************************************************
+# Query Customizations
+# *****************************************************************************
+
 
 #TAX_REDIRECT = "http://t.biothings.io/v1/taxon/{0}?include_children=1"
 
@@ -81,16 +83,16 @@ SPECIES_TYPEDEF = {
     }
 }
 
-
-DEFAULT_FIELDS = ['_id']
-
+ANNOTATION_DEFAULT_SCOPES = ['_id']
 ANNOTATION_KWARGS = copy.deepcopy(ANNOTATION_KWARGS)
 ANNOTATION_KWARGS['*'].update(SPECIES_TYPEDEF)
 
 QUERY_KWARGS = copy.deepcopy(QUERY_KWARGS)
 QUERY_KWARGS['*'].update(SPECIES_TYPEDEF)
+DEFAULT_FIELDS = ['_id']
+QUERY_KWARGS['*']['_source']['default'] = DEFAULT_FIELDS
+
 #QUERY_KWARGS['GET']['scopes']['default'] =  ["_id"]
 #QUERY_KWARGS['POST']['scopes']['default'] =  ["_id"]
-QUERY_KWARGS['*']['_source']['default'] = DEFAULT_FIELDS
 
 ES_QUERY_BUILDER = "web.pipeline.MyGenesetQueryBuilder"
