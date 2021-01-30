@@ -12,20 +12,20 @@ class MyGenesetQueryBuilder(ESQueryBuilder):
         search = self._extra_query_options(search, options)
         return search
 
-    def default_match_query(self, q, options):
-        search = super().default_match_query(q, options)
-        search = self._extra_query_options(search, options)
-        return search
+    #def default_match_query(self, q, options):
+    #    search = super().default_match_query(q, options)
+        #search = self._extra_query_options(search, options)
+    #    return search
 
     def build_string_query(self, q, options):
         search = super().build_string_query(q, options)
         search = self._extra_query_options(search, options)
         return search
 
-    def build_match_query(self, q, options):
-        search = super().build_match_query(q, options)
-        search = self._extra_query_options(search, options)
-        return search
+    #def build_match_query(self, q, options):
+    #    search = super().build_match_query(q, options)
+        #search = self._extra_query_options(search, options)
+    #    return search
 
     def _extra_query_options(self, search, options):
         search = AsyncSearch().query(
