@@ -1,0 +1,155 @@
+/*My Own customization*/
+
+/*@import url(http://fonts.useso.com/css?family=Droid+Sans+Mono:400|Open+Sans:400);*/
+@import url(https://fonts.googleapis.com/css?family=Droid+Sans+Mono:400|Open+Sans:400);
+
+
+/*overwrite font color for dropdown menu*/
+.nav li a {
+    /*color: black !important;*/
+    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+}
+
+h4, h5, h6{
+    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+}
+
+h4 {
+    font-size: 15px !important;
+}
+
+body{
+    font-size: 14px !important;
+}
+
+h1 {
+    font-size: 38px !important;
+    font-weight: boldx !important;
+}
+
+h2 {
+    font-size: 31px;
+    font-weight: boldx !important;
+}
+
+h3 {
+    font-weight: boldx !important;
+}
+
+.navbar-brand {
+    font-size: 20px !important;
+    font-weight: bold !important;
+}
+
+.navbar-search,
+.navbar-search .search-query {
+    width: 120px !important;
+}
+
+.head-paragraph {
+    margin-top: 25px;
+}
+
+p.admonition-title {
+
+}
+
+blockquote p {
+    font-size: 14px !important;
+    line-height: 20px !important;
+}
+
+.hint {
+    color: #029acf;
+    background-color: #d9edf7;
+    border-color: #bce8f1;
+}
+
+.highlight-python pre,
+.highlight-html pre,
+.highlight-json pre {
+    font-family: 'Droid Sans Mono', sans-serif;
+}
+
+
+.highlight-python pre {
+    /*font-family: 'Droid Sans Mono', sans-serif;*/
+    /*background-color: #FAFDBA;*/
+    background-color: #FCFDDC;
+    border-color: #D8DB8C;
+
+}
+
+/*this should be after .highlight-python pre*/
+.mg-citation pre {
+    float: right;
+    overflow: hidden;
+    color: #333344;
+    background-color: #f5f5f5;
+    border-color: #ccc;
+    font-size: 12px;
+}
+
+#twitter-widget-0 {
+      width: 100% !important;
+      height: 180px !important;
+}
+
+.gene-object-containter pre {
+    max-height: 500px;
+    overflow:auto;
+}
+
+.species-table table {
+  width: auto;
+}
+
+.hidden-title {
+    visibility: hidden;
+    display: none;
+}
+
+.indented {
+    margin-left: 40px;
+}
+
+#status {
+    margin:0!important;
+    line-height:1em!important;
+}
+
+#status span{
+    margin-left:auto;
+    margin-right:auto;
+    width: 100%;
+    display: block;
+    text-align: center;
+    font-weight: bold;
+    font-family: "Open Sans", Arial, sans-serif !important;
+}
+
+.v1_box {
+    float: left;
+    width: 50%;
+}
+
+.v2_box {
+    float: right;
+    width: 50%;
+}
+
+.v1_box pre,
+.v2_box pre {
+    width: 100%;
+}
+
+.v1_box p,
+.v2_box p {
+    text-align: center;
+}
+
+.v1_box table,
+.v2_box table {
+    width: 90% !important;
+}
+
