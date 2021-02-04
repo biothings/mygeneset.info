@@ -49,13 +49,17 @@ STATUS_CHECK = {
 TAXONOMY = {
     "human": {"taxid": "9606"},
     "mouse": {"taxid": "10090"},
-    "fruitfly": {"taxid": "7227"},
     "rat": {"taxid": "10116"},
+    "fruitfly": {"taxid": "7227"},
+    "mosquito": {"taxid": "180454"},
     "nematode": {"taxid": "6239"},
     "zebrafish": {"taxid": "7955"},
     "thale-cress": {"taxid": "3702"},
+    "rice": {"taxid": "39947"},
     "dog": {"taxid": "9615"},
+    "chicken": {"taxid": "9031"},
     "horse": {"taxid": "9796"},
+    "chimpanzee": {"taxid": "9598"},
     "frog": {"taxid": "8364"},
     "pig": {"taxid": "9823"}
 }
