@@ -45,4 +45,6 @@ class MyGenesetQueryBuilder(ESQueryBuilder):
                 raise BadRequest(reason="cannot map some species to taxids.")
             else:
                 search = search.filter('terms', taxid=options.species)
+            if options.aggs and options.species_facet_filter:
+                search = search.post_filter('terms', taxid=options.species_facet_filter)
         return search
