@@ -32,9 +32,11 @@ STATUS_CHECK = {
     'doc_type': 'geneset'
 }
 
-# Customizations
 
-ANNOTATION_DEFAULT_SCOPES = ['_id']
+# *****************************************************************************
+# Query Customizations
+# *****************************************************************************
+
 
 #TAX_REDIRECT = "http://t.biothings.io/v1/taxon/{0}?include_children=1"
 
@@ -47,13 +49,17 @@ ANNOTATION_DEFAULT_SCOPES = ['_id']
 TAXONOMY = {
     "human": {"taxid": "9606"},
     "mouse": {"taxid": "10090"},
-    "fruitfly": {"taxid": "7227"},
     "rat": {"taxid": "10116"},
+    "fruitfly": {"taxid": "7227"},
+    "mosquito": {"taxid": "180454"},
     "nematode": {"taxid": "6239"},
     "zebrafish": {"taxid": "7955"},
     "thale-cress": {"taxid": "3702"},
+    "rice": {"taxid": "39947"},
     "dog": {"taxid": "9615"},
+    "chicken": {"taxid": "9031"},
     "horse": {"taxid": "9796"},
+    "chimpanzee": {"taxid": "9598"},
     "frog": {"taxid": "8364"},
     "pig": {"taxid": "9823"}
 }
@@ -81,16 +87,16 @@ SPECIES_TYPEDEF = {
     }
 }
 
-
-DEFAULT_FIELDS = ['_id']
-
+ANNOTATION_DEFAULT_SCOPES = ['_id']
 ANNOTATION_KWARGS = copy.deepcopy(ANNOTATION_KWARGS)
 ANNOTATION_KWARGS['*'].update(SPECIES_TYPEDEF)
 
 QUERY_KWARGS = copy.deepcopy(QUERY_KWARGS)
 QUERY_KWARGS['*'].update(SPECIES_TYPEDEF)
+DEFAULT_FIELDS = ['_id']
+QUERY_KWARGS['*']['_source']['default'] = DEFAULT_FIELDS
+
 #QUERY_KWARGS['GET']['scopes']['default'] =  ["_id"]
 #QUERY_KWARGS['POST']['scopes']['default'] =  ["_id"]
-QUERY_KWARGS['*']['_source']['default'] = DEFAULT_FIELDS
 
 ES_QUERY_BUILDER = "web.pipeline.MyGenesetQueryBuilder"
