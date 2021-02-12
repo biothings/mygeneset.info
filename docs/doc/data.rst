@@ -10,24 +10,23 @@ Data sources
 
 We currently obtain the geneset annotation data from several public data resources and keep them up-to-date, so that you don't have to do it:
 
-============    =======================      =================================
-Source           Update frequency               Notes
-============    =======================      =================================
-NCBI Entrez      weekly snapshot
-Ensembl          whenever a new              | Ensembl Pre! and EnsemblGenomes
-                 release is available        | are not included at the moment
-Uniprot          whenever a new
-                 release is available
-NetAffx          whenever a new               For "reporter" field
-                 release is available
-PharmGKB         whenever a new
-                 release is available
-UCSC             whenever a new               For "exons" field
-                 release is available
-CPDB             whenever a new               For "pathway" field
-                 release is available
+==================   =======================      =================================
+Source               Update frequency               Notes
+==================   =======================      =================================
+MSigDB               whenever a new              
+                     release is available        
+Gene Ontology        whenever a new
+                     release is available
+KEGG                 whenever a new               
+                     release is available
+WikiPathways         whenever a new
+                     release is available
+Reactome             whenever a new               
+                     release is available
+Disease Ontology     whenever a new               
+                     release is available
 
-============    =======================      =================================
+==================   =======================      =================================
 
 The most updated data information can be accessed `here <http://mygeneset.info/v1/metadata>`__.
 
