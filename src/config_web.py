@@ -61,7 +61,9 @@ TAXONOMY = {
     "horse": {"taxid": "9796"},
     "chimpanzee": {"taxid": "9598"},
     "frog": {"taxid": "8364"},
-    "pig": {"taxid": "9823"}
+    "pig": {"taxid": "9823"},
+    "pseudomonas-aeruginosa": {"taxid": "208964"},
+    "brewers-yeast": {"taxid": "559292"}
 }
 
 SPECIES_TYPEDEF = {
