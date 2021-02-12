@@ -17,22 +17,22 @@ Examples
 """"""""
 ::
 
-    # Search genesets with 'glucose' in the name or description
+    # Search genesets with 'glucose' in a default query field (geneset name or description)
     http://mygeneset.info/v1/query?q=glucose
 
-    # Retreive query results with a particular identifier
+    # Retreive NCBI gene ids for genes in genesets with 'glucose' in a default query field
     http://mygeneset.info/v1/query?q=glucose&fields=genes.ncbigene
 
     # Fetch all genesets containing the gene with symbol ABL1
     http://mygeneset.info/v1/query?q=genes.symbol:ABL1
 
-    # Filter the previous query by species
+    # Filter the previous query to human species
     http://mygeneset.info/v1/query?q=genes.symbol:ABL1&species=human
 
-    # Fetch all genesets belonging to two specific organisms
+    # Fetch all genesets belonging to two mice or human organisms
     http://mygeneset.info/v1/query?species=mouse,human
 
-    # Fetch all genesets from a particular source
+    # Fetch all genesets from the source "wikipathways"
     http://mygeneset.info/v1/query?q=_exists_:wikipathways
 
     # Wildcard queries
