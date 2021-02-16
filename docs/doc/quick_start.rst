@@ -39,6 +39,12 @@ Examples
     http://mygeneset.info/v1/query?q=genes.symbol=cdk?
     http://mygeneset.info/v1/query?q=genes.symbol=IL*
 
+    # Search genesets containing all of the provided genes
+    http://localhost:8000/v1/query?q=genes.symbol:(ABL1 AND CEBPA AND FLT3)&fields=all
+
+    # Search genesets containing any of the provided genes
+    http://localhost:8000/v1/query?q=genes.symbol:(ABL1 OR CEBPA OR FLT3)&fields=all
+
 
 .. Hint:: View nicely formatted JSON results in your browser with this handy add-on: `JSON formater <https://chrome.google.com/webstore/detail/bcjindcccaagfpapjjmafapmmgkkhgoa>`_ for Chrome or `JSONView <https://addons.mozilla.org/en-US/firefox/addon/jsonview/>`_ for Firefox.
 
