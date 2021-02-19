@@ -95,7 +95,7 @@ def get_ctd_genesets(filename):
                    chemical_id: {
                        'chemical_name': str,
                        'genes': set,
-                       'interactions': set
+                       'cas_rn': str,
                    },
                    ... ...
               }
@@ -120,8 +120,8 @@ def get_ctd_genesets(filename):
 
             chemical_name = tokens[0]
             chemical_id = tokens[1]
+            cas_rn = tokens[2]
             gene_id = int(tokens[4])
-            interactions = set(tokens[9].split('|'))
 
             if tax_id not in ctd_genesets:
                 ctd_genesets[tax_id] = {
@@ -132,12 +132,11 @@ def get_ctd_genesets(filename):
             ctd_genesets[tax_id]['unique_genes'].add(gene_id)
             if chemical_id in ctd_genesets[tax_id]['genesets']:
                 ctd_genesets[tax_id]['genesets'][chemical_id]['genes'].add(gene_id)
-                ctd_genesets[tax_id]['genesets'][chemical_id]['interactions'] |= interactions
             else:
                 ctd_genesets[tax_id]['genesets'][chemical_id] = {
                     'chemical_name': chemical_name,
+                    'cas_rn': cas_rn,
                     'genes': {gene_id},
-                    'interactions': interactions,
                 }
 
     return ctd_genesets
@@ -165,10 +164,9 @@ def load_data(data_dir):
                 continue
 
             chemical_name = ctd_info['chemical_name']
-            interactions = ' | '.join(sorted(ctd_info['interactions'])),
-
+            cas_rn = ctd_info['cas_rn']
             my_geneset = dict()
-            my_geneset['_id'] = chemical_name + "-" + tax_id
+            my_geneset['_id'] = chemical_id + "-" + tax_id
             my_geneset['is_public'] = True
             my_geneset['taxid'] = tax_id
             my_geneset['genes'] = genes_found
@@ -176,9 +174,9 @@ def load_data(data_dir):
             # CTD-specific fields
             my_geneset['ctd'] = {
                 'id': my_geneset['_id'],
-                'ChemicalName': chemical_name,
-                'ChemicalID': chemical_id,
-                'InteractionActions': interactions,
+                'chemical_name': chemical_name,
+                'mesh': chemical_id,
+                'cas': cas_rn,
             }
 
             my_geneset = dict_sweep(my_geneset, vals=[None], remove_invalid_list=True)

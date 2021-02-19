@@ -38,16 +38,17 @@ def get_customized_mapping(cls):
                         "all"
                     ]
                 },
-                "ChemicalName": {
+                "chemical_name": {
                     "normalizer": "keyword_lowercase_normalizer",
                     "type": "keyword"
                 },
-                "ChemicalID": {
+                "mesh": {
                     "normalizer": "keyword_lowercase_normalizer",
                     "type": "keyword"
                 },
-                "InteractionActions": {
-                    "type": "text"
+                "cas": {
+                    "normalizer": "keyword_lowercase_normalizer",
+                    "type": "keyword"
                 }
             }
         }
