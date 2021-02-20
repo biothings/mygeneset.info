@@ -120,8 +120,11 @@ def get_ctd_genesets(filename):
 
             chemical_name = tokens[0]
             chemical_id = tokens[1]
-            cas_rn = tokens[2]
             gene_id = int(tokens[4])
+
+            cas_rn = tokens[2].strip()
+            if len(cas_rn) == 0:
+                cas_rn = None
 
             if tax_id not in ctd_genesets:
                 ctd_genesets[tax_id] = {
