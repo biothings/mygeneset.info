@@ -19,7 +19,6 @@ organisms = {
     '7227': 'fly',
     '9606': 'human',
     '10090': 'mouse',
-    '6239': 'nematode',
     '9823': 'pig',
     '10116': 'rat',
     '6239': 'worm',
