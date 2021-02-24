@@ -16,14 +16,31 @@ except Exception:            # run locally as a standalone script
 
 # Organisms (key is species taxonomy ID, value is species common name)
 organisms = {
-    '7227': 'fly',
-    '9606': 'human',
-    '10090': 'mouse',
-    '9823': 'pig',
-    '10116': 'rat',
     '6239': 'worm',
+    '7227': 'fly',
     '7955': 'zebrafish',
+    "8364": "frog",
+    "9031": "chicken",
+    '9606': 'human',
+    "9615": "dog",
+    '10090': 'mouse',
+    '10116': 'rat',
 }
+
+
+def polish_gene_info(gene):
+    """Polish some field values in input gene."""
+
+    ensembl_gene = None
+    ensembl = gene.get('ensembl', None)
+    if ensembl and 'gene' in ensembl:
+        gene['ensembl'] = ensembl['gene']
+
+    # Only keep 'Swiss-Prot' component in 'uniprot'
+    uniprot = gene.get('uniprot', None)
+    if uniprot:
+        uniprot = uniprot.get('Swiss-Prot', None)
+        gene['uniprot'] = uniprot
 
 
 def query_mygene(entrez_set, tax_id):
@@ -31,41 +48,71 @@ def query_mygene(entrez_set, tax_id):
 
     q_genes = entrez_set
     q_scopes = ['entrezgene', 'retired']
-    output_fields = ['entrezgene', 'ensembl.gene', 'symbol', 'uniprot']
+    output_fields = [
+        'entrezgene', 'ensembl.gene', 'symbol', 'uniprot', 'taxid', 'homologene'
+    ]
 
     mg = mygene.MyGeneInfo()
-    logging.info(f"Querying {q_scopes} in MyGene.info ...")
     q_results = mg.querymany(
         q_genes,
         scopes=q_scopes,
         fields=output_fields,
-        species=tax_id,
         returnall=True
     )
 
     genes_info = dict()
+    homo_genes = dict()
     for gene in q_results['out']:
         q_str = gene["query"]
         if gene.get('notfound', None):  # ignore missing genes
             continue
 
-        # Ensembl gene ID
-        ensembl_gene = None
-        ensembl = gene.get('ensembl', None)
-        if ensembl and 'gene' in ensembl:
-            ensembl_gene =  ensembl['gene']
+        # If organism also matches, put the gene in `gene_info` directly
+        if str(gene['taxid']) == tax_id:
+            polish_gene_info(gene)
+            genes_info[q_str] = {
+                'mygene_id': gene.get('_id', None),
+                'ncbigene': gene.get('entrezgene', None),
+                'ensemblgene': gene.get('ensembl', None),
+                'symbol': gene.get('symbol', None),
+                'uniprot': gene.get('uniprot', None)
+            }
+            continue
 
-        # Only keep 'Swiss-Prot' component in 'uniprot'
-        uniprot = gene.get('uniprot', None)
-        if uniprot:
-            uniprot = uniprot.get('Swiss-Prot', None)
+        # If oragnism doesn't match, search `homologene` field
+        if 'homologene' not in gene:
+            continue
+        for homo_tax_id, homo_gene_id in gene['homologene']['genes']:
+            homo_tax_id = str(homo_tax_id)
+            homo_gene_id = str(homo_gene_id)
+            if homo_tax_id == tax_id:
+                homo_genes[homo_gene_id] = q_str
+                break
 
-        genes_info[q_str] = {
+    # Search homologenes in mygene.info
+    q_genes = list(homo_genes.keys())
+    logging.info("Searching homologous genes")
+    homo_results = mg.querymany(
+        q_genes,
+        scopes=q_scopes,
+        fields=['entrezgene', 'ensembl.gene', 'symbol', 'uniprot'],
+        species=tax_id,
+        returnall=True
+    )
+
+    # Put homologene query results into `genes_info` dict too
+    for gene in homo_results['out']:
+        if gene.get('notfound', None):  # ignore missing genes
+            continue
+
+        polish_gene_info(gene)
+        original_q_str = homo_genes[gene['query']]
+        genes_info[original_q_str] = {
             'mygene_id': gene.get('_id', None),
             'ncbigene': gene.get('entrezgene', None),
-            'ensemblgene': ensembl_gene,
+            'ensemblgene': gene.get('ensembl', None),
             'symbol': gene.get('symbol', None),
-            'uniprot': uniprot
+            'uniprot': gene.get('uniprot', None)
         }
 
     return genes_info
@@ -113,13 +160,13 @@ def get_ctd_genesets(filename):
                 logging.warning(f"Line #{row_num} has {len(tokens)} columns, skipped")
                 continue
 
-            tax_id = tokens[7]
+            tax_id = tokens[7].strip()
             if tax_id not in organisms:
                 continue
 
-            chemical_name = tokens[0]
-            chemical_id = tokens[1]
-            gene_id = int(tokens[4])
+            chemical_name = tokens[0].strip()
+            chemical_id = tokens[1].strip()
+            gene_id = tokens[4].strip()
 
             cas_rn = tokens[2].strip()
             if len(cas_rn) == 0:
@@ -151,19 +198,34 @@ def load_data(data_dir):
     ctd_genesets = get_ctd_genesets(filename)
     for tax_id, value in ctd_genesets.items():
         organism_name = organisms[tax_id]
-        logging.info(f"Building {organism_name} genesets (taxid = {tax_id})")
+        logging.info(f"Building '{organism_name}' genesets (taxid = {tax_id})")
         entrez_set = value['unique_genes']
         genes_info = query_mygene(entrez_set, tax_id)
 
         genesets = value['genesets']
         for chemical_id, ctd_info in genesets.items():
             gid_set = ctd_info['genes']
-            genes_found = [
-                genes_info[str(gid)] for gid in sorted(gid_set) if str(gid) in genes_info
-            ]
+            uniq_gid = set()
+            genes_found = list()
+            for gid in gid_set:
+                if gid not in genes_info:
+                    continue
+                gene = genes_info[gid]
+
+                # Skip duplicate genes in a geneset
+                mg_id = gene["mygene_id"]
+                if mg_id in uniq_gid:
+                    continue
+
+                uniq_gid.add(mg_id)
+                genes_found.append(gene)
+
             # Ignore a geneset if none of its genes is found in mygene.info
             if len(genes_found) == 0:
                 continue
+
+            # Sort `genes_found` by "mygene_id" value in each gene
+            genes_found = sorted(genes_found, key=lambda x: int(x["mygene_id"]))
 
             chemical_name = ctd_info['chemical_name']
             cas_rn = ctd_info['cas_rn']
