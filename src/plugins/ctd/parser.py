@@ -34,13 +34,15 @@ def polish_gene_info(gene):
     ensembl_gene = None
     ensembl = gene.get('ensembl', None)
     if ensembl and 'gene' in ensembl:
-        gene['ensembl'] = ensembl['gene']
+        ensembl_gene = ensembl['gene']
 
     # Only keep 'Swiss-Prot' component in 'uniprot'
     uniprot = gene.get('uniprot', None)
     if uniprot:
         uniprot = uniprot.get('Swiss-Prot', None)
-        gene['uniprot'] = uniprot
+
+    gene['ensembl'] = ensembl_gene
+    gene['uniprot'] = uniprot
 
 
 def query_mygene(entrez_set, tax_id):
