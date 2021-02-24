@@ -31,17 +31,18 @@ organisms = {
 def polish_gene_info(gene):
     """Polish some field values in input gene."""
 
-    ensembl_gene = None
     ensembl = gene.get('ensembl', None)
-    if ensembl and 'gene' in ensembl:
-        ensembl_gene = ensembl['gene']
+    if ensembl:
+        if type(ensembl) == list:
+            ensembl = ensembl[0]
+        ensembl = ensembl.get('gene', None)
 
     # Only keep 'Swiss-Prot' component in 'uniprot'
     uniprot = gene.get('uniprot', None)
     if uniprot:
         uniprot = uniprot.get('Swiss-Prot', None)
 
-    gene['ensembl'] = ensembl_gene
+    gene['ensembl'] = ensembl
     gene['uniprot'] = uniprot
 
 
