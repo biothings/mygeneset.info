@@ -139,3 +139,6 @@ ssh_host_key
 
 # Config file
 config.py
+
+# emacs backup
+*~

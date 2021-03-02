@@ -1,0 +1,19 @@
+{
+  "version": "0.2",
+  "requires" : ["biothings", "lxml", "mygene", "requests"],
+  "__metadata__": {
+    "license_url": "https://ctdbase.org/about/legal.jsp",
+    "url": "https://ctdbase.org/"
+  },
+  "dumper": {
+    "data_url": "https://ctdbase.org/reports/CTD_chem_gene_ixns.tsv.gz",
+    "uncompress": true,
+    "release": "version:get_release",
+    "schedule": "13 5 1 * *"
+  },
+  "uploader" : {
+    "parser": "parser:load_data",
+    "on_duplicates": "error",
+    "mapping": "mapping:get_customized_mapping"
+  }
+}

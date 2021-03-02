@@ -97,7 +97,6 @@ organisms = [
     },
 
     # Add th following species that are NOT supported in Tribe?
-    # - nematode (6239)
     # - frog (8364)
     # - pig (9823)
 ]
