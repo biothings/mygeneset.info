@@ -631,7 +631,7 @@ def query_mygene(entrez_set, tax_id):
 
     q_genes = entrez_set
     q_scopes = ['entrezgene', 'retired']
-    output_fields = ['entrezgene', 'ensembl.gene', 'symbol', 'uniprot']
+    output_fields = ['entrezgene', 'ensembl.gene', 'symbol', 'name', 'uniprot']
 
     mg = mygene.MyGeneInfo()
     logging.info(f"Querying {q_scopes} in MyGene.info ...")
@@ -648,10 +648,13 @@ def query_mygene(entrez_set, tax_id):
         q_str = gene["query"]
 
         # Ensembl gene ID
-        ensembl_gene = None
+        ensembl_id = None
         ensembl = gene.get('ensembl', None)
-        if ensembl and 'gene' in ensembl:
-            ensembl_gene =  ensembl['gene']
+        if ensembl:
+            if len(gene['ensembl']) > 1:
+                ensembl_id = [g['gene'] for g in gene['ensembl'] if 'gene' in g]
+            elif 'gene' in gene['ensembl']:
+                ensembl_id = gene['ensembl']['gene']
 
         # Only keep 'Swiss-Prot' component in 'uniprot'
         uniprot = gene.get('uniprot', None)
@@ -661,8 +664,9 @@ def query_mygene(entrez_set, tax_id):
         genes_info[q_str] = {
             'mygene_id': gene.get('_id', None),
             'ncbigene': gene.get('entrezgene', None),
-            'ensemblgene': ensembl_gene,
+            'ensemblgene': ensembl_id,
             'symbol': gene.get('symbol', None),
+            'name': gene.get('name', None),
             'uniprot': uniprot
         }
 
@@ -705,13 +709,19 @@ def get_genesets(obo_filename, genemap_filename):
             my_geneset['_id'] = create_gs_id(term)
             my_geneset['is_public'] = True
             my_geneset['taxid'] = TAX_ID
+            my_geneset['source'] = 'do'
+            my_geneset['name'] = term.full_name
+            do_abstract = create_gs_abstract(term, doid_omim_dict)
+            my_geneset['description'] = do_abstract
 
             # Genes in a geneset are sorted by their IDs to make output reproducible.
             my_geneset['genes'] = [genes_info[str(gid)] for gid in sorted(gid_set)]
+
             my_geneset['do'] = {
                 'id': term_id,
-                'abstract': create_gs_abstract(term, doid_omim_dict)
+                'abstract': do_abstract
             }
+
             my_geneset = dict_sweep(my_geneset, vals=[None], remove_invalid_list=True)
             my_geneset = unlist(my_geneset)
             genesets.append(my_geneset)
