@@ -6,11 +6,29 @@ def get_customized_mapping(cls):
         "taxid": {
             "type": "integer"
         },
+        "source": {
+            "normalizer": "keyword_lowercase_normalizer",
+            "type": "keyword"
+        },
+        "name": {
+            "normalizer": "keyword_lowercase_normalizer",
+            "type": "keyword"
+        },
+        "description": {
+            "type": "text"
+        },
         "genes": {
             "properties": {
                 "mygene_id": {
                     "normalizer": "keyword_lowercase_normalizer",
                     "type": "keyword"
+                },
+                "symbol": {
+                    "normalizer": "keyword_lowercase_normalizer",
+                    "type": "keyword"
+                },
+                "name": {
+                    "type": "text"
                 },
                 "ncbigene": {
                     "normalizer": "keyword_lowercase_normalizer",
@@ -22,9 +40,6 @@ def get_customized_mapping(cls):
                 },
                 "uniprot": {
                     "normalizer": "keyword_lowercase_normalizer",
-                    "type": "keyword"
-                },
-                "symbol": {
                     "type": "keyword"
                 }
             }

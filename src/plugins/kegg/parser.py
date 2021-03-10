@@ -82,7 +82,7 @@ def query_mygene(genes, tax_id, gene_id_types):
 
     genes_info = list()
     q_genes = genes
-    output_fields = ['entrezgene', 'ensembl.gene', 'symbol', 'uniprot']
+    output_fields = ['entrezgene', 'ensembl.gene', 'symbol', 'name', 'uniprot']
 
     mg = mygene.MyGeneInfo()
     for gid_type in gene_id_types:
@@ -116,6 +116,21 @@ def query_mygene(genes, tax_id, gene_id_types):
     return genes_info
 
 
+def get_unique_tokens(geneset_name):
+    """
+    Delimit the input `geneset_name` by "; ", and return a new string
+    that includes only unique tokens delimited by "; ".
+    """
+
+    tokens = geneset_name.split("; ")
+    uniq_tokens = []
+    for t in tokens:
+        if t not in uniq_tokens:
+            uniq_tokens.append(t)
+
+    return "; ".join(uniq_tokens)
+
+
 def load_data(data_dir):
     """The argument `data_dir` is not being used at this moment."""
 
@@ -128,7 +143,7 @@ def load_data(data_dir):
         tax_id = config['tax_id']
 
         logging.info("=" * 60)
-        logging.info(f"Parsing genesets for {organism_name} (taxid={tax_id}) ...")
+        logging.info(f"Building '{organism_name}' genesets (taxid = {tax_id}) ...")
 
         organism_code = config['organism_code']
 
@@ -162,8 +177,11 @@ def load_data(data_dir):
         for gene in matched_genes:
             q_str = gene['query']
             ensembl_id = None  # ensembl_id is optional
-            if 'ensembl' in gene and 'gene' in gene['ensembl']:
-                ensembl_id = gene['ensembl']['gene']
+            if 'ensembl' in gene:
+                if len(gene['ensembl']) > 1:
+                    ensembl_id = [g['gene'] for g in gene['ensembl'] if 'gene' in g]
+                elif 'gene' in gene['ensembl']:
+                    ensembl_id = gene['ensembl']['gene']
 
             # Only keep 'Swiss-Prot' component in 'uniprot'
             uniprot = gene.get('uniprot', None)
@@ -175,6 +193,7 @@ def load_data(data_dir):
                 'ncbigene': gene.get('entrezgene', None),
                 'ensemblgene': ensembl_id,
                 'symbol': gene.get('symbol', None),
+                'name': gene.get('name', None),
                 'uniprot': uniprot
             }
 
@@ -192,6 +211,8 @@ def load_data(data_dir):
                 '_id': f"KEGG_{gs_type}_{gs_entry}_{tax_id}",
                 'is_public': True,
                 'taxid': tax_id,
+                'source': 'kegg',
+                'name': get_unique_tokens(gs_name),
                 'genes': [q_to_geneinfo[g] for g in genes],
                 'kegg': {
                     'id': gs_id,
