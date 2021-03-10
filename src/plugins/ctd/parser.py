@@ -33,9 +33,10 @@ def polish_gene_info(gene):
 
     ensembl = gene.get('ensembl', None)
     if ensembl:
-        if type(ensembl) == list:
-            ensembl = ensembl[0]
-        ensembl = ensembl.get('gene', None)
+        if len(ensembl) > 1:
+            ensembl = [g['gene'] for g in ensembl if 'gene' in g]
+        elif 'gene' in ensembl:
+            ensembl = ensembl['gene']
 
     # Only keep 'Swiss-Prot' component in 'uniprot'
     uniprot = gene.get('uniprot', None)
@@ -78,6 +79,7 @@ def query_mygene(entrez_set, tax_id):
                 'ncbigene': gene.get('entrezgene', None),
                 'ensemblgene': gene.get('ensembl', None),
                 'symbol': gene.get('symbol', None),
+                'name': gene.get('name', None),
                 'uniprot': gene.get('uniprot', None)
             }
             continue
@@ -98,7 +100,7 @@ def query_mygene(entrez_set, tax_id):
     homo_results = mg.querymany(
         q_genes,
         scopes=q_scopes,
-        fields=['entrezgene', 'ensembl.gene', 'symbol', 'uniprot'],
+        fields=['entrezgene', 'ensembl.gene', 'symbol', 'name', 'uniprot'],
         species=tax_id,
         returnall=True
     )
@@ -115,6 +117,7 @@ def query_mygene(entrez_set, tax_id):
             'ncbigene': gene.get('entrezgene', None),
             'ensemblgene': gene.get('ensembl', None),
             'symbol': gene.get('symbol', None),
+            'name': gene.get('name', None),
             'uniprot': gene.get('uniprot', None)
         }
 
@@ -201,6 +204,7 @@ def load_data(data_dir):
     ctd_genesets = get_ctd_genesets(filename)
     for tax_id, value in ctd_genesets.items():
         organism_name = organisms[tax_id]
+        logging.info("=" * 60)
         logging.info(f"Building '{organism_name}' genesets (taxid = {tax_id})")
         entrez_set = value['unique_genes']
         genes_info = query_mygene(entrez_set, tax_id)
@@ -236,6 +240,9 @@ def load_data(data_dir):
             my_geneset['_id'] = chemical_id + "-" + tax_id
             my_geneset['is_public'] = True
             my_geneset['taxid'] = tax_id
+            my_geneset['source'] = 'ctd'
+            my_geneset['name'] = f"{chemical_name} interactions"
+            my_geneset['description'] = f"Chemical-gene interactions of {chemical_name} in {organism_name}"
             my_geneset['genes'] = genes_found
 
             # CTD-specific fields
