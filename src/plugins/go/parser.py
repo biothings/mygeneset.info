@@ -1,7 +1,9 @@
 import glob
 import json
 import os
+import sys
 
+sys.path.append("../../")
 from biothings.utils.dataload import tabfile_feeder, dict_sweep, unlist
 from utils.geneset_utils import IDLookup
 
@@ -108,19 +110,21 @@ def parse_ontology(f):
             continue
         go_terms[_id] = {"id": _id.replace("_", ":"),
                          "url": url,
-                         "type": node.get('type')}
+                         "ontology": [node['meta'].get('basicPropertyValues')[0].get('val')]}
         if node.get('lbl'):
-            go_terms['name'] = node['lbl']
+            go_terms[_id]['name'] = node['lbl']
         if node['meta'].get("definition"):
             go_terms[_id]['definition'] = node['meta']['definition'].get('val')
             go_terms[_id]['xrefs'] = node['meta']['definition'].get('xrefs')
     go_terms = unlist(go_terms)
     go_terms = dict_sweep(go_terms)
+    for g in go_terms.values():
+        print(json.dumps(g, indent=2))
     return go_terms
 
 
 if __name__ == "__main__":
-
+    import os
     annotations = load_data("./test_data")
     with open("out.json", 'a') as outfile:
         for a in annotations:
