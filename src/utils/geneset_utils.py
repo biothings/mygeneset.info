@@ -47,7 +47,7 @@ class IDLookup:
                 continue
             gene = {'mygene_id': out['_id']}
             if out.get('symbol') is not None:
-                gene['symbol'] = out['symbol'],
+                gene['symbol'] = out['symbol']
             if out.get('name') is not None:
                 gene['name'] = out['name']
             if out.get('entrezgene') is not None:
@@ -60,8 +60,6 @@ class IDLookup:
                     gene['ensemblgene'] = out['ensembl']['gene']
             if out.get('uniprot') is not None:
                 gene['uniprot'] = out['uniprot']['Swiss-Prot']
-            if out.get('locus_tag') is not None:
-                gene['locus_tag'] = out['locus_tag']
             gene = dict_sweep(gene)
             gene = unlist(gene)
             self.query_cache[query] = gene
