@@ -1,5 +1,5 @@
 import mygene
-from biothings.utils.dataload import unlist
+from biothings.utils.dataload import unlist, dict_sweep
 
 class IDLookup:
     """Query a list of IDs and scope against mygene.info.
@@ -26,9 +26,15 @@ class IDLookup:
         self.ids = ids
         mg = mygene.MyGeneInfo()
         # Fields to query
-        fields = "entrezgene,ensembl.gene,uniprot.Swiss-Prot,symbol,name,locus_tag"
+        fields = "entrezgene,ensembl.gene,uniprot.Swiss-Prot,symbol,name"
+        if id_type == "symbol":
+            scopes = "symbol,alias"
+        elif id_type == "entrezgene":
+            scopes = "entrezgene,retired"
+        else:
+            scopes = id_type
         response = mg.querymany(ids,
-                                scopes=id_type,
+                                scopes=scopes,
                                 fields=fields,
                                 species=self.species,
                                 returnall=True)
@@ -56,6 +62,7 @@ class IDLookup:
                 gene['uniprot'] = out['uniprot']['Swiss-Prot']
             if out.get('locus_tag') is not None:
                 gene['locus_tag'] = out['locus_tag']
+            gene = dict_sweep(gene)
             gene = unlist(gene)
             self.query_cache[query] = gene
 
