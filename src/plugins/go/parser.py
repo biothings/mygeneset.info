@@ -27,21 +27,26 @@ def load_data(data_folder):
         uniprot = [i for i, j in all_genes]
         symbols = [j for i, j in all_genes]
         taxid = annotations['taxid']
+        # Fetch gene data from mygene.info
         lookup = IDLookup(taxid)
-        lookup.query_mygene(uniprot, "uniprot")
+        lookup.query_mygene(uniprot, "uniprot,retired,accession")
         lookup.retry_failed_with_new_ids(symbols, "symbol")
 
         for _id, annotations in docs.items():
             # Add ontology annotations
             annotations['go'] = goterms[_id]
+            annotations['source'] = 'go'
+            annotations['name'] = annotations['go'].pop('name')
+            annotations['description'] = annotations['go'].pop('description')
             # Add gene sets
             if annotations.get("genes") is not None:
+                new_genes = []
                 for u, s in annotations['genes']:
                     if lookup.query_cache.get(u) is not None:
-                        genes = lookup.query_cache[u]
+                        new_genes.append(lookup.query_cache[u])
                     elif lookup.query_cache.get(s) is not None:
-                        genes = lookup.query_cache[s]
-                annotations['genes'] = genes
+                        new_genes.append(lookup.query_cache[s])
+                annotations['genes'] = new_genes
             else:
                 # No genes in set
                 continue
@@ -49,13 +54,13 @@ def load_data(data_folder):
             for key in ["excluded_genes", "contributing_genes",
                         "colocalized_genes"]:
                 if annotations.get(key) is not None:
-                    genes = []
+                    new_genes = []
                     for u, s in annotations.pop(key):
                         if lookup.query_cache.get(u) is not None:
-                            genes = lookup.query_cache[u]
+                            new_genes.append(lookup.query_cache[u])
                         elif lookup.query_cache.get(s) is not None:
-                            genes = lookup.query_cache[s]
-                    annotations['go'][key] = genes
+                            new_genes.append(lookup.query_cache[s])
+                    annotations['go'][key] = new_genes
             # Clean up data
             annotations = unlist(annotations)
             annotations = dict_sweep(annotations)
@@ -109,17 +114,18 @@ def parse_ontology(f):
         if not _id.startswith("GO_"):
             continue
         go_terms[_id] = {"id": _id.replace("_", ":"),
-                         "url": url,
-                         "ontology": [node['meta'].get('basicPropertyValues')[0].get('val')]}
+                         "url": url,}
+        properties = node['meta'].get('basicPropertyValues')
+        for p in properties:
+            if p['val'] in ["biological_process", "cellular_component", "molecular_function"]:
+                go_terms[_id]["class"] = [p['val']]
         if node.get('lbl'):
             go_terms[_id]['name'] = node['lbl']
         if node['meta'].get("definition"):
-            go_terms[_id]['definition'] = node['meta']['definition'].get('val')
+            go_terms[_id]['description'] = node['meta']['definition'].get('val')
             go_terms[_id]['xrefs'] = node['meta']['definition'].get('xrefs')
     go_terms = unlist(go_terms)
     go_terms = dict_sweep(go_terms)
-    for g in go_terms.values():
-        print(json.dumps(g, indent=2))
     return go_terms
 
 
