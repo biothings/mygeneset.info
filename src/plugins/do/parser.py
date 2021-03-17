@@ -551,26 +551,6 @@ def add_term_annotations(doid_omim_dict, disease_ontology, mim_diseases):
 
     return entrez_set
 
-# Based on `create_do_term_title()` in "annotation-refinery/process_do.py"
-# See https://github.com/greenelab/annotation-refinery
-def create_gs_id(do_term):
-    """
-    Small function to create the DO term title in the desired
-    format: DO-<DO integer ID>:<DO term full name>
-    Example: DO-9351:diabetes mellitus
-
-    Arguments:
-    do_term -- This is a GOTerm object
-
-    Returns:
-    title -- A string of the DO term's title in the desired format.
-    """
-    do_id = do_term.go_id
-    do_num = do_id.split(':')[1]
-    title = 'DO' + '-' + do_num + ':' + do_term.full_name
-
-    return title
-
 
 # Based on `create_do_term_bastract()` in "annotation-refinery/process_do.py".
 # See https://github.com/greenelab/annotation-refinery
@@ -706,7 +686,7 @@ def get_genesets(obo_filename, genemap_filename):
 
         if gid_set:
             my_geneset = {}
-            my_geneset['_id'] = create_gs_id(term)
+            my_geneset['_id'] = term_id.replace(":", "_")
             my_geneset['is_public'] = True
             my_geneset['taxid'] = TAX_ID
             my_geneset['source'] = 'do'
