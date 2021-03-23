@@ -1,5 +1,11 @@
 def get_customized_mapping(cls):
     mapping = {
+        "name": {
+            "type": "text",
+            "copy_to": [
+                "all"
+            ]
+        },
         "is_public": {
             "type": "boolean"
         },

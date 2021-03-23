@@ -12,13 +12,6 @@ def get_customized_mapping(cls):
                     "normalizer": "keyword_lowercase_normalizer",
                     "type": "keyword"
                 },
-                "symbol": {
-                    "normalizer": "keyword_lowercase_normalizer",
-                    "type": "keyword"
-                },
-                "name": {
-                    "type": "text"
-                },
                 "ncbigene": {
                     "normalizer": "keyword_lowercase_normalizer",
                     "type": "keyword"
@@ -30,6 +23,12 @@ def get_customized_mapping(cls):
                 "uniprot": {
                     "normalizer": "keyword_lowercase_normalizer",
                     "type": "keyword"
+                },
+                "symbol": {
+                    "type": "text"
+                },
+                "name": {
+                    "type": "text"
                 }
             }
         },
@@ -46,11 +45,14 @@ def get_customized_mapping(cls):
                     "normalizer": "keyword_lowercase_normalizer",
                     "type": "keyword"
                 },
-                "type": {
+                "class": {
                     "normalizer": "keyword_lowercase_normalizer",
                     "type": "keyword"
                 },
-                "definition": {
+                "name": {
+                    "type": "text"
+                },
+                "description": {
                     "type": "text"
                 },
                 "xrefs": {
@@ -58,33 +60,6 @@ def get_customized_mapping(cls):
                     "type": "keyword"
                 },
                 "contributing_genes": {
-                    "properties": {
-                        "mygene_id": {
-                            "normalizer": "keyword_lowercase_normalizer",
-                            "type": "keyword"
-                        },
-                        "symbol": {
-                            "normalizer": "keyword_lowercase_normalizer",
-                            "type": "keyword"
-                        },
-                        "ncbigene": {
-                            "normalizer": "keyword_lowercase_normalizer",
-                            "type": "keyword"
-                        },
-                        "ensemblgene": {
-                            "normalizer": "keyword_lowercase_normalizer",
-                            "type": "keyword"
-                        },
-                        "uniprot": {
-                            "normalizer": "keyword_lowercase_normalizer",
-                            "type": "keyword"
-                        },
-                        "name": {
-                            "type": "text"
-                        }
-                    }
-                },
-                "excluded_genes": {
                     "properties": {
                         "mygene_id": {
                             "normalizer": "keyword_lowercase_normalizer",
@@ -137,9 +112,51 @@ def get_customized_mapping(cls):
                             "type": "text"
                         }
                     }
+                },
+                "excluded_genes": {
+                    "properties": {
+                        "mygene_id": {
+                            "normalizer": "keyword_lowercase_normalizer",
+                            "type": "keyword"
+                        },
+                        "symbol": {
+                            "normalizer": "keyword_lowercase_normalizer",
+                            "type": "keyword"
+                        },
+                        "ncbigene": {
+                            "normalizer": "keyword_lowercase_normalizer",
+                            "type": "keyword"
+                        },
+                        "ensemblgene": {
+                            "normalizer": "keyword_lowercase_normalizer",
+                            "type": "keyword"
+                        },
+                        "uniprot": {
+                            "normalizer": "keyword_lowercase_normalizer",
+                            "type": "keyword"
+                        },
+                        "name": {
+                            "type": "text"
+                        }
+                    }
                 }
             }
+        },
+        "source": {
+            "normalizer": "keyword_lowercase_normalizer",
+            "type": "keyword"
+        },
+        "name": {
+            "type": "text",
+            "copy_to": [
+                "all"
+            ]
+        },
+        "description": {
+            "type": "text",
+            "copy_to": [
+                "all"
+            ]
         }
     }
-
     return mapping
