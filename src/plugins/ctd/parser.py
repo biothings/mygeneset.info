@@ -237,7 +237,7 @@ def load_data(data_dir):
             chemical_name = ctd_info['chemical_name']
             cas_rn = ctd_info['cas_rn']
             my_geneset = dict()
-            my_geneset['_id'] = chemical_id + "-" + tax_id
+            my_geneset['_id'] = chemical_id + "_" + tax_id
             my_geneset['is_public'] = True
             my_geneset['taxid'] = tax_id
             my_geneset['source'] = 'ctd'

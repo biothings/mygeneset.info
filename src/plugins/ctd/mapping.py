@@ -12,10 +12,16 @@ def get_customized_mapping(cls):
         },
         "name": {
             "normalizer": "keyword_lowercase_normalizer",
-            "type": "keyword"
+            "type": "keyword",
+            "copy_to": [
+                "all"
+            ]
         },
         "description": {
-            "type": "text"
+            "type": "text",
+            "copy_to": [
+                "all"
+            ]
         },
         "genes": {
             "properties": {
@@ -55,15 +61,25 @@ def get_customized_mapping(cls):
                 },
                 "chemical_name": {
                     "normalizer": "keyword_lowercase_normalizer",
-                    "type": "keyword"
+                    "type": "keyword",
+                    "copy_to": [
+                        "all"
+                    ]
+
                 },
                 "mesh": {
                     "normalizer": "keyword_lowercase_normalizer",
-                    "type": "keyword"
+                    "type": "keyword",
+                    "copy_to": [
+                        "all"
+                    ]
                 },
                 "cas": {
                     "normalizer": "keyword_lowercase_normalizer",
-                    "type": "keyword"
+                    "type": "keyword",
+                    "copy_to": [
+                        "all"
+                    ]
                 }
             }
         }
