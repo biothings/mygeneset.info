@@ -36,10 +36,10 @@ def load_data(data_folder):
             # Add ontology annotations
             annotations['go'] = goterms[_id]
             annotations['source'] = 'go'
-            annotations['name'] = annotations['go'].pop('name')
-            annotations['description'] = annotations['go'].pop('description')
             # Add gene sets
             if annotations.get("genes") is not None:
+                annotations['name'] = annotations['go']['name']
+                annotations['description'] = annotations['go']['description']
                 new_genes = []
                 for u, s in annotations['genes']:
                     if lookup.query_cache.get(u) is not None:
@@ -113,7 +113,7 @@ def parse_ontology(f):
         _id = url.split("/")[-1]
         if not _id.startswith("GO_"):
             continue
-        go_terms[_id] = {"id": _id.replace("_", ":"),
+        go_terms[_id] = {"id": _id,
                          "url": url,}
         properties = node['meta'].get('basicPropertyValues')
         for p in properties:
