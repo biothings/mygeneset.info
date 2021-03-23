@@ -53,7 +53,7 @@ def query_mygene(entrez_set, tax_id):
     q_genes = entrez_set
     q_scopes = ['entrezgene', 'retired']
     output_fields = [
-        'entrezgene', 'ensembl.gene', 'symbol', 'uniprot', 'taxid', 'homologene'
+        'entrezgene', 'ensembl.gene', 'symbol', 'name', 'uniprot', 'taxid', 'homologene'
     ]
 
     mg = mygene.MyGeneInfo()
