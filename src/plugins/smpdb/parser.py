@@ -43,6 +43,9 @@ def parse_genes(data_folder):
     for f in glob(os.path.join(data_folder, "*_proteins.csv")):
         fields = ['SMPDB ID', 'Uniprot ID', 'Gene Name', 'GenBank ID', 'Locus']
         data = pd.read_csv(f, usecols=fields)
+        # Skip empty files
+        if len(data) == 0:
+            continue
         # Query gene info
         gene_lookup.query_mygene(data['Uniprot ID'], 'uniprot')
         gene_lookup.retry_failed_with_new_ids(data['Gene Name'], 'symbol')
@@ -63,6 +66,9 @@ def parse_metabolites(data_folder):
     metabolite_sets = {}
     for f in glob(os.path.join(data_folder, "*_metabolites.csv")):
         data = pd.read_csv(f)
+        # Skip empty files
+        if len(data) == 0:
+            continue
         smpdb_id = data['SMPDB ID'][0]
 
         pw_id = data['Metabolite ID']
