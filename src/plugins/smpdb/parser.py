@@ -11,7 +11,9 @@ from utils.geneset_utils import IDLookup
 def load_data(data_folder):
     # Parse pathway metadata
     f = os.path.join(data_folder, "smpdb_pathways.csv")
-    metabolitesets = parse_metabolites(data_folder) genesets = parse_genes(data_folder)
+    metabolitesets = parse_metabolites(data_folder)
+    genesets = parse_genes(data_folder)
+
     data = pd.read_csv(f, quotechar='"')
     for i in range(len(data)):
         smpdb_id = data['SMPDB ID'][i]
