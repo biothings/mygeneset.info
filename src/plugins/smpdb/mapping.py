@@ -24,7 +24,7 @@ def get_customized_mapping(cls):
 		    ]
 		},
 		"pathway_subject": {
-		    "type": "text"
+		    "type": "keyword"
 		}
 	    }
 	},
@@ -101,13 +101,15 @@ def get_customized_mapping(cls):
 		    "type": "keyword"
 		},
 		"cas": {
-		    "type": "text"
+		    "normalizer": "keyword_lowercase_normalizer",
+		    "type": "keyword"
 		},
 		"name": {
 		    "type": "text"
 		},
 		"iupac": {
-		    "type": "text"
+		    "type": "keyword"
+		    "normalizer": "keyword_lowercase_normalizer",
 		}
 	    }
 	},
