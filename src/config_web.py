@@ -8,7 +8,7 @@ from biothings.web.settings.default import APP_LIST, ANNOTATION_KWARGS, QUERY_KW
 # elasticsearch server transport url
 ES_HOST = 'localhost:9200'
 # elasticsearch index name
-ES_INDEX = 'mygeneset_current'
+ES_INDEX = 'mygeneset_current,user-genesets-test'
 # elasticsearch document type
 ES_DOC_TYPE = 'geneset'
 
@@ -95,10 +95,10 @@ ANNOTATION_KWARGS['*'].update(SPECIES_TYPEDEF)
 
 QUERY_KWARGS = copy.deepcopy(QUERY_KWARGS)
 QUERY_KWARGS['*'].update(SPECIES_TYPEDEF)
-DEFAULT_FIELDS = ['_id', 'genes', 'is_public', 'taxid']
+DEFAULT_FIELDS = ['_id', 'genes', 'name', 'description', 'source',
+                  'author', 'date', 'is_public', 'taxid']
 QUERY_KWARGS['*']['_source']['default'] = DEFAULT_FIELDS
 
-#QUERY_KWARGS['GET']['scopes']['default'] =  ["_id"]
-#QUERY_KWARGS['POST']['scopes']['default'] =  ["_id"]
+QUERY_KWARGS['POST']['scopes']['default'] =  ["_id"]
 
 ES_QUERY_BUILDER = "web.pipeline.MyGenesetQueryBuilder"
