@@ -8,7 +8,7 @@ from biothings.web.settings.default import APP_LIST, ANNOTATION_KWARGS, QUERY_KW
 # elasticsearch server transport url
 ES_HOST = 'localhost:9200'
 # elasticsearch index name
-ES_INDEX = 'mygeneset_current,user-genesets-test'
+ES_INDEX = 'mygeneset_current,user-genesets'
 # elasticsearch document type
 ES_DOC_TYPE = 'geneset'
 
@@ -38,12 +38,9 @@ STATUS_CHECK = {
 # *****************************************************************************
 
 
-#TAX_REDIRECT = "http://t.biothings.io/v1/taxon/{0}?include_children=1"
-
-#APP_LIST += [
-#        (r"/{ver}/species/(\d+)/?", "tornado.web.RedirectHandler", {"url": TAX_REDIRECT}),
-#        (r"/{ver}/taxon/(\d+)/?", "tornado.web.RedirectHandler", {"url": TAX_REDIRECT})
-#        ]
+APP_LIST += [
+        (r"/{ver}/submit/?", "web.handlers.api.SubmitHandler"),
+        ]
 
 
 TAXONOMY = {
