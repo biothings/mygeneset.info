@@ -33,7 +33,7 @@ Examples
     http://mygeneset.info/v1/query?species=mouse,human
 
     # Fetch all genesets from the source "wikipathways"
-    http://mygeneset.info/v1/query?q=_exists_:wikipathways
+    http://mygeneset.info/v1/query?q=source:wikipathways
 
     # Wildcard queries
     http://mygeneset.info/v1/query?q=genes.symbol=cdk?

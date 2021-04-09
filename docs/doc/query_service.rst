@@ -29,20 +29,20 @@ q
 
 fields
 """"""
-    Optional, can be a comma-separated fields to limit the fields returned from the matching gene hits. The supported field names can be found from any gene object (e.g. `gene 1017 <http://mygeneset.info/v1/gene/1017>`_). Note that it supports dot notation as well, e.g., you can pass "refseq.rna". If "fields=all", all available fields will be returned. Default:
-    "symbol,name,taxid,entrezgene".
+    Optional, can be a comma-separated fields to limit the fields returned from the matching geneset hits. The supported field names can be found from any geneset object (e.g. `geneset WP60 <http://mygeneset.info/v1/geneset/WP60>`_). Note that it supports dot notation as well, e.g., you can pass "genes.symbol". If "fields=all", all available fields will be returned. Default:
+    "_id,genes,name,description,source,author,date,is_public,taxid".
 
 species
 """""""
-    Optional, can be used to limit the gene hits from given species. You can use "common names" for nine common species (human, mouse, rat, fruitfly, nematode, zebrafish, thale-cress, frog and pig). All other species, you can provide their taxonomy ids. See `more details here <data.html#species>`_. Multiple species can be passed using comma as a separator. Passing "all" will query against all available species. Default: all.
+    Optional, can be used to limit the geneset hits from given species. You can use "common names" for 17 common species. All other species, you can provide their taxonomy ids. See `more details here <data.html#species>`_. Multiple species can be passed using comma as a separator. Passing "all" will query against all available species. Default: all.
 
 size
 """"
-    Optional, the maximum number of matching gene hits to return (with a cap of 1000 at the moment). Default: 10.
+    Optional, the maximum number of matching geneset hits to return (with a cap of 1000 at the moment). Default: 10.
 
 from
 """"
-    Optional, the number of matching gene hits to skip, starting from 0. Default: 0
+    Optional, the number of matching geneset hits to skip, starting from 0. Default: 0
 
 .. Hint:: The combination of "**size**" and "**from**" parameters can be used to get paging for large query:
 
@@ -61,28 +61,28 @@ scroll_id
 
 sort
 """"
-    Optional, the comma-separated fields to sort on. Prefix with "-" for descending order, otherwise in ascending order. Default: sort by matching scores in decending order.
+    Optional, the comma-separated fields to sort on. Prefix with "-" for descending order, otherwise in ascending order. Default: sort by matching scores in descending order.
 
 facets
 """"""
-    Optional, a single field or comma-separated fields to return facets, for example, "facets=taxid", "facets=taxid,type_of_gene". See `examples of faceted queries here <#faceted-queries>`_.
+    Optional, a single field or comma-separated fields to return facets, for example, "facets=taxid", "facets=taxid,source". See `examples of faceted queries here <#faceted-queries>`_.
 
 facet_size
 """"""""""
-    Optional, an integer (1 <= **facet_size** <= 1000) that specifies how many buckets to ret
-urn in a faceted query.
+    Optional, an integer (1 <= **facet_size** <= 1000) that specifies how many buckets to return in a faceted query.
 
 species_facet_filter
 """"""""""""""""""""
     Optional, relevant when faceting on species (i.e., "facets=taxid" are passed). It's used to pass species filter without changing the scope of faceting, so that the returned facet counts won't change. Either species name or taxonomy id can be used, just like "`species <#species>`_" parameter above. See `examples of faceted queries here <#faceted-queries>`_.
 
-entrezonly
-""""""""""
-    Optional, when passed as "true" or "1", the query returns only the hits with valid Entrez gene ids. Default: false.
 
-ensemblonly
+always_list
 """""""""""
-    Optional, when passed as "true" or "1", the query returns only the hits with valid Ensembl gene ids. Default: false.
+    Optional, forces a field, or set of fields to always return an array. This is useful for fields such as **genes** and **genes.ensemblgene**, which may return an array or string. Can take a comma sepparated list of fields such as: "always_list=genes,genes.ensemblgene".
+
+allow_null
+""""""""""
+    Optional, forces a field, or set of fields to return **Null** if the field does not exist. Can take a comma sepparated list of fields such as: "allow_null=genes.ncbigene,genes.ensemblgene".
 
 callback
 """"""""
@@ -90,7 +90,7 @@ callback
 
 dotfield
 """"""""
-    Optional, can be used to control the format of the returned gene object.  If "dotfield" is true, the returned data object is returned flattened (no nested objects) using dotfield notation for key names.  Default: false.
+    Optional, can be used to control the format of the returned geneset object.  If "dotfield" is true, the returned data object is returned flattened (no nested objects) using dotfield notation for key names.  Default: false.
 
 filter
 """"""
@@ -119,7 +119,7 @@ Simple queries
 
 search for everything::
 
-    q=cdk2                              search for any fields
+    q=glucose                           search for any fields
     q=tumor suppressor                  default as "AND" for all query terms
     q="cyclin-dependent kinase"         search for the phrase
 
@@ -129,10 +129,10 @@ Fielded queries
 """""""""""""""
 ::
 
-    q=entrezgene:1017
-    q=symbol:cdk2
-    q=refseq:NM_001798
-
+    q=genes.entrezgene:1017
+    q=genes.symbol:cdk2
+    q=source:reactome
+    q=kegg.id:"path:hsa04723"
 
 .. _available_fields:
 
@@ -144,7 +144,7 @@ This table lists some commonly used fields can be used for "fielded queries". `C
 ========================    =============================================    =================================================================================
 Field                        Description                                     Examples
 ========================    =============================================    =================================================================================
-**entrezgene**                Entrez gene id                                    `q=entrezgene:1017 <http://mygeneset.info/v1/query?q=entrezgene:1017>`_
+**entrezgene**                Entrez gene id                                    `q=entrezgene:1017 <http://mygeneset.info/v1/query?q=entrezgene:1017>`
 **ensembl.gene**               Ensembl gene id                                   `q=ensembl.gene:ENSG00000123374 <http://mygeneset.info/v1/query?q=ensembl.gene:ENSG00000123374>`_
 **symbol**                    official gene symbol                              `q=symbol:cdk2 <http://mygeneset.info/v1/query?q=symbol:cdk2>`_
 **name**                      gene name                                         `q=name:cyclin-dependent <http://mygeneset.info/v1/query?q=name:cyclin-dependent>`_
