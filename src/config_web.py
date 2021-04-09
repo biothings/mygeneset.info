@@ -8,7 +8,7 @@ from biothings.web.settings.default import APP_LIST, ANNOTATION_KWARGS, QUERY_KW
 # elasticsearch server transport url
 ES_HOST = 'localhost:9200'
 # elasticsearch index name
-ES_INDEX = 'mygeneset_current,user-genesets'
+ES_INDEX = 'mygeneset_current,user-genesets-test'
 # elasticsearch document type
 ES_DOC_TYPE = 'geneset'
 
