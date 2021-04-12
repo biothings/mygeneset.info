@@ -8,7 +8,7 @@ var DATA_FORMAT_VERSION = "1.0";
 jQuery(document).ready(function () {
     if (jQuery(' .indexed-field-table ').length) {
         jQuery.ajax({
-            url: "//mygene.info/v3/metadata/fields",
+            url: "//mygeneset.info/v1/metadata/fields",
             dataType: "json",
             type: "GET",
             success: function (data) {
@@ -36,7 +36,7 @@ jQuery(document).ready(function () {
     if ((jQuery('#all-releases').length)) {
         // load releases
         jQuery.ajax({
-            url: 'https://s3-us-west-2.amazonaws.com/biothings-releases/mygene.info/versions.json',
+            url: 'https://biothings-releases.s3.amazonaws.com/mygeneset-geneset/versions.json',
             cache: false,
             type: "GET",
             dataType: "json",
