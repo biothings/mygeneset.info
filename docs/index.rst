@@ -31,7 +31,7 @@ Documentation
 .. toctree::
    :maxdepth: 3
 
-   Try it live on our interactive API page <http://mygeneset.info/v1/api>
+   Try it live on our interactive API page <http://mygeneset.info/api>
    doc/data
    doc/release_changes
    doc/query_service
@@ -42,24 +42,24 @@ Documentation
 How to cite
 ------------
 
-See citation page here: http://mygeneset.info/citation/
+See citation page here: http://mygeneset.info/about#cite
 
 FAQ
 -------
 
-See FAQ page here: http://mygeneset.info/faq/
+See FAQ page here: http://mygeneset.info/about#faqs
 
 Related links
 -------------
 
-* `mygeneset.info on Github <https://github.com/SuLab/mygeneset.info>`_
+* `mygeneset.info on Github <https://github.com/biothings/mygeneset.info/>`_
 
 
 Contact us
 -------------------------
 
 * help@mygeneset.info
-* `@mygeneinfo <https://twitter.com/mygeneinfo>`_
+* `@mygeneinfo <https://twitter.com/mygenesetinfo/>`_
 
 
 .. raw:: html

@@ -21,6 +21,12 @@ class WikiPathwaysUploader(uploader.BaseSourceUploader):
     @classmethod
     def get_mapping(cls):
         mapping = {
+            "name": {
+                "type": "text",
+                "copy_to": [
+                    "all"
+                ]
+            },
             "is_public": {
                 "type": "boolean"
             },
@@ -67,10 +73,7 @@ class WikiPathwaysUploader(uploader.BaseSourceUploader):
                         ]
                     },
                     "pathway_name": {
-                        "type": "text",
-                        "copy_to": [
-                            "all"
-                        ]
+                        "type": "text"
                     },
                     "url": {
                         "normalizer": "keyword_lowercase_normalizer",

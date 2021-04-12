@@ -95,7 +95,6 @@ QUERY_KWARGS['*'].update(SPECIES_TYPEDEF)
 DEFAULT_FIELDS = ['_id', 'genes', 'name', 'description', 'source',
                   'author', 'date', 'is_public', 'taxid']
 QUERY_KWARGS['*']['_source']['default'] = DEFAULT_FIELDS
-
-QUERY_KWARGS['POST']['scopes']['default'] =  ["_id"]
+QUERY_KWARGS['POST']['scopes']['default'] =  ['_id', 'name']
 
 ES_QUERY_BUILDER = "web.pipeline.MyGenesetQueryBuilder"

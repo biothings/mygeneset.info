@@ -60,9 +60,11 @@ def load_data(data_folder):
 
             # Format schema
             doc = {'_id': wikipathways_id,
+                   'name': pathway_name,
                    'is_public': True,
                    'taxid': taxid,
                    'genes': genes,
+                   'source': 'wikipathways',
                    'wikipathways': {
                        'id': wikipathways_id,
                        'pathway_name': pathway_name,

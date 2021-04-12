@@ -33,7 +33,7 @@ Query parameters
 
 fields
 """"""""
-    Optional, can be a comma-separated fields to limit the fields returned from the gene object. If "fields=all", all available fields will be returned. Note that it supports dot notation as well, e.g., you can pass "refseq.rna". Default: "fields=all".
+    Optional, can be a comma-separated fields to limit the fields returned from the geneset object. If "fields=all", all available fields will be returned. Note that it supports dot notation as well, e.g., you can pass "refseq.rna". Default: "fields=all".
 
 callback
 """""""""
@@ -59,7 +59,7 @@ A GET request like this::
 
     http://mygeneset.info/v1/gene/1017
 
-should return a gene object below:
+should return a geneset object below:
 
 .. container:: gene-object-containter
 
@@ -70,7 +70,7 @@ should return a gene object below:
 Batch queries via POST
 ======================
 
-Although making simple GET requests above to our gene query service is sufficient in most of use cases,
+Although making simple GET requests above to our geneset query service is sufficient in most of use cases,
 there are some cases you might find it's more efficient to make queries in a batch (e.g., retrieving gene
 annotation for multiple genes). Fortunately, you can also make batch queries via POST requests when you
 need::
@@ -85,7 +85,7 @@ Query parameters
 
 ids
 """""
-    Required. Accept multiple geneids (either Entrez or Ensembl gene ids) seperated by comma, e.g., 'ids=1017,1018' or 'ids=695,ENSG00000123374'. Note that currently we only take the input ids up to **1000** maximum, the rest will be omitted.
+    Required. Accept multiple geneset ids seperated by comma, e.g., 'ids=1017,1018' or 'ids=695,ENSG00000123374'. Note that currently we only take the input ids up to **1000** maximum, the rest will be omitted.
 
 fields
 """""""
@@ -94,7 +94,7 @@ fields
 
 species
 """""""""""
-    Optional, can be used to limit the gene hits from given species. You can use "common names" for nine common species (human, mouse, rat, fruitfly, nematode, zebrafish, thale-cress, frog and pig). All other species, you can provide their taxonomy ids. See `more details here <data.html#species>`_. Multiple species can be passed using comma as a separator. Passing "all" will query against all available species. Default: all.
+    Optional, can be used to limit the gene hits to a given species. You can use "common names" for 17 common species. All other species, you can provide their taxonomy ids. See `more details here <data.html#species>`_. Multiple species can be passed using comma as a separator. Passing "all" will query against all available species. Default: all.
 
 dotfield
 """"""""""
@@ -112,8 +112,8 @@ piece of code, still trivial of course. Here is a sample python snippet::
 
     import requests
     headers = {'content-type': 'application/x-www-form-urlencoded'}
-    params = 'ids=1017,695&fields=name,symbol,refseq.rna'
-    res = requests.post('http://mygeneset.info/v1/gene', data=params, headers=headers)
+    params = 'ids=WP60,WP100&fields=name,taxid,genes.symbol'
+    res = requests.post('http://mygeneset.info/v1/geneset', data=params, headers=headers)
 
 Returned object
 ---------------
@@ -124,37 +124,111 @@ The returned result (the value of "res.text") from the example code above should
 
     [
       {
-        "_id": "1017",
-        "_score": 21.731894,
-        "name": "cyclin dependent kinase 2",
-        "query": "1017",
-        "refseq": {
-          "rna": [
-            "NM_001290230.1",
-            "NM_001798.4",
-            "NM_052827.3",
-            "XM_011537732.1"
-          ]
-        },
-        "symbol": "CDK2"
+	"query": "WP60",
+	"_id": "WP60",
+	"_version": 1,
+	"genes": [
+	  {
+	    "symbol": "AAD15"
+	  },
+	  {
+	    "symbol": "AAD6"
+	  },
+	  {
+	    "symbol": "AAD14"
+	  },
+	  {
+	    "symbol": "AAD3"
+	  },
+	  {
+	    "symbol": "AAD10"
+	  },
+	  {
+	    "symbol": "AAD4"
+	  }
+	],
+	"name": "Toluene degradation",
+	"taxid": 559292
       },
       {
-        "_id": "695",
-        "_score": 21.730501,
-        "name": "Bruton tyrosine kinase",
-        "query": "695",
-        "refseq": {
-          "rna": [
-            "NM_000061.2",
-            "NM_001287344.1",
-            "NM_001287345.1"
-          ]
-        },
-        "symbol": "BTK"
+	"query": "WP100",
+	"_id": "WP100",
+	"_version": 1,
+	"genes": [
+	  {
+	    "symbol": "GGT2"
+	  },
+	  {
+	    "symbol": "GGTLC2"
+	  },
+	  {
+	    "symbol": "ANPEP"
+	  },
+	  {
+	    "symbol": "OPLAH"
+	  },
+	  {
+	    "symbol": "GSTA5"
+	  },
+	  {
+	    "symbol": "GGTLC1"
+	  },
+	  {
+	    "symbol": "IDH1"
+	  },
+	  {
+	    "symbol": "GPX3"
+	  },
+	  {
+	    "symbol": "GSTM1"
+	  },
+	  {
+	    "symbol": "GPX2"
+	  },
+	  {
+	    "symbol": "GGT1"
+	  },
+	  {
+	    "symbol": "GPX1"
+	  },
+	  {
+	    "symbol": "GSTT2"
+	  },
+	  {
+	    "symbol": "GGT5"
+	  },
+	  {
+	    "symbol": "LOC102724197"
+	  },
+	  {
+	    "symbol": "GCLM"
+	  },
+	  {
+	    "symbol": "GSTA1"
+	  },
+	  {
+	    "symbol": "GCLC"
+	  },
+	  {
+	    "symbol": "GSS"
+	  },
+	  {
+	    "symbol": "GSR"
+	  },
+	  {
+	    "symbol": "GSTM2"
+	  },
+	  {
+	    "symbol": "G6PD"
+	  },
+	  {
+	    "symbol": "GPX4"
+	  }
+	],
+	"name": "Glutathione metabolism",
+	"taxid": 9606
       }
     ]
-
-
 
 
 .. raw:: html

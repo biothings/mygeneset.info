@@ -7,7 +7,7 @@ Geneset query service
              :alt: information!
 
 
-This page describes the reference for MyGeneset.info gene query web service. It's also recommended to try it live on our `interactive API page <http://mygeneset.info/v1/api>`_.
+This page describes the reference for MyGeneset.info geneset query web service. It's also recommended to try it live on our `interactive API page <http://mygeneset.info/v1/api>`_.
 
 
 Service endpoint
@@ -29,22 +29,22 @@ q
 
 fields
 """"""
-    Optional, can be a comma-separated fields to limit the fields returned from the matching gene hits. The supported field names can be found from any gene object (e.g. `gene 1017 <http://mygeneset.info/v1/gene/1017>`_). Note that it supports dot notation as well, e.g., you can pass "refseq.rna". If "fields=all", all available fields will be returned. Default:
-    "symbol,name,taxid,entrezgene".
+    Optional, can be a comma-separated list of fields to limit the fields returned from the matching geneset hits. The supported field names can be found from any geneset object (e.g. `geneset WP60 <http://mygeneset.info/v1/geneset/WP60>`_). Note that it supports dot notation as well, e.g., you can pass "genes.symbol". If "fields=all", all available fields will be returned. Default:
+    "_id,genes,name,description,source,author,date,is_public,taxid".
 
 species
 """""""
-    Optional, can be used to limit the gene hits from given species. You can use "common names" for nine common species (human, mouse, rat, fruitfly, nematode, zebrafish, thale-cress, frog and pig). All other species, you can provide their taxonomy ids. See `more details here <data.html#species>`_. Multiple species can be passed using comma as a separator. Passing "all" will query against all available species. Default: all.
+    Optional, can be used to limit the geneset hits from given species. You can use "common names" for `17 common species <data.html#species-filter>`_. For all other species, you can provide their taxonomy ids. Multiple species can be passed using comma as a separator. Passing "all" will query against all available species. Default: all.
 
 size
 """"
-    Optional, the maximum number of matching gene hits to return (with a cap of 1000 at the moment). Default: 10.
+    Optional, the maximum number of matching geneset hits to return (with a cap of 1000 at the moment). Default: 10.
 
 from
 """"
-    Optional, the number of matching gene hits to skip, starting from 0. Default: 0
+    Optional, the number of matching geneset hits to skip, starting from 0. Default: 0
 
-.. Hint:: The combination of "**size**" and "**from**" parameters can be used to get paging for large query:
+.. Hint:: The combination of "**size**" and "**from**" parameters can be used to get paging for a large query:
 
 ::
 
@@ -61,36 +61,36 @@ scroll_id
 
 sort
 """"
-    Optional, the comma-separated fields to sort on. Prefix with "-" for descending order, otherwise in ascending order. Default: sort by matching scores in decending order.
+    Optional, the comma-separated fields to sort on. Prefix with "-" for descending order, otherwise in ascending order. Default: sort by matching scores in descending order.
 
 facets
 """"""
-    Optional, a single field or comma-separated fields to return facets, for example, "facets=taxid", "facets=taxid,type_of_gene". See `examples of faceted queries here <#faceted-queries>`_.
+    Optional, a single field or comma-separated fields to return facets, for example, "facets=taxid", "facets=taxid,source". See `examples of faceted queries here <#faceted-queries>`_.
 
 facet_size
 """"""""""
-    Optional, an integer (1 <= **facet_size** <= 1000) that specifies how many buckets to ret
-urn in a faceted query.
+    Optional, an integer (1 <= **facet_size** <= 1000) that specifies how many buckets to return in a faceted query.
 
 species_facet_filter
 """"""""""""""""""""
     Optional, relevant when faceting on species (i.e., "facets=taxid" are passed). It's used to pass species filter without changing the scope of faceting, so that the returned facet counts won't change. Either species name or taxonomy id can be used, just like "`species <#species>`_" parameter above. See `examples of faceted queries here <#faceted-queries>`_.
 
-entrezonly
-""""""""""
-    Optional, when passed as "true" or "1", the query returns only the hits with valid Entrez gene ids. Default: false.
 
-ensemblonly
+always_list
 """""""""""
-    Optional, when passed as "true" or "1", the query returns only the hits with valid Ensembl gene ids. Default: false.
+    Optional, forces a field, or set of fields to always return an array. This is useful for fields such as **genes** and **genes.ensemblgene**, which may return an array or string. Can take a comma sepparated list of fields such as: "always_list=genes,genes.ensemblgene".
+
+allow_null
+""""""""""
+    Optional, forces a field, or set of fields to return "**Null**" if the field does not exist. Can take a comma sepparated list of fields such as: "allow_null=genes.ncbigene,genes.ensemblgene".
 
 callback
 """"""""
-    Optional, you can pass a "**callback**" parameter to make a `JSONP <http://ajaxian.com/archives/jsonp-json-with-padding>`_ call.
+    Optional, you can pass a "**callback**" parameter to make a JSONP call.
 
 dotfield
 """"""""
-    Optional, can be used to control the format of the returned gene object.  If "dotfield" is true, the returned data object is returned flattened (no nested objects) using dotfield notation for key names.  Default: false.
+    Optional, can be used to control the format of the returned geneset object.  If "dotfield" is true, the returned data object is returned flattened (no nested objects) using dotfield notation for key names.  Default: false.
 
 filter
 """"""
@@ -119,7 +119,7 @@ Simple queries
 
 search for everything::
 
-    q=cdk2                              search for any fields
+    q=glucose                           search for any fields
     q=tumor suppressor                  default as "AND" for all query terms
     q="cyclin-dependent kinase"         search for the phrase
 
@@ -129,82 +129,42 @@ Fielded queries
 """""""""""""""
 ::
 
-    q=entrezgene:1017
-    q=symbol:cdk2
-    q=refseq:NM_001798
-
+    q=genes.entrezgene:1017
+    q=genes.symbol:cdk2
+    q=source:reactome
+    q=kegg.id:"path:hsa04723"
 
 .. _available_fields:
 
 Available fields
 ^^^^^^^^^^^^^^^^
 
-This table lists some commonly used fields can be used for "fielded queries". `Check here <./data.html#available-fields>`_ for the complete list of available fields.
+This table lists some commonly used fields can be used for "fielded queries". Check out http://mygeneset.info/v1/metadata/fields for the complete list of available fields.
 
-========================    =============================================    =================================================================================
-Field                        Description                                     Examples
-========================    =============================================    =================================================================================
-**entrezgene**                Entrez gene id                                    `q=entrezgene:1017 <http://mygeneset.info/v1/query?q=entrezgene:1017>`_
-**ensembl.gene**               Ensembl gene id                                   `q=ensembl.gene:ENSG00000123374 <http://mygeneset.info/v1/query?q=ensembl.gene:ENSG00000123374>`_
-**symbol**                    official gene symbol                              `q=symbol:cdk2 <http://mygeneset.info/v1/query?q=symbol:cdk2>`_
-**name**                      gene name                                         `q=name:cyclin-dependent <http://mygeneset.info/v1/query?q=name:cyclin-dependent>`_
-**alias**                     gene alias                                        `q=alias:p33 <http://mygeneset.info/v1/query?q=alias:p33>`_
-**summary**                   gene summary text                                 `q=summary:insulin <http://mygeneset.info/v1/query?q=summary:insulin>`_
-**refseq**                    NCBI RefSeq id  (both rna and proteins)           `q=refseq:NM_001798 <http://mygeneset.info/v1/query?q=refseq:NM_001798>`_ :raw-html:`<br />`
-                                                                                `q=refseq:NP_439892 <http://mygeneset.info/v1/query?q=refseq:NP_439892>`_
-**unigene**                   NCBI UniGene id                                   `q=unigene:Hs.19192 <http://mygeneset.info/v1/query?q=unigene:Hs.19192>`_
-**homologene**                NCBI HomoloGene id                                `q=homologene:74409 <http://mygeneset.info/v1/query?q=homologene:74409>`_
-**accession**                 NCBI GeneBank Accession number                    `q=accession:AA810989 <http://mygeneset.info/v1/query?q=accession:AA810989>`_
-**ensembl.transcript**         Ensembl transcript id                             `q=ensembl.transcript:ENST00000266970 <http://mygeneset.info/v1/query?q=ensembl.transcript:ENST00000266970>`_
-**ensembl.protein**            Ensembl protein id                                `q=ensembl.protein:ENSP00000243067 <http://mygeneset.info/v1/query?q=ensembl.protein:ENSP00000243067>`_
-**uniprot**                   UniProt id                                        `q=uniprot:P24941 <http://mygeneset.info/v1/query?q=uniprot:P24941>`_
-**ipi** (deprecated!)         IPI id                                            `q=ipi:IPI00031681 <http://mygeneset.info/v1/query?q=ipi:IPI00031681>`_
-**pdb**                       PDB id                                            `q=pdb:1AQ1 <http://mygeneset.info/v1/query?q=pdb:1AQ1>`_
-**prosite**                   Prosite id                                        `q=prosite:PS50011 <http://mygeneset.info/v1/query?q=prosite:PS50011>`_
-**pfam**                      PFam id                                           `q=pfam:PF00069 <http://mygeneset.info/v1/query?q=pfam:PF00069>`_
-**interpro**                  InterPro id                                       `q=interpro:IPR008351 <http://mygeneset.info/v1/query?q=interpro:IPR008351>`_
-**mim**                       OMIM id                                           `q=mim:116953 <http://mygeneset.info/v1/query?q=MIM:116953>`_
-**pharmgkb**                  PharmGKB id                                       `q=pharmgkb:PA101 <http://mygeneset.info/v1/query?q=pharmgkb:PA101>`_
-**reporter**                  Affymetrix probeset id                            `q=reporter:204252_at <http://mygeneset.info/v1/query?q=reporter:204252_at>`_
-**reagent**                   GNF reagent id                                    `q=reagent:GNF282834 <http://mygeneset.info/v1/query?q=reagent:GNF282834>`_
-**go**                        Gene Ontology id                                  `q=go:0000307 <http://mygeneset.info/v1/query?q=go:0000307>`_
-**hgnc**                      HUGO Gene Nomenclature Committee                  `q=hgnc:1771 <http://mygeneset.info/v1/query?q=HGNC:1771>`_
-**hprd**                      Human Protein Reference Database                  `q=hprd:00310 <http://mygeneset.info/v1/query?q=HPRD:00310>`_
-**mgi**                       Mouse Genome Informatics                          `q=mgi:MGI\\\\:88339 <http://mygeneset.info/v1/query?q=mgi:MGI%5C%5C:88339>`_
-**rgd**                       Rat Genome Database                               `q=rgd:620620 <http://mygeneset.info/v1/query?q=RGD:620620>`_
-**flybase**                   A Database of Drosophila Genes & Genomes          `q=flybase:FBgn0004107&species=fruitfly <http://mygeneset.info/v1/query?q=FLYBASE:FBgn0004107&species=fruitfly>`_
-**wormbase**                  C elegans and related nematodes database          `q=wormbase:WBGene00057218&species=31234 <http://mygeneset.info/v1/query?q=wormbase:WBGene00057218&species=31234>`_
-**zfin**                      Zebrafish Information Network                     `q=zfin:ZDB-GENE-980526-104&species=zebrafish <http://mygeneset.info/v1/query?q=ZFIN:ZDB-GENE-980526-104&species=zebrafish>`_
-**tair**                      Arabidopsis Information Resource                  `q=tair:AT3G48750&species=thale-cress <http://mygeneset.info/v1/query?q=TAIR:AT3G48750&species=thale-cress>`_
-**xenbase**                 | Xenopus laevis and Xenopus tropicalis             `q=xenbase:XB-GENE-1001990&species=frog <http://mygeneset.info/v1/query?q=xenbase:XB-GENE-1001990&species=frog>`_
-                            | biology and genomics resource
-**mirbase**                 | database of published miRNA                       `q=mirbase:MI0017267 <http://mygeneset.info/v1/query?q=mirbase:MI0017267>`_
-                            | sequences and annotation
-**retired**                 | Retired Entrez gene id, including                 `q=retired:84999 <http://mygeneset.info/v1/query?q=retired:84999>`_
-                            | those with replaced gene ids.
-========================    =============================================    =================================================================================
-
-
-
-Genome interval query
-"""""""""""""""""""""
-
-When we detect your query ("**q**" parameter) contains a genome interval pattern like this one::
-
-    chrX:151,073,054-151,383,976
-
-we will do the genome interval query for you. Besides above interval string, you also need to specify "*species*" parameter (with the default as human). These are all acceptted queries::
-
-    q=chrX:151073054-151383976&species:9606
-    q=chrX:151,073,054-151,383,976&species:human
-
-
-.. Hint:: As you can see above, the genomic locations can include commas in it.
-
-.. seealso::
-
-   `Genome assembly information <data.html#genome-assemblies>`_
-
+=======================    =======================================    =================================================================================
+Field                      Description                                Examples
+=======================    =======================================    =================================================================================
+**name**                   Geneset name                               `q=name:kinase <http://mygeneset.info/v1/query?q=name:kinase>`_
+**description**            Geneset description                        `q=description:cytosine deamination <http://mygeneset.info/v1/query?q=description:cytosine deamination>`_
+**source**                 Name of data source (if built-in)          `q=source:kegg <http://mygeneset.info/v1/query?q=source:kegg>`_
+**author**                 Geneset creator (if user-created)          `q=author:biothings <http://mygeneset.info/v1/query?q=author:biothings>`_
+**taxid**                  Taxonomic id                               `q=taxid:9606 <http://mygeneset.info/v1/query?q=taxid:9606>`_
+**genes.symbol**           HGNC gene symbol                           `q=genes.symbol:cdk1 <http://mygeneset.info/v1/query?q=genes.symbol:cdk1>`_
+**genes.ncbigene**         NCBI gene id                               `q=genes.ncbigene:1017 <http://mygeneset.info/v1/query?q=genes.ncbigene:1017>`_
+**genes.ensemblgene**      Ensembl gene id                            `q=genes.ensemblgene:ENSG00000123374 <http://mygeneset.info/v1/query?q=genes.ensemblgene:ENSG00000123374>`_
+**genes.name**             Gene name                                  `q=genes.name:cyclin-dependent <http://mygeneset.info/v1/query?q=genes.name:cyclin-dependent>`_
+**genes.uniprot**          UniProt SwissProt ID                       `q=genes.uniprot:P24941 <http://mygeneset.info/v1/query?q=genes.uniprot:P24941>`_
+**genes.mygene_id**        MyGene.info primary gene _id               `q=genes.mygene_id:30 <http://mygeneset.info/v1/query?q=genes.my_gene_id:30>`_
+**go.id**                  Gene Ontology id                           `q=go.id:GO_0042753 <http://mygeneset.info/v1/query?q=go.id:GO_0042753>`_
+**kegg.id**                KEGG id                                    `q=kegg.id:"ds:H01348" <http://mygeneset.info/v1/query?q=kegg.id:"ds:H01348">`_
+**wikipathways.id**        Wikipathways id                            `q=wikipathways.id:WP60 <http://mygeneset.info/v1/query?q=WP60>`_
+**msigdb.id**              MSigDB id                                  `q=msigdb.id:CCATCCA_MIR432 <http://mygeneset.info/v1/query?q=msigdb.id:CCATCCA_MIR432>`_
+**do.id**                  Disease Ontology id                        `q=do.id:DOID_0111329 <http://mygeneset.info/v1/query?q=do.id:DOID_0111329>`_
+**ctd.id**                 CTD chemical id                            `q=ctd.id:C016705_9606 <http://mygeneset.info/v1/query?q=ctd.id:C016705_9606>`_
+**ctd.cas**                chemical CAS id                            `q=ctd.cas:62-55-5 <http://mygeneset.info/v1/query?q=ctd.cas:62-55-5>`_
+**ctd.mesh**               chemical mesh id                           `q=ctd.mesh:C016705 <http://mygeneset.info/v1/query?q=ctd.mesh:C016705>`_
+**ctd.chemical_name**      chemical name                              `q=ctd.chemical_name:acetaminophen <http://mygeneset.info/v1/query?q=ctd.chemical_name:acetaminophen>`_
+=======================    =======================================    =================================================================================
 
 
 Wildcard queries
@@ -212,7 +172,7 @@ Wildcard queries
 Wildcard character "*" or "?" is supported in either simple queries or fielded queries::
 
     q=CDK?                              single character wildcard
-    q=symbol:CDK?                       single character wildcard within "symbol" field
+    q=genes.symbol:CDK?                       single character wildcard within "symbol" field
     q=IL*R                              multiple character wildcard
 
 .. note:: Wildcard character can not be the first character. It will be ignored.
@@ -224,7 +184,7 @@ Boolean operators and grouping
 You can use **AND**/**OR**/**NOT** boolean operators and grouping to form complicated queries::
 
     q=tumor AND suppressor                        AND operator
-    q=CDK2 OR BTK                                 OR operator
+    q=genes.symbol:CDK2 OR BTK                    OR operator
     q="tumor suppressor" NOT receptor             NOT operator
     q=(interleukin OR insulin) AND receptor       the use of parentheses
 
@@ -234,7 +194,7 @@ Returned object
 
 A GET request like this::
 
-    http://mygeneset.info/v1/query?q=symbol:cdk2
+    http://mygeneset.info/v1/query?q=genes.symbol:cdk2
 
 should return hits as:
 
@@ -243,33 +203,27 @@ should return hits as:
     {
       "hits": [
         {
-          "name": "cyclin-dependent kinase 2",
-          "_score": 87.76775,
-          "symbol": "CDK2",
-          "taxid": 9606,
-          "entrezgene": 1017,
-          "_id": "1017"
+          "_id": "C016805_9606",
+          "_score": 7.2883334,
+          "genes": ["..."],
+          "is_public": true,
+          "taxid": "9606"
         },
         {
-          "name": "cyclin-dependent kinase 2",
-          "_score": 79.480484,
-          "symbol": "Cdk2",
-          "taxid": 10090,
-          "entrezgene": 12566,
-          "_id": "12566"
+          "_id": "C017690_9606",
+          "_score": 7.2883334,
+          "genes": ["..."],
+          "is_public": true,
+          "taxid": "9606"
         },
         {
-          "name": "cyclin dependent kinase 2",
-          "_score": 62.286797,
-          "symbol": "Cdk2",
-          "taxid": 10116,
-          "entrezgene": 362817,
-          "_id": "362817"
+          "_id": "C017875_9606",
+          "_score": 7.2883334,
+          "genes": ["..."],
+          "is_public": true,
+          "taxid": "9606"
         }
-      ],
-      "total": 3,
-      "max_score": 87.76775,
-      "took": 4
+      ]
     }
 
 
@@ -279,23 +233,15 @@ If you need to perform a faceted query, you can pass an optional "`facets <#face
 
 A GET request like this::
 
-    http://mygeneset.info/v1/query?q=cdk2&size=1&facets=taxid
+    http://mygeneset.info/v1/query?q=glugose&size=1&facets=taxid
 
 should return hits as:
 
 .. code-block:: json
-    :emphasize-lines: 15-36
 
     {
       "hits":[
-        {
-          "entrezgene":1017,
-          "name":"cyclin-dependent kinase 2",
-          "_score":400.43347,
-          "symbol":"CDK2",
-          "_id":"1017",
-          "taxid":9606
-        }
+        {"..."}
       ],
       "total":26,
       "max_score":400.43347,
@@ -427,7 +373,7 @@ At this point, the first 1000 hits have been returned (of ~14,000 total), and a 
 Batch queries via POST
 ======================
 
-Although making simple GET requests above to our gene query service is sufficient in most of use cases,
+Although making simple GET requests above to our geneset query service is sufficient in most of use cases,
 there are some cases you might find it's more efficient to make queries in a batch (e.g., retrieving gene
 annotation for multiple genes). Fortunately, you can also make batch queries via POST requests when you
 need::

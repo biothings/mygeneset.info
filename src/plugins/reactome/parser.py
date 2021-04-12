@@ -27,9 +27,11 @@ def load_data(data_folder):
                 genes.append(lookup.query_cache[gene])
         # Format schema
         doc = {'_id': _id,
+               'name': name,
                'is_public': True,
                'taxid': 9606,
                'genes': genes,
+               'source': 'reactome',
                'reactome': {
                    'id': _id,
                    'geneset_name': name,

@@ -31,6 +31,7 @@ def load_data(data_folder):
                    'is_public': True,
                    'taxid': 9606,
                    'genes': genes,
+                   'source': 'msigdb',
                    'msigdb': {
                        'id': name,
                        'geneset_name': name,
