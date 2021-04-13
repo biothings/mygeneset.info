@@ -95,7 +95,8 @@ ANNOTATION_KWARGS['*'].update(SPECIES_TYPEDEF)
 
 QUERY_KWARGS = copy.deepcopy(QUERY_KWARGS)
 QUERY_KWARGS['*'].update(SPECIES_TYPEDEF)
-DEFAULT_FIELDS = ['_id', 'genes', 'is_public', 'taxid']
+DEFAULT_FIELDS = ['_id', 'genes', 'name', 'description', 'source',
+                  'author', 'date', 'taxid']
 QUERY_KWARGS['*']['_source']['default'] = DEFAULT_FIELDS
 
 QUERY_KWARGS['POST']['scopes']['default'] =  ['_id', 'name']
