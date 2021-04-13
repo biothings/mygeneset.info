@@ -71,7 +71,12 @@ class IDLookup:
             new_ids (iterable): is a list or set where the number of elements
                 matches the length and order of self.ids.
             new_id_type (str): query scope for the new set of ids."""
-        id_map = {i: j for i, j in zip(self.ids, new_ids)}
-        retry_list = [id_map[e] for e in self.missing]
+        retry_list = []
+        for e in self.missing:
+            indices = [i for i, x in enumerate(self.ids) if x == e]
+            retry_list = retry_list + [new_ids[i] for i in indices]
+        retry_list = set(retry_list)
+        #id_map = {i: j for i, j in zip(self.ids, new_ids)}
+        #retry_list = [id_map[e] for e in self.missing]
         self.query_mygene(retry_list, new_id_type)
         mg = mygene.MyGeneInfo()

@@ -1,0 +1,21 @@
+{
+    "version": "0.1",
+    "requires" : ["biothings", "mygene", "biothings_client", "pandas"],
+    "__metadata__": {
+        "license_url": "",
+        "license": "",
+        "url": ""},
+    "dumper": {
+        "data_url": ["https://smpdb.ca/downloads/smpdb_pathways.csv.zip",
+                     "https://smpdb.ca/downloads/smpdb_metabolites.csv.zip",
+                     "https://smpdb.ca/downloads/smpdb_proteins.csv.zip"],
+        "uncompress": true,
+        "release": "version:get_release",
+        "schedule": "0 3 4,17 * *"
+    },
+    "uploader" : {
+        "parser": "parser:load_data",
+        "on_duplicates": "error"
+    },
+    "mapping": "mapping:get_customized_mapping"
+}
