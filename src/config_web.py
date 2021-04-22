@@ -95,6 +95,35 @@ ANNOTATION_KWARGS['*'].update(SPECIES_TYPEDEF)
 
 QUERY_KWARGS = copy.deepcopy(QUERY_KWARGS)
 QUERY_KWARGS['*'].update(SPECIES_TYPEDEF)
+
+SOURCES = [
+    'ctd', 'do', 'go', 'kegg', 'msigdb', 'reactome', 'smpdb', 'wikipathways',
+]
+
+SOURCE_TYPEDEF = {
+    'source': {
+        'type': list,
+        'default': ['all'],
+        'max': 1000,
+        'group': 'esqb',
+        'translations': [
+            (re.compile(src, re.I), src) for src in SOURCES
+        ]
+    },
+    'source_facet_filter': {
+        'type': list,
+        'default': None,
+        'max': 1000,
+        'group': 'esqb',
+        'translations': [
+            (re.compile(src, re.I), src) for src in SOURCES
+        ]
+    }
+}
+
+ANNOTATION_KWARGS['*'].update(SOURCE_TYPEDEF)
+QUERY_KWARGS['*'].update(SOURCE_TYPEDEF)
+
 DEFAULT_FIELDS = ['_id', 'genes', 'name', 'description', 'source',
                   'author', 'date', 'taxid']
 QUERY_KWARGS['*']['_source']['default'] = DEFAULT_FIELDS
