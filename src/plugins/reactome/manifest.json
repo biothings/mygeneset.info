@@ -1,6 +1,6 @@
 {
     "version": "0.1",
-    "requires" : ["biothings", "mygene", "requests"],
+    "requires" : ["mygene", "requests"],
     "__metadata__": {
         "license_url": "https://reactome.org/license",
         "license": "Creative Commons Public Domain (CC0)",
