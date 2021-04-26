@@ -39,7 +39,7 @@ STATUS_CHECK = {
 
 
 APP_LIST += [
-        (r"/{ver}/submit/?", "web.handlers.api.SubmitHandler"),
+        (r"/{ver}/user_genesets/?", "web.handlers.api.UserGenesetsHandler"),
         ]
 
 
