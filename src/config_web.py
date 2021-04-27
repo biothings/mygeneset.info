@@ -95,6 +95,25 @@ ANNOTATION_KWARGS['*'].update(SPECIES_TYPEDEF)
 
 QUERY_KWARGS = copy.deepcopy(QUERY_KWARGS)
 QUERY_KWARGS['*'].update(SPECIES_TYPEDEF)
+
+SOURCE_TYPEDEF = {
+    'source': {
+        'type': list,
+        'default': ['all'],
+        'max': 1000,
+        'group': 'esqb',
+    },
+    'source_facet_filter': {
+        'type': list,
+        'default': None,
+        'max': 1000,
+        'group': 'esqb',
+    }
+}
+
+ANNOTATION_KWARGS['*'].update(SOURCE_TYPEDEF)
+QUERY_KWARGS['*'].update(SOURCE_TYPEDEF)
+
 DEFAULT_FIELDS = ['_id', 'genes', 'name', 'description', 'source',
                   'author', 'date', 'taxid']
 QUERY_KWARGS['*']['_source']['default'] = DEFAULT_FIELDS

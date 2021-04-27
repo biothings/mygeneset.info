@@ -47,4 +47,16 @@ class MyGenesetQueryBuilder(ESQueryBuilder):
                 search = search.filter('terms', taxid=options.species)
             if options.aggs and options.species_facet_filter:
                 search = search.post_filter('terms', taxid=options.species_facet_filter)
+
+        if options.source:
+            if 'all' in options.source:
+                pass
+            elif not all(isinstance(src, str) for src in options.source):
+                raise BadRequest(reason="source must be strings.")
+            else:
+                search = search.filter('terms', source=options.source)
+
+            if options.aggs and options.source_facet_filter:
+                search = search.post_filter('terms', source=options.source_facet_filter)
+
         return search
