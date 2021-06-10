@@ -108,8 +108,8 @@ def get_customized_mapping(cls):
 		    "type": "text"
 		},
 		"iupac": {
-		    "type": "keyword"
 		    "normalizer": "keyword_lowercase_normalizer",
+		    "type": "keyword"
 		}
 	    }
 	},
