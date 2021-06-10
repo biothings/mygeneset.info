@@ -12,7 +12,7 @@ def get_customized_mapping(cls):
         },
         "name": {
             "normalizer": "keyword_lowercase_normalizer",
-            "type": "keyword",
+            "type": "text",
             "copy_to": [
                 "all"
             ]
