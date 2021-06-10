@@ -1,4 +1,2 @@
 -e git+https://github.com/biothings/biothings.api.git#egg=biothings[hub]
-elasticsearch>=6, <7
-elasticsearch-dsl>=6, <7
-elasticsearch-async>=6, <7
+elasticsearch>=7
