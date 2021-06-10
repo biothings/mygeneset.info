@@ -11,7 +11,6 @@ def get_customized_mapping(cls):
             "type": "keyword"
         },
         "name": {
-            "normalizer": "keyword_lowercase_normalizer",
             "type": "text",
             "copy_to": [
                 "all"
