@@ -40,6 +40,7 @@ STATUS_CHECK = {
 
 APP_LIST += [
         (r"/{ver}/user_genesets/?", "web.handlers.api.UserGenesetsHandler"),
+        (r"/{ver}/login/github?", "web.handlers.loginHandlers.GitHubAuthHandler"),
         ]
 
 
