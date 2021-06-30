@@ -28,8 +28,7 @@ GA_TRACKER_URL = 'MyGeneset.info'
 
 STATUS_CHECK = {
     'id': 'WP4966',
-    'index': 'mygeneset_current',
-    'doc_type': 'geneset'
+    'index': 'mygeneset_current'
 }
 
 
