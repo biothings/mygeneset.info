@@ -38,12 +38,12 @@ STATUS_CHECK = {
 # *****************************************************************************
 
 
-#TAX_REDIRECT = "http://t.biothings.io/v1/taxon/{0}?include_children=1"
+# TAX_REDIRECT = "http://t.biothings.io/v1/taxon/{0}?include_children=1"
 
-#APP_LIST += [
-#        (r"/{ver}/species/(\d+)/?", "tornado.web.RedirectHandler", {"url": TAX_REDIRECT}),
-#        (r"/{ver}/taxon/(\d+)/?", "tornado.web.RedirectHandler", {"url": TAX_REDIRECT})
-#        ]
+# APP_LIST += [
+#     (r"/{ver}/species/(\d+)/?", "tornado.web.RedirectHandler", {"url": TAX_REDIRECT}),
+#     (r"/{ver}/taxon/(\d+)/?", "tornado.web.RedirectHandler", {"url": TAX_REDIRECT})
+# ]
 
 
 TAXONOMY = {
@@ -71,7 +71,6 @@ SPECIES_TYPEDEF = {
         'type': list,
         'default': ['all'],
         'max': 1000,
-        'group': 'esqb',
         'translations': [
             (re.compile(pattern, re.I), translation['taxid'])
             for (pattern, translation) in TAXONOMY.items()
@@ -81,7 +80,6 @@ SPECIES_TYPEDEF = {
         'type': list,
         'default': None,
         'max': 1000,
-        'group': 'esqb',
         'translations': [
             (re.compile(pattern, re.I), translation['taxid']) for
             (pattern, translation) in TAXONOMY.items()
@@ -89,35 +87,32 @@ SPECIES_TYPEDEF = {
     }
 }
 
-ANNOTATION_DEFAULT_SCOPES = ['_id']
-ANNOTATION_KWARGS = copy.deepcopy(ANNOTATION_KWARGS)
-ANNOTATION_KWARGS['*'].update(SPECIES_TYPEDEF)
-
-QUERY_KWARGS = copy.deepcopy(QUERY_KWARGS)
-QUERY_KWARGS['*'].update(SPECIES_TYPEDEF)
-
 SOURCE_TYPEDEF = {
     'source': {
         'type': list,
         'default': ['all'],
         'max': 1000,
-        'group': 'esqb',
     },
     'source_facet_filter': {
         'type': list,
         'default': None,
         'max': 1000,
-        'group': 'esqb',
     }
 }
 
+ANNOTATION_DEFAULT_SCOPES = ['_id']
+ANNOTATION_KWARGS = copy.deepcopy(ANNOTATION_KWARGS)
+ANNOTATION_KWARGS['*'].update(SPECIES_TYPEDEF)
 ANNOTATION_KWARGS['*'].update(SOURCE_TYPEDEF)
+
+QUERY_KWARGS = copy.deepcopy(QUERY_KWARGS)
+QUERY_KWARGS['*'].update(SPECIES_TYPEDEF)
 QUERY_KWARGS['*'].update(SOURCE_TYPEDEF)
+QUERY_KWARGS['*']['_source']['default'] = [
+    '_id', 'genes', 'name', 'description',
+    'source', 'author', 'date', 'taxid']
+QUERY_KWARGS['POST']['scopes']['default'] = [
+    '_id', 'name']
 
-DEFAULT_FIELDS = ['_id', 'genes', 'name', 'description', 'source',
-                  'author', 'date', 'taxid']
-QUERY_KWARGS['*']['_source']['default'] = DEFAULT_FIELDS
-
-QUERY_KWARGS['POST']['scopes']['default'] =  ['_id', 'name']
 
 ES_QUERY_BUILDER = "web.pipeline.MyGenesetQueryBuilder"
