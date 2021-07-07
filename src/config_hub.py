@@ -4,7 +4,7 @@
 import os
 import logging
 
-from biothings import ConfigurationError
+from biothings.utils.configuration import ConfigurationError
 
 DATA_HUB_DB_DATABASE = "biothings_hubdb"   # db containing the following (internal use)
 DATA_SRC_MASTER_COLLECTION = 'src_master'  # for metadata of each src collections
@@ -104,7 +104,7 @@ READONLY_HUB_API_PORT = 19481
 
 # Hub name/icon url/version, for display purpose
 HUB_NAME = "MyGeneset.info API (backend)"
-HUB_ICON = "https://biothings.io/static/img/sdk-icon.svg"
+HUB_ICON = "http://mygeneset.info/img/logo.f6c04a40.svg"
 HUB_VERSION = "master"
 
 USE_RELOADER = True # so no need to restart hub when a datasource has changed

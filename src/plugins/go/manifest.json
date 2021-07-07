@@ -1,6 +1,6 @@
 {
     "version": "0.1",
-    "requires" : ["biothings", "mygene", "requests"],
+    "requires" : ["mygene", "requests"],
     "__metadata__": {
         "license": "Creative Commons Attribution 4.0 Unported License",
         "license_url": "http://geneontology.org/docs/go-citation-policy/",

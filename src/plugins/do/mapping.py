@@ -11,8 +11,7 @@ def get_customized_mapping(cls):
             "type": "keyword"
         },
         "name": {
-            "normalizer": "keyword_lowercase_normalizer",
-            "type": "keyword",
+            "type": "text",
             "copy_to": [
                 "all"
             ]
@@ -60,8 +59,7 @@ def get_customized_mapping(cls):
                     ]
                 },
                 "abstract": {
-                    "normalizer": "keyword_lowercase_normalizer",
-                    "type": "keyword"
+                    "type": "text"
                 }
             }
         }

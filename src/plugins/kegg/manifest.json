@@ -1,6 +1,6 @@
 {
   "version": "0.1",
-  "requires" : ["biothings", "mygene", "requests"],
+  "requires" : ["mygene", "requests"],
   "__metadata__": {
     "license": "Academic service provider license",
     "license_url": "https://www.kegg.jp/kegg/legal.html",

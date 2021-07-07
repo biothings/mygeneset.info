@@ -1,6 +1,6 @@
 {
   "version": "0.1",
-  "requires" : ["biothings", "mygene"],
+  "requires" : ["mygene"],
   "__metadata__": {
     "license": "Creative Commons Public Domain Dedication CC0 1.0 Universal license",
     "license_url": "https://github.com/DiseaseOntology/HumanDiseaseOntology/blob/main/DO_LICENSE.txt",

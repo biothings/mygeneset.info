@@ -1,41 +1,20 @@
-import re
 
-from biothings.utils.web.es_dsl import AsyncSearch
+from elasticsearch_dsl import Search
 from biothings.web.handlers.exceptions import BadRequest
-from biothings.web.pipeline import ESQueryBuilder
+from biothings.web.query import ESQueryBuilder
 
 
 class MyGenesetQueryBuilder(ESQueryBuilder):
 
-    def default_string_query(self, q, options):
-        search = super().default_string_query(q, options)
-        search = self._extra_query_options(search, options)
-        return search
+    def apply_extras(self, search, options):
 
-    #def default_match_query(self, q, options):
-    #    search = super().default_match_query(q, options)
-        #search = self._extra_query_options(search, options)
-    #    return search
+        search = Search().query(
+            "function_score", query=search.query, score_mode="first", functions=[
+                {"filter": {"term": {"taxid": 9606}}, "weight": "1.55"},  # human
+                {"filter": {"term": {"taxid": 10090}}, "weight": "1.3"},  # mouse
+                {"filter": {"term": {"taxid": 10116}}, "weight": "1.1"},  # rat
+            ])
 
-    def build_string_query(self, q, options):
-        search = super().build_string_query(q, options)
-        search = self._extra_query_options(search, options)
-        return search
-
-    #def build_match_query(self, q, options):
-    #    search = super().build_match_query(q, options)
-        #search = self._extra_query_options(search, options)
-    #    return search
-
-    def _extra_query_options(self, search, options):
-        search = AsyncSearch().query(
-                "function_score",
-                query=search.query,
-                functions=[
-                    {"filter": {"term": {"taxid": 9606}}, "weight": "1.55"},  # human
-                    {"filter": {"term": {"taxid": 10090}}, "weight": "1.3"},  # mouse
-                    {"filter": {"term": {"taxid": 10116}}, "weight": "1.1"},  # rat
-                    ], score_mode="first")
         if options.species:
             if 'all' in options.species:
                 pass
@@ -47,4 +26,16 @@ class MyGenesetQueryBuilder(ESQueryBuilder):
                 search = search.filter('terms', taxid=options.species)
             if options.aggs and options.species_facet_filter:
                 search = search.post_filter('terms', taxid=options.species_facet_filter)
-        return search
+
+        if options.source:
+            if 'all' in options.source:
+                pass
+            elif not all(isinstance(src, str) for src in options.source):
+                raise BadRequest(reason="source must be strings.")
+            else:
+                search = search.filter('terms', source=options.source)
+
+            if options.aggs and options.source_facet_filter:
+                search = search.post_filter('terms', source=options.source_facet_filter)
+
+        return super().apply_extras(search, options)

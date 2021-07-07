@@ -66,10 +66,7 @@ class msigdbUploader(uploader.BaseSourceUploader):
                     },
                     "geneset_name": {
                         "normalizer": "keyword_lowercase_normalizer",
-                        "type": "keyword",
-                        "copy_to": [
-                            "all"
-                        ]
+                        "type": "keyword"
                     },
                     "url": {
                         "normalizer": "keyword_lowercase_normalizer",

@@ -1,6 +1,6 @@
 {
     "version": "0.1",
-    "requires" : ["biothings", "mygene", "biothings_client", "pandas"],
+    "requires" : ["mygene", "biothings_client", "pandas"],
     "__metadata__": {
         "license_url": "",
         "license": "",

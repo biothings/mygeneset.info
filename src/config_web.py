@@ -28,8 +28,7 @@ GA_TRACKER_URL = 'MyGeneset.info'
 
 STATUS_CHECK = {
     'id': 'WP4966',
-    'index': 'mygeneset_current',
-    'doc_type': 'geneset'
+    'index': 'mygeneset_current'
 }
 
 
@@ -42,7 +41,6 @@ APP_LIST += [
         (r"/{ver}/user_genesets/?", "web.handlers.api.UserGenesetsHandler"),
         (r"/{ver}/login/github?", "web.handlers.loginHandlers.GitHubAuthHandler"),
         ]
-
 
 TAXONOMY = {
     "human": {"taxid": "9606"},
@@ -69,7 +67,6 @@ SPECIES_TYPEDEF = {
         'type': list,
         'default': ['all'],
         'max': 1000,
-        'group': 'esqb',
         'translations': [
             (re.compile(pattern, re.I), translation['taxid'])
             for (pattern, translation) in TAXONOMY.items()
@@ -79,7 +76,6 @@ SPECIES_TYPEDEF = {
         'type': list,
         'default': None,
         'max': 1000,
-        'group': 'esqb',
         'translations': [
             (re.compile(pattern, re.I), translation['taxid']) for
             (pattern, translation) in TAXONOMY.items()
@@ -87,15 +83,31 @@ SPECIES_TYPEDEF = {
     }
 }
 
+SOURCE_TYPEDEF = {
+    'source': {
+        'type': list,
+        'default': ['all'],
+        'max': 1000,
+    },
+    'source_facet_filter': {
+        'type': list,
+        'default': None,
+        'max': 1000,
+    }
+}
+
 ANNOTATION_DEFAULT_SCOPES = ['_id']
 ANNOTATION_KWARGS = copy.deepcopy(ANNOTATION_KWARGS)
 ANNOTATION_KWARGS['*'].update(SPECIES_TYPEDEF)
+ANNOTATION_KWARGS['*'].update(SOURCE_TYPEDEF)
 
 QUERY_KWARGS = copy.deepcopy(QUERY_KWARGS)
 QUERY_KWARGS['*'].update(SPECIES_TYPEDEF)
-DEFAULT_FIELDS = ['_id', 'genes', 'name', 'description', 'source',
-                  'author', 'date', 'is_public', 'taxid']
-QUERY_KWARGS['*']['_source']['default'] = DEFAULT_FIELDS
-QUERY_KWARGS['POST']['scopes']['default'] =  ['_id', 'name']
+QUERY_KWARGS['*'].update(SOURCE_TYPEDEF)
+QUERY_KWARGS['*']['_source']['default'] = [
+    '_id', 'genes', 'name', 'description',
+    'source', 'author', 'date', 'taxid']
+QUERY_KWARGS['POST']['scopes']['default'] = [
+    '_id', 'name']
 
 ES_QUERY_BUILDER = "web.pipeline.MyGenesetQueryBuilder"
