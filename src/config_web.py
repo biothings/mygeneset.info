@@ -5,26 +5,18 @@ from biothings.web.settings.default import APP_LIST, ANNOTATION_KWARGS, QUERY_KW
 # *****************************************************************************
 # Elasticsearch variables
 # *****************************************************************************
-# elasticsearch server transport url
 ES_HOST = 'localhost:9200'
-# elasticsearch index name
 ES_INDEX = 'mygeneset_current'
-# elasticsearch document type
 ES_DOC_TYPE = 'geneset'
 
 # *****************************************************************************
 # Web Application
 # *****************************************************************************
 API_VERSION = 'v1'
-# *****************************************************************************
-# Analytics & Features
-# *****************************************************************************
 
-GA_ACTION_QUERY_GET = 'query_get'
-GA_ACTION_QUERY_POST = 'query_post'
-GA_ACTION_ANNOTATION_GET = 'geneset_get'
-GA_ACTION_ANNOTATION_POST = 'geneset_post'
-GA_TRACKER_URL = 'MyGeneset.info'
+# *****************************************************************************
+# Features
+# *****************************************************************************
 
 STATUS_CHECK = {
     'id': 'WP4966',
