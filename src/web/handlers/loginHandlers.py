@@ -1,6 +1,5 @@
 import json
 import hashlib
-import os
 
 from biothings.web.handlers import BaseAPIHandler, BiothingHandler
 from requests_oauthlib import OAuth2Session
@@ -29,31 +28,31 @@ class GitHubAuthHandler(BaseAuthHandler):
     """
     Handles the user authentication process using Github.
     """
-    __client_id = os.environ.get("GITHUB_CLIENT_ID")
-    __client_secret = os.environ.get("GITHUB_CLIENT_SECRET")
-
     def post(self):
         """Redirect to github login page."""
-
+        client_id = self.web_settings.GITHUB_CLIENT_ID
         auth_base_url = "https://github.com/login/oauth/authorize"
-        github = OAuth2Session(self.__client_id)
 
+        github = OAuth2Session(client_id)
         auth_url, state = github.authorization_url(auth_base_url)
+        print(auth_url)
         state_md5_hash = hashlib.md5(state.encode('UTF-8')).hexdigest()
-
         self.redirect(auth_url)
 
     def get(self):
+        client_id = self.web_settings.GITHUB_CLIENT_ID
+        client_secret = self.web_settings.GITHUB_CLIENT_SECRET
         token_url = "https://github.com/login/oauth/access_token"
+
         state = self.get_query_argument("state")
         state_md5_hash = hashlib.md5(state.encode('UTF-8')).hexdigest()
         if state_mdd5_hash:
 
-            github = OAuth2Session(self.__client_id)
+            github = OAuth2Session(client_id)
             try:
                 github.fetch_token(
                     token_url,
-                    client_secret=self.__client_secret,
+                    client_secret=client_secret,
                     authorization_response=self.request.full_url()
                 )
             except Exception:
@@ -93,6 +92,25 @@ class ORCIDAuthHandler(BaseAuthHandler):
     """
     Handles the user authentication process using Github.
     """
-    __client_id = os.environ.get("GITHUB_CLIENT_ID")
-    __client_secret = os.environ.get("GITHUB_CLIENT_SECRET")
+
+    def post(self):
+        """Redirect to orcid login page."""
+        client_id = self.web_settings.ORCID_CLIENT_ID
+        auth_base_url = "https://orcid.org/oauth/authorize"
+
+        """
+        orcid = OAuth2Session(client_id)
+        auth_url, state = orcid.authorization_url(auth_base_url)
+        state_md5_hash = hashlib.md5(state.encode('UTF-8')).hexdigest()
+        self.redirect(auth_url)
+        """
+        print(self.request.host)
+        self.redirect(
+            f"{auth_base_url}?"
+            f"client_id={client_id}&"
+            f"response_type=code&"
+            f"scope=/authenticate&"
+            f"redirect_uri="
+            f"http://localhost:8000/"
+	)
 
