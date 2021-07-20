@@ -113,3 +113,10 @@ QUERY_KWARGS['POST']['scopes']['default'] = [
     '_id', 'name']
 
 ES_QUERY_BUILDER = "web.pipeline.MyGenesetQueryBuilder"
+
+
+# OAuth keys -- set in config.py
+GITHUB_CLIENT_ID = ""
+ORCID_CLIENT_SECRET = ""
+ORCID_CLIENT_ID = ""
+GITHUB_CLIENT_SECRET = ""
