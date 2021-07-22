@@ -41,7 +41,7 @@ APP_LIST += [
         (r"/{ver}/user_genesets/?", "web.handlers.api.UserGenesetsHandler"),
         (r"/login/github?", "web.handlers.loginHandlers.GitHubAuthHandler"),
         (r"/login/orcid?", "web.handlers.loginHandlers.ORCIDAuthHandler"),
-        (r"/", "home.mockAppHandler")
+        (r"/login", "home.mockAppHandler")
         ]
 
 TAXONOMY = {
