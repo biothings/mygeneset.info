@@ -1,8 +1,11 @@
 import json
 import hashlib
+from urllib.parse import urlparse
 
 from biothings.web.handlers import BaseAPIHandler, BiothingHandler
-from requests_oauthlib import OAuth2Session
+from authlib.integrations.requests_client import OAuth2Session
+
+from tornado.httputil import url_concat
 from tornado.web import RequestHandler
 from tornado.web import Finish, HTTPError
 
@@ -28,18 +31,20 @@ class GitHubAuthHandler(BaseAuthHandler):
     """
     Handles the user authentication process using Github.
     """
-    def post(self):
-        """Redirect to github login page."""
-        client_id = self.web_settings.GITHUB_CLIENT_ID
-        auth_base_url = "https://github.com/login/oauth/authorize"
 
-        github = OAuth2Session(client_id)
-        auth_url, state = github.authorization_url(auth_base_url)
-        print(auth_url)
-        state_md5_hash = hashlib.md5(state.encode('UTF-8')).hexdigest()
-        self.redirect(auth_url)
+    GITHUB_CALLBACK_PATH = "/login"
 
     def get(self):
+        """Redirect to github login page."""
+        client_id = self.web_settings.GITHUB_CLIENT_ID
+        client_secret = self.web_settings.GITHUB_CLIENT_SECRET
+        auth_base_url = "https://github.com/login/oauth/authorize"
+
+        github = OAuth2Session(client_id, client_secret)
+        auth_url, state = github.create_authorization_url(auth_base_url)
+        self.redirect(auth_url)
+
+    def post(self):
         client_id = self.web_settings.GITHUB_CLIENT_ID
         client_secret = self.web_settings.GITHUB_CLIENT_SECRET
         token_url = "https://github.com/login/oauth/access_token"
@@ -81,7 +86,8 @@ class GitHubAuthHandler(BaseAuthHandler):
 
                 self._set_new_user_cookie(user)
 
-                self.redirect(self.reverse_url("user_detail", user.id))
+                self.redirect(url_concat(self.request.protocol + "://" + self.request.host +
+                              self.GITHUB_CALLBACK_PATH, {"next": self.get_argument('next', '/')}))
         else:
             self.render(
                 f"{APP_NAME}/login.html",
@@ -104,13 +110,20 @@ class ORCIDAuthHandler(BaseAuthHandler):
         state_md5_hash = hashlib.md5(state.encode('UTF-8')).hexdigest()
         self.redirect(auth_url)
         """
-        print(self.request.host)
+        redirect_uri = url_concat(self.request.protocol + "://" + self.request.host,
+                                  {"next": self.get_argument('next', '/')})
         self.redirect(
             f"{auth_base_url}?"
             f"client_id={client_id}&"
             f"response_type=code&"
             f"scope=/authenticate&"
             f"redirect_uri="
-            f"http://localhost:8000/"
+            f"http://localhost:8000?next=/"
 	)
 
+
+
+class LogoutHandler(BaseAuthHandler):
+    def get(self):
+        self.clear_cookie("user")
+        self.redirect(self.get_argument("next", "/"))
