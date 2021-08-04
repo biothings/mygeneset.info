@@ -1,6 +1,7 @@
 import copy
 import re
-from biothings.web.settings.default import APP_LIST, ANNOTATION_KWARGS, QUERY_KWARGS
+
+from biothings.web.settings.default import ANNOTATION_KWARGS, QUERY_KWARGS
 
 # *****************************************************************************
 # Elasticsearch variables
@@ -12,7 +13,7 @@ ES_DOC_TYPE = 'geneset'
 # *****************************************************************************
 # Web Application
 # *****************************************************************************
-API_VERSION = 'v1'
+APP_VERSION = 'v1'
 
 # *****************************************************************************
 # Features

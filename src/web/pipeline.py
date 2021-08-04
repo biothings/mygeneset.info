@@ -1,7 +1,7 @@
 
-from elasticsearch_dsl import Search
-from biothings.web.handlers.exceptions import BadRequest
 from biothings.web.query import ESQueryBuilder
+from elasticsearch_dsl import Search
+from tornado.web import HTTPError
 
 
 class MyGenesetQueryBuilder(ESQueryBuilder):
@@ -19,9 +19,9 @@ class MyGenesetQueryBuilder(ESQueryBuilder):
             if 'all' in options.species:
                 pass
             elif not all(isinstance(string, str) for string in options.species):
-                raise BadRequest(reason="species must be strings or integer strings.")
+                raise HTTPError(400, reason="species must be strings or integer strings.")
             elif not all(string.isnumeric() for string in options.species):
-                raise BadRequest(reason="cannot map some species to taxids.")
+                raise HTTPError(400, reason="cannot map some species to taxids.")
             else:
                 search = search.filter('terms', taxid=options.species)
             if options.aggs and options.species_facet_filter:
@@ -31,7 +31,7 @@ class MyGenesetQueryBuilder(ESQueryBuilder):
             if 'all' in options.source:
                 pass
             elif not all(isinstance(src, str) for src in options.source):
-                raise BadRequest(reason="source must be strings.")
+                raise HTTPError(400, reason="source must be strings.")
             else:
                 search = search.filter('terms', source=options.source)
 
