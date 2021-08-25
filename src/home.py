@@ -1,5 +1,5 @@
 from tornado.web import RequestHandler
 
-class mockAppHandler(RequestHandler):
+class mockLogin(RequestHandler):
     def get(self):
             self.render("home.html")
