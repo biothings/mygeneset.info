@@ -38,10 +38,12 @@ STATUS_CHECK = {
 
 
 APP_LIST += [
-        (r"/{ver}/user_genesets/?", "web.handlers.api.UserGenesetsHandler"),
-        (r"/login/github?", "web.handlers.loginHandlers.GitHubAuthHandler"),
-        (r"/login/orcid?", "web.handlers.loginHandlers.ORCIDAuthHandler"),
-        (r"/login", "home.mockAppHandler")
+        (r"/{ver}/user_genesets/?", "web.handlers.api.UserGenesetHandler"),
+        (r"/login", "home.mockLogin"),
+        (r"/login/github", "web.handlers.loginHandlers.GitHubAuthHandler"),
+        (r"/login/orcid", "web.handlers.loginHandlers.ORCIDAuthHandler"),
+        (r"/logout", "web.handlers.loginHandlers.LogoutHandler"),
+        (r"/user", "web.handlers.loginHandlers.UserInfoHandler"),
         ]
 
 TAXONOMY = {
@@ -115,8 +117,11 @@ QUERY_KWARGS['POST']['scopes']['default'] = [
 ES_QUERY_BUILDER = "web.pipeline.MyGenesetQueryBuilder"
 
 
+# A random string -- set in config.py
+COOKIE_SECRET = ""
+
 # OAuth keys -- set in config.py
 GITHUB_CLIENT_ID = ""
-ORCID_CLIENT_SECRET = ""
-ORCID_CLIENT_ID = ""
 GITHUB_CLIENT_SECRET = ""
+ORCID_CLIENT_ID = ""
+ORCID_CLIENT_SECRET = ""
