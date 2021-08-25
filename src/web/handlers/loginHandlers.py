@@ -20,50 +20,49 @@ class BaseAuthHandler(BaseAPIHandler, OAuth2Mixin):
     """
     COOKIE_EXPIRATION = 15
 
-    def get_authenticated_user(self, redirect_uri, client_id, client_secret,
-                               code, callback, extra_fields=None):
-        """Fetch User info if he has already logged in to the OAuth service."""
+    async def get_authenticated_user(self, redirect_uri, client_id, client_secret,
+                               code, callback, login_method, extra_fields=None):
+        """Fetch authorization code if use has logged into the OAuth service."""
 
         fields = set(["id", "login", "name", "email", "avatar_url"])
         if extra_fields:
             fields.update(extra_fields)
 
         # Exchange code for access token
-        auth_body = {"client_id": client_id, "client_secret": client_secret, "code": code,
-                     "redirect_uri": redirect_uri}
-        if extra_fields:
-            auth_body.update(extra_fields)
-
-        response = requests.post(self._OAUTH_ACCESS_TOKEN_URL, data=auth_body,
-                                 headers={'Content-Type': 'application/x-www-form-urlencoded',
-                                          'Accept': 'application/json'})
-        print(response.request.url)
-        print(response.request.body)
-        print(response.json())
-        """
-        auth_body = urlencode({
+        auth_body = {
                 "redirect_uri": redirect_uri,
                 "code": code,
                 "client_id": client_id,
                 "client_secret": client_secret,
                 "extra_params": extra_fields
-                })
-        """
-        #http = AsyncHTTPClient()
-        #request = httpclient.HTTPRequest(self._OAUTH_ACCESS_TOKEN_URL,
-        #        method="POST", body=auth_body,
-        #        headers={'Content-Type': 'application/x-www-form-urlencoded'})
-        #response = await http.fetch(request)
+                }
+        if extra_fields:
+            auth_body.update(extra_fields)
+        http = AsyncHTTPClient()
+        response = await http.fetch(self._OAUTH_ACCESS_TOKEN_URL,
+                method="POST", body=urlencode(auth_body),
+                headers={'Content-Type': 'application/x-www-form-urlencoded',
+                         'Accept': 'application/json'})
+        print(response.body)
+        access_token = json.loads(response.body)['access_token']
 
-        # Get user info
-        headers = {'Authorization': 'token {}'.format(response.json()['access_token'])}
-        user = requests.get("https://api.github.com/user", headers=headers)
+        # Get user info from github
+        if login_method == 'github':
+            headers = {'Authorization': 'token {}'.format(access_token)}
+            user = requests.get("https://api.github.com/user", headers=headers)
+            return json.dumps(user.json()).replace("</", "<\\/")
 
-        return json.dumps(user.json()).replace("</", "<\\/")
-
+        # Get user info from orcid
+        elif login_method == 'orcid':
+            headers = {'Content-Type': 'application/json'}
+            orcid = json.loads(response.body)['orcid']
+            user = requests.get("https://pub.orcid.org/v2.0/{}".format(orcid),
+                                headers=headers)
+            return json.dumps(user.json())
 
     def get_current_user(self):
         user_json = self.get_secure_cookie("user")
+        print(user_json)
         if not user_json:
             return None
         return json.loads(user_json.decode('utf-8'))
@@ -76,6 +75,7 @@ class GitHubAuthHandler(BaseAuthHandler):
     # Override settings from OAuth2Mixin
     _OAUTH_AUTHORIZE_URL = "https://github.com/login/oauth/authorize"
     _OAUTH_ACCESS_TOKEN_URL = "https://github.com/login/oauth/access_token"
+    _USER_DATA_URL = "https://api.github.com/user"
     CALLBACK_PATH = "/login/github"
     SCOPE = "read:user"
 
@@ -89,17 +89,18 @@ class GitHubAuthHandler(BaseAuthHandler):
                                   {"next": self.get_argument('next', '/')})
 
         # if we have a code, we have been authorized so we can log in
-        print(self.web_settings.GITHUB_CLIENT_SECRET)
         if self.get_argument("code", False):
             logging.info('Got authentication code.')
-            user = self.get_authenticated_user(
+            user = yield self.get_authenticated_user(
                 redirect_uri=redirect_uri,
                 client_id=self.web_settings.GITHUB_CLIENT_ID,
                 client_secret=self.web_settings.GITHUB_CLIENT_SECRET,
                 code=self.get_argument("code"),
+                login_method="github",
                 callback=lambda: None
             )
             if user:
+                logging.info('logged in user from GitHub: %s', str(user))
                 logging.info("Setting user cookie.")
                 self.set_secure_cookie("user", user)
             else:
@@ -146,11 +147,13 @@ class ORCIDAuthHandler(BaseAuthHandler):
                 client_secret=self.web_settings.ORCID_CLIENT_SECRET,
                 code=self.get_argument("code"),
                 extra_fields={'grant_type': 'authorization_code'},
+                login_method="orcid",
                 callback=lambda: None
             )
             if user:
                 logging.info('logged in user from ORCID: %s', str(user))
-                self.set_secure_cookie("user", self.json_encode(user))
+                logging.info("Setting user cookie.")
+                self.set_secure_cookie("user", user)
             else:
                 self.clear_cookie("user")
             self.redirect(self.get_argument("next", "/"))
@@ -158,7 +161,7 @@ class ORCIDAuthHandler(BaseAuthHandler):
 
         # otherwise we need to request an authorization code
         logging.info("Redirecting to login...")
-        self.authorize_redirect(
+        yield self.authorize_redirect(
             redirect_uri=redirect_uri,
             client_id=self.web_settings.ORCID_CLIENT_ID,
             extra_params={"scope": self.SCOPE, "response_type": "code"}
