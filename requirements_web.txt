@@ -1,1 +1,2 @@
+mygene>=3.1.0
 git+git://github.com/biothings/biothings.api#egg=biothings[web_extra]
