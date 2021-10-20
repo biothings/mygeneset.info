@@ -1,7 +1,7 @@
 import copy
 import re
 
-from biothings.web.settings.default import ANNOTATION_KWARGS, QUERY_KWARGS
+from biothings.web.settings.default import ANNOTATION_KWARGS, QUERY_KWARGS, APP_LIST
 
 # *****************************************************************************
 # Elasticsearch variables
