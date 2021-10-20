@@ -7,8 +7,12 @@ from biothings.web.settings.default import ANNOTATION_KWARGS, QUERY_KWARGS
 # Elasticsearch variables
 # *****************************************************************************
 ES_HOST = 'localhost:9200'
-ES_INDEX = 'mygeneset_current'
+# elasticsearch index name
+ES_INDEX = 'mygeneset_current,user_genesets'
+ES_USER_INDEX = 'user_genesets'
+# elasticsearch document type
 ES_DOC_TYPE = 'geneset'
+
 
 # *****************************************************************************
 # Web Application
@@ -30,13 +34,17 @@ STATUS_CHECK = {
 # *****************************************************************************
 
 
-# TAX_REDIRECT = "http://t.biothings.io/v1/taxon/{0}?include_children=1"
-
-# APP_LIST += [
-#     (r"/{ver}/species/(\d+)/?", "tornado.web.RedirectHandler", {"url": TAX_REDIRECT}),
-#     (r"/{ver}/taxon/(\d+)/?", "tornado.web.RedirectHandler", {"url": TAX_REDIRECT})
-# ]
-
+APP_LIST += [
+        (r"/{ver}/query/?", "web.handlers.api.QueryHandler"),
+        (r"/{ver}/geneset/?", "web.handlers.api.BiothingHandler"),
+        (r"/{ver}/user_geneset/?", "web.handlers.api.UserGenesetHandler"),
+        (r"/{ver}/user_geneset/([^/]+)/?", "web.handlers.api.UserGenesetHandler"),
+        (r"/login", "home.mockLogin"),
+        (r"/login/github", "web.handlers.auth.GitHubAuthHandler"),
+        (r"/login/orcid", "web.handlers.auth.ORCIDAuthHandler"),
+        (r"/logout", "web.handlers.auth.LogoutHandler"),
+        (r"/user", "web.handlers.auth.UserInfoHandler"),
+        ]
 
 TAXONOMY = {
     "human": {"taxid": "9606"},
@@ -106,5 +114,14 @@ QUERY_KWARGS['*']['_source']['default'] = [
 QUERY_KWARGS['POST']['scopes']['default'] = [
     '_id', 'name']
 
-
 ES_QUERY_BUILDER = "web.pipeline.MyGenesetQueryBuilder"
+
+
+# A random string -- set in config.py
+COOKIE_SECRET = ""
+
+# OAuth keys -- set in config.py
+GITHUB_CLIENT_ID = ""
+GITHUB_CLIENT_SECRET = ""
+ORCID_CLIENT_ID = ""
+ORCID_CLIENT_SECRET = ""

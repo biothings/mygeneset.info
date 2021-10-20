@@ -1,6 +1,5 @@
-
 from biothings.web.query import ESQueryBuilder
-from elasticsearch_dsl import Search
+from elasticsearch_dsl import Q, Search
 from tornado.web import HTTPError
 
 
@@ -14,6 +13,12 @@ class MyGenesetQueryBuilder(ESQueryBuilder):
                 {"filter": {"term": {"taxid": 10090}}, "weight": "1.3"},  # mouse
                 {"filter": {"term": {"taxid": 10116}}, "weight": "1.1"},  # rat
             ])
+
+        # Filter results according to authenticated user permissions
+        if options.current_user is not None:
+            search = search.filter(Q("match", is_public=True) | Q("match", author=options.current_user))
+        else:
+            search = search.filter(Q('match', is_public=True))
 
         if options.species:
             if 'all' in options.species:
