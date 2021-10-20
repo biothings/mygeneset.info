@@ -8,9 +8,11 @@ from biothings.web.settings.default import APP_LIST, ANNOTATION_KWARGS, QUERY_KW
 # elasticsearch server transport url
 ES_HOST = 'localhost:9200'
 # elasticsearch index name
-ES_INDEX = 'mygeneset_current,user-genesets-test'
+ES_INDEX = 'mygeneset_current,user_genesets'
+ES_USER_INDEX = 'user_genesets'
 # elasticsearch document type
 ES_DOC_TYPE = 'geneset'
+
 
 # *****************************************************************************
 # Web Application
@@ -38,12 +40,15 @@ STATUS_CHECK = {
 
 
 APP_LIST += [
-        (r"/{ver}/user_genesets/?", "web.handlers.api.UserGenesetHandler"),
+        (r"/{ver}/query/?", "web.handlers.api.QueryHandler"),
+        (r"/{ver}/geneset/?", "web.handlers.api.BiothingHandler"),
+        (r"/{ver}/user_geneset/?", "web.handlers.api.UserGenesetHandler"),
+        (r"/{ver}/user_geneset/([^/]+)/?", "web.handlers.api.UserGenesetHandler"),
         (r"/login", "home.mockLogin"),
-        (r"/login/github", "web.handlers.loginHandlers.GitHubAuthHandler"),
-        (r"/login/orcid", "web.handlers.loginHandlers.ORCIDAuthHandler"),
-        (r"/logout", "web.handlers.loginHandlers.LogoutHandler"),
-        (r"/user", "web.handlers.loginHandlers.UserInfoHandler"),
+        (r"/login/github", "web.handlers.auth.GitHubAuthHandler"),
+        (r"/login/orcid", "web.handlers.auth.ORCIDAuthHandler"),
+        (r"/logout", "web.handlers.auth.LogoutHandler"),
+        (r"/user", "web.handlers.auth.UserInfoHandler"),
         ]
 
 TAXONOMY = {
