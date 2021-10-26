@@ -11,6 +11,7 @@ import elasticsearch
 from biothings.utils.dataload import dict_sweep
 from biothings.web.handlers.query import (BaseQueryHandler, capture_exceptions,
                                           ensure_awaitable)
+import elasticsearch_dsl
 from tornado.web import HTTPError
 from utils.geneset_utils import IDLookup
 from web.handlers.auth import BaseAuthHandler, authenticated_user
@@ -140,9 +141,9 @@ class UserGenesetHandler(BaseAuthHandler):
         # is_public
         is_public = payload.get("is_public", "true")
         if is_public is not None:
-            if is_public in ["false", "False", "0"]:
+            if is_public in [True, "false", "False", "0"]:
                 payload['is_public'] = False
-            elif is_public in ["true", "True", "1"]:
+            elif is_public in [False, "true", "True", "1"]:
                 payload['is_public'] = True
             else:
                 raise HTTPError(400, reason="Body element 'is_public' must be 'True/False', 'true/false', or '1/0'.")
@@ -182,7 +183,7 @@ class UserGenesetHandler(BaseAuthHandler):
             })
         else:
             # Return the document itself as the response
-            self.finish({"dry_run": geneset})
+            self.finish({"new_document": geneset})
 
     @authenticated_user
     async def put(self, _id):
@@ -197,25 +198,33 @@ class UserGenesetHandler(BaseAuthHandler):
         document_owner =  document['_source']['author']
         geneset = document['_source']
         if document_owner == user:
+            # Update metadata
             for elem in ['name', 'description', 'is_public']:
                 if payload.get(elem):
                     geneset.update({elem: payload[elem]})
+            # Update genes
             if payload.get('genes'):
-                geneset = await self._create_user_geneset(
-                        name=geneset['name'],
-                        genes=payload['genes'],
-                        author=user,
-                        description=geneset.get('description'),
-                        is_public=geneset['is_public'])
-            if payload.get('remove'):
-                gene_dict = {gene['mygene_id']: gene for gene in geneset['genes']}
-                for geneid in payload['remove']:
-                    gene_dict.pop(geneid, None)
-                geneset.update({'genes': list(gene_dict.values())})
-            if payload.get('add'):
-                new_genes = await self._query_mygene(payload['add'])
-                geneset.update({
-                    'genes': geneset['genes'] + [gene for gene in new_genes if gene not in geneset['genes']]})
+                gene_operation = self.get_argument("gene_operation", default="replace")
+                if gene_operation == "replace":
+                    geneset = await self._create_user_geneset(
+                            name=geneset['name'],
+                            genes=payload['genes'],
+                            author=user,
+                            description=geneset.get('description'),
+                            is_public=geneset['is_public'])
+                elif gene_operation == "remove":
+                    gene_dict = {gene['mygene_id']: gene for gene in geneset['genes']}
+                    for geneid in payload['genes']:
+                        gene_dict.pop(geneid, None)
+                    geneset.update({'genes': list(gene_dict.values())})
+                elif gene_operation == "add":
+                    new_genes = await self._query_mygene(payload['genes'])
+                    geneset.update({
+                        'genes': geneset['genes'] + [gene for gene in new_genes if gene not in geneset['genes']]})
+                else:
+                    raise HTTPError(401,
+                        reason="Argument 'gene operation' must be one of: 'replace', 'add', 'remove'.")
+
             # Update geneset
             dry_run = self.get_argument("dry_run", default=None)
             if dry_run is None or dry_run.lower() == "false":
@@ -231,7 +240,7 @@ class UserGenesetHandler(BaseAuthHandler):
                     "user": document_owner
                 })
             else:
-                self.finish({"dry_run": geneset})
+                self.finish({"new_document": geneset})
         else:
             raise HTTPError(403,
                 reason="You don't have permission to modify this document.")
