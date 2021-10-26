@@ -166,18 +166,23 @@ class UserGenesetHandler(BaseAuthHandler):
         is_public = payload['is_public']
         # Generate body for ES request
         geneset = await self._create_user_geneset(name, user, genes, is_public, description)
-        _now = str(datetime.now(timezone.utc).replace(microsecond=0).isoformat())
-        geneset.update({"created": _now})
-        geneset.update({"updated": _now})
-        response = await self.biothings.elasticsearch.async_client.index(
+        dry_run = self.get_argument("dry_run", default=None)
+        if dry_run is None or dry_run.lower() == "false":
+            _now = str(datetime.now(timezone.utc).replace(microsecond=0).isoformat())
+            geneset.update({"created": _now})
+            geneset.update({"updated": _now})
+            response = await self.biothings.elasticsearch.async_client.index(
                 body=geneset, index=self.biothings.config.ES_USER_INDEX)
-        self.finish({
-            "success": True,
-            "result": response['result'],
-            "_id":response['_id'],
-            "name": name,
-            "user": user
-        })
+            self.finish({
+                "success": True,
+                "result": response['result'],
+                "_id":response['_id'],
+                "name": name,
+                "user": user
+            })
+        else:
+            # Return the document itself as the response
+            self.finish({"dry_run": geneset})
 
     @authenticated_user
     async def put(self, _id):
@@ -212,20 +217,24 @@ class UserGenesetHandler(BaseAuthHandler):
                 geneset.update({
                     'genes': geneset['genes'] + [gene for gene in new_genes if gene not in geneset['genes']]})
             # Update geneset
-            _now = datetime.now(timezone.utc).isoformat()
-            geneset.update({'updated': _now})
-            response = await self.biothings.elasticsearch.async_client.update(
-                    id=_id, body={"doc": geneset}, index=self.biothings.config.ES_USER_INDEX)
+            dry_run = self.get_argument("dry_run", default=None)
+            if dry_run is None or dry_run.lower() == "false":
+                _now = datetime.now(timezone.utc).isoformat()
+                geneset.update({'updated': _now})
+                response = await self.biothings.elasticsearch.async_client.update(
+                        id=_id, body={"doc": geneset}, index=self.biothings.config.ES_USER_INDEX)
+                self.finish({
+                    "success": True,
+                    "result": response['result'],
+                    "_id":response['_id'],
+                    "name": document_name,
+                    "user": document_owner
+                })
+            else:
+                self.finish({"dry_run": geneset})
         else:
             raise HTTPError(403,
                 reason="You don't have permission to modify this document.")
-        self.finish({
-            "success": True,
-            "result": response['result'],
-            "_id":response['_id'],
-            "name": document_name,
-            "user": document_owner
-        })
 
     @authenticated_user
     async def delete(self, _id):
@@ -239,13 +248,13 @@ class UserGenesetHandler(BaseAuthHandler):
         if document_owner == user:
             response = await self.biothings.elasticsearch.async_client.delete(
                     id=_id, index=self.biothings.config.ES_USER_INDEX)
+            self.finish({
+                "success": True,
+                "result": response['result'],
+                "_id": response['_id'],
+                "name": document_name,
+                "user": document_owner
+            })
         else:
             raise HTTPError(403,
                 reason="You don't have permission to delete this document.")
-        self.finish({
-            "success": True,
-            "result": response['result'],
-            "_id": response['_id'],
-            "name": document_name,
-            "user": document_owner
-        })
