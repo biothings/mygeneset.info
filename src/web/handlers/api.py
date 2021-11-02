@@ -204,7 +204,7 @@ class UserGenesetHandler(BaseAuthHandler):
                     geneset.update({elem: payload[elem]})
             # Update genes
             if payload.get('genes'):
-                gene_operation = self.get_argument("gene_operation", default="replace")
+                gene_operation = self.get_argument("gene_operation")
                 if gene_operation == "replace":
                     geneset = await self._create_user_geneset(
                             name=geneset['name'],
