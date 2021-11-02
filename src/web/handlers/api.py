@@ -116,7 +116,7 @@ class UserGenesetHandler(BaseAuthHandler):
 
     async def _query_mygene(self, genes):
         """"Take a list of mygene.info ids and return a list of gene objects."""
-        mygene = IDLookup(species="all")
+        mygene = IDLookup(species="all", cache_dict={})
         mygene.query_mygene(genes, id_type="_id")
         return [gene for gene in mygene.query_cache.values()]
 
@@ -204,7 +204,9 @@ class UserGenesetHandler(BaseAuthHandler):
                     geneset.update({elem: payload[elem]})
             # Update genes
             if payload.get('genes'):
-                gene_operation = self.get_argument("gene_operation")
+                gene_operation = self.get_argument("gene_operation", None)
+                if gene_operation is None:
+                    raise HTTPError(401, reason="Missing argument 'gene_operation'.")
                 if gene_operation == "replace":
                     geneset = await self._create_user_geneset(
                             name=geneset['name'],
@@ -244,6 +246,7 @@ class UserGenesetHandler(BaseAuthHandler):
         else:
             raise HTTPError(403,
                 reason="You don't have permission to modify this document.")
+
 
     @authenticated_user
     async def delete(self, _id):
