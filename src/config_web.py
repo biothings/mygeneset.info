@@ -116,7 +116,6 @@ QUERY_KWARGS['POST']['scopes']['default'] = [
 
 ES_QUERY_BUILDER = "web.pipeline.MyGenesetQueryBuilder"
 
-
 # A random string -- set in config.py
 COOKIE_SECRET = ""
 
@@ -125,3 +124,6 @@ GITHUB_CLIENT_ID = ""
 GITHUB_CLIENT_SECRET = ""
 ORCID_CLIENT_ID = ""
 ORCID_CLIENT_SECRET = ""
+
+# User geneset settings
+MAX_GENESET_SIZE = 2000
