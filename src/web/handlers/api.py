@@ -4,93 +4,28 @@ API handler for MyGeneset submit/ endpoint
 
 from datetime import datetime, timezone
 import json
-import re
-from time import time
 
 import elasticsearch
 from biothings.utils.dataload import dict_sweep
-from biothings.web.handlers.query import (BaseQueryHandler, capture_exceptions,
-                                          ensure_awaitable)
-import elasticsearch_dsl
+from biothings.web.handlers.query import BaseQueryHandler, QueryHandler, BiothingHandler
+
 from tornado.web import HTTPError
 from utils.geneset_utils import IDLookup
 from web.handlers.auth import BaseAuthHandler, authenticated_user
 
 
-class QueryHandler(BaseQueryHandler, BaseAuthHandler):
-    ''' Biothings Query Endpoint with User Authentication
-    Fetch  - GET  ./query?q=<query_string>
-    Fetch  - POST ./query?q=<query_string1, query_string2>
-    '''
-    name = 'query'
-
-    def set_current_user(self, *args, **kwargs):
-        """Add a query argument if user is authenticated"""
-        current_user = self.get_current_user()
-        if current_user is not None:
-            self.args['current_user'] = current_user['login']
+class MyGenesetQueryHandler(BaseQueryHandler):
+    def prepare(self):
+        super().prepare()
+        if self.current_user:
+            self.args['current_user'] = self.current_user['login']
 
 
-    async def post(self, *args, **kwargs):
-        self.event['value'] = len(self.args['q'])
-
-        self.set_current_user()
-
-        result = await ensure_awaitable(
-            self.pipeline.search(**self.args))
-        self.finish(result)
-
-    async def get(self, *args, **kwargs):
-        self.event['value'] = 1
-
-        self.set_current_user()
-
-        if self.args.get('fetch_all'):
-            self.event['label'] = 'fetch_all'
-
-        if self.args.get('fetch_all') or \
-                self.args.get('scroll_id') or \
-                self.args.get('q') == '__any__':
-            self.clear_header('Cache-Control')
-
-        response = await ensure_awaitable(
-            self.pipeline.search(**self.args))
-        self.finish(response)
-
-
-class BiothingHandler(BaseQueryHandler, BaseAuthHandler):
-    """
-    Biothings Annotation Endpoint with Authentication
-    Fetch  - GET  ./geneset?q=<_id>
-    Fetch  - POST ./geneset?ids=<_id,_id>
-    """
-    name = 'annotation'
-
-    def set_current_user(self, *args, **kwargs):
-        """Add a query argument if user is authenticated"""
-        current_user = self.get_current_user()
-        if current_user is not None:
-            self.args['current_user'] = current_user['login']
-
-    @capture_exceptions
-    async def post(self, *args, **kwargs):
-        self.event['value'] = len(self.args['id'])
-
-        self.set_current_user()
-
-        result = await ensure_awaitable(
-            self.pipeline.fetch(**self.args))
-        self.finish(result)
-
-    @capture_exceptions
-    async def get(self, *args, **kwargs):
-        self.event['value'] = 1
-
-        self.set_current_user()
-
-        result = await ensure_awaitable(
-            self.pipeline.fetch(**self.args))
-        self.finish(result)
+class MyGenesetBiothingHandler(BiothingHandler):
+    def prepare(self):
+        super().prepare()
+        if self.current_user:
+            self.args['current_user'] = self.current_user['login']
 
 
 class UserGenesetHandler(BaseAuthHandler):
