@@ -1,7 +1,8 @@
 import copy
 import re
 
-from biothings.web.settings.default import ANNOTATION_KWARGS, QUERY_KWARGS, APP_LIST
+from biothings.web.settings.default import ANNOTATION_KWARGS, AUTHN_PROVIDERS, QUERY_KWARGS, APP_LIST
+from web.handlers.auth import GitHubLoginHandler, ORCIDLoginHandler
 
 # *****************************************************************************
 # Elasticsearch variables
@@ -39,11 +40,10 @@ APP_LIST += [
         (r"/{ver}/geneset/?", "web.handlers.api.MyGenesetBiothingHandler"),
         (r"/{ver}/user_geneset/?", "web.handlers.api.UserGenesetHandler"),
         (r"/{ver}/user_geneset/([^/]+)/?", "web.handlers.api.UserGenesetHandler"),
+        (r"/user_info", "web.handlers.api.UserInfoHandler"),
         (r"/login", "home.mockLogin"),
-        (r"/login/github", "web.handlers.auth.GitHubAuthHandler"),
-        (r"/login/orcid", "web.handlers.auth.ORCIDAuthHandler"),
-        (r"/logout", "web.handlers.auth.LogoutHandler"),
-        (r"/user", "web.handlers.auth.UserInfoHandler"),
+        (r"/login/github", "web.handlers.auth.GitHubLoginHandler"),
+        (r"/login/orcid", "web.handlers.auth.ORCIDLoginHandler")
         ]
 
 TAXONOMY = {
@@ -115,6 +115,12 @@ QUERY_KWARGS['POST']['scopes']['default'] = [
     '_id', 'name']
 
 ES_QUERY_BUILDER = "web.pipeline.MyGenesetQueryBuilder"
+
+# Authentication providers for BiothingsAuthnMixin
+AUTHN_PROVIDERS = [
+    (ORCIDLoginHandler, {}),
+    (GitHubLoginHandler,  {})
+    ]
 
 # A random string -- set in config.py
 COOKIE_SECRET = ""
