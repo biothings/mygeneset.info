@@ -2,33 +2,49 @@
 API handler for MyGeneset submit/ endpoint
 """
 
-from datetime import datetime, timezone
 import json
+from datetime import datetime, timezone
 
 import elasticsearch
 from biothings.utils.dataload import dict_sweep
-from biothings.web.handlers.query import BaseQueryHandler, QueryHandler, BiothingHandler
-
+from biothings.web.auth.authn import BioThingsAuthnMixin
+from biothings.web.handlers import BaseAPIHandler
+from biothings.web.handlers.query import BaseQueryHandler, BiothingHandler
 from tornado.web import HTTPError
 from utils.geneset_utils import IDLookup
-from web.handlers.auth import BaseAuthHandler, authenticated_user
 
 
-class MyGenesetQueryHandler(BaseQueryHandler):
+class MyGenesetQueryHandler(BioThingsAuthnMixin, BaseQueryHandler):
     def prepare(self):
         super().prepare()
         if self.current_user:
             self.args['current_user'] = self.current_user['login']
 
 
-class MyGenesetBiothingHandler(BiothingHandler):
+class MyGenesetBiothingHandler(BioThingsAuthnMixin, BiothingHandler):
     def prepare(self):
         super().prepare()
         if self.current_user:
             self.args['current_user'] = self.current_user['login']
 
 
-class UserGenesetHandler(BaseAuthHandler):
+class UserInfoHandler(BioThingsAuthnMixin, BaseAPIHandler):
+    def get(self):
+        if self.current_user:
+            self.write(self.current_user)
+        else:
+            header = self.get_www_authenticate_header()
+            if header:
+                self.clear()
+                self.set_header('WWW-Authenticate', header)
+                self.set_status(401, "Unauthorized")
+                # raising HTTPError will cause headers to be emptied
+                self.finish()
+            else:
+                raise HTTPError(403)
+
+
+class UserGenesetHandler():
     """
         Operations on user geneset documents.
         Create - POST ./user_geneset/
@@ -41,7 +57,7 @@ class UserGenesetHandler(BaseAuthHandler):
 
     async def _get_geneset(self, _id):
         """Fetch a geneset document from Elasticsearch"""
-        try:
+        try: 
             document = await self.biothings.elasticsearch.async_client.get(
                     id=_id,
                     index=self.biothings.config.ES_USER_INDEX)
@@ -88,7 +104,6 @@ class UserGenesetHandler(BaseAuthHandler):
                 raise HTTPError(400, reason="Body element 'genes' is required.")
         return payload
 
-    @authenticated_user
     async def post(self):
         """Create a user geneset."""
         # Get user id
@@ -120,7 +135,6 @@ class UserGenesetHandler(BaseAuthHandler):
             # Return the document itself as the response
             self.finish({"new_document": geneset})
 
-    @authenticated_user
     async def put(self, _id):
         """Update an existing user geneset"""
         user = self._get_user_id()
@@ -182,8 +196,6 @@ class UserGenesetHandler(BaseAuthHandler):
             raise HTTPError(403,
                 reason="You don't have permission to modify this document.")
 
-
-    @authenticated_user
     async def delete(self, _id):
         """Delete a geneset."""
         user = self._get_user_id()
