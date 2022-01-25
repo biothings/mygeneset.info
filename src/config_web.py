@@ -2,7 +2,7 @@ import copy
 import re
 
 from biothings.web.settings.default import ANNOTATION_KWARGS, AUTHN_PROVIDERS, QUERY_KWARGS, APP_LIST
-from web.handlers.auth import GitHubLoginHandler, ORCIDLoginHandler
+from web.authn.authn_provider import UserCookieAuthProvider
 
 # *****************************************************************************
 # Elasticsearch variables
@@ -118,8 +118,7 @@ ES_QUERY_BUILDER = "web.pipeline.MyGenesetQueryBuilder"
 
 # Authentication providers for BiothingsAuthnMixin
 AUTHN_PROVIDERS = [
-    (ORCIDLoginHandler, {}),
-    (GitHubLoginHandler,  {})
+    (UserCookieAuthProvider, {})
     ]
 
 # A random string -- set in config.py

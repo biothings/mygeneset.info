@@ -57,7 +57,7 @@ class UserGenesetHandler():
 
     async def _get_geneset(self, _id):
         """Fetch a geneset document from Elasticsearch"""
-        try: 
+        try:
             document = await self.biothings.elasticsearch.async_client.get(
                     id=_id,
                     index=self.biothings.config.ES_USER_INDEX)

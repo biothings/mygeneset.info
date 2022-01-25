@@ -58,12 +58,6 @@ class ORCIDLoginHandler(BaseAPIHandler, OrcidOAuth2Mixin):
             user_data['email'] = email[0]['email']
         return json.dumps(user_data)
 
-    def get_current_user(self):
-        user_json = self.get_secure_cookie("user")
-        if not user_json:
-            return None
-        return json.loads(user_json.decode('utf-8'))
-
 
 class GitHubLoginHandler(BaseAPIHandler, GithubOAuth2Mixin):
     SCOPES = []
@@ -111,9 +105,3 @@ class GitHubLoginHandler(BaseAPIHandler, GithubOAuth2Mixin):
         if user.get('avatar_url'):
             user_data['avatar_url'] = user['avatar_url']
         return json.dumps(user_data)
-
-    def get_current_user(self):
-        user_json = self.get_secure_cookie("user")
-        if not user_json:
-            return None
-        return json.loads(user_json.decode('utf-8'))
