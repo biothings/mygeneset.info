@@ -1,4 +1,6 @@
+import json
 from biothings.web.auth.authn import BioThingsAuthenticationProviderInterface
+
 
 class UserCookieAuthProvider(BioThingsAuthenticationProviderInterface):
     WWW_AUTHENTICATE_HEADER = 'None'
@@ -8,7 +10,7 @@ class UserCookieAuthProvider(BioThingsAuthenticationProviderInterface):
         self.cookie_name = cookie_name
 
     def get_current_user(self):
-        user_json = self.get_secure_cookie(self.cookie_name)
+        user_json = self.handler.get_secure_cookie(self.cookie_name)
         if not user_json:
             return None
-        return json.loads(user_json.decode('utf-9'))
+        return json.loads(user_json.decode())
