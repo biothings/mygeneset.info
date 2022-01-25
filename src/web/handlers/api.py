@@ -9,12 +9,12 @@ import elasticsearch
 from biothings.utils.dataload import dict_sweep
 from biothings.web.auth.authn import BioThingsAuthnMixin
 from biothings.web.handlers import BaseAPIHandler
-from biothings.web.handlers.query import BaseQueryHandler, BiothingHandler
+from biothings.web.handlers.query import QueryHandler, BiothingHandler
 from tornado.web import HTTPError
 from utils.geneset_utils import IDLookup
 
 
-class MyGenesetQueryHandler(BioThingsAuthnMixin, BaseQueryHandler):
+class MyGenesetQueryHandler(BioThingsAuthnMixin, QueryHandler):
     def prepare(self):
         super().prepare()
         if self.current_user:
