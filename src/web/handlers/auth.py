@@ -40,6 +40,7 @@ class ORCIDLoginHandler(BaseAPIHandler, OrcidOAuth2Mixin):
             else:
                 logging.info("Failed to get user info.")
                 self.clear_cookie("user")
+            self.redirect(self.get_argument('next', '/'))
 
     def _format_user_record(self, user):
         user_data = {}
@@ -92,6 +93,7 @@ class GitHubLoginHandler(BaseAPIHandler, GithubOAuth2Mixin):
             else:
                 logging.info("Failed to get user info.")
                 self.clear_cookie("user")
+            self.redirect(self.get_argument('next', '/'))
 
     def _format_user_record(self, user):
         user_data = {}
@@ -105,4 +107,3 @@ class GitHubLoginHandler(BaseAPIHandler, GithubOAuth2Mixin):
         if user.get('avatar_url'):
             user_data['avatar_url'] = user['avatar_url']
         return json.dumps(user_data)
-
