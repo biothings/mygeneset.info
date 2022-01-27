@@ -4,6 +4,7 @@ API handler for MyGeneset submit/ endpoint
 
 import json
 from datetime import datetime, timezone
+from re import I
 
 import elasticsearch
 from biothings.utils.dataload import dict_sweep
@@ -36,9 +37,17 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
         Update - PUT ./user_geneset/<_id>
         Remove - DELETE ./user_geneset/<_id>
     """
-    def _get_user_id(self):
-        user = self.get_current_user()
-        return user['login']
+
+    def user_authenticated(func):
+        """Checks if user is authenticated and sends 401 if not authenticated. """
+        def _(self, *args, **kwargs):
+            if not self.current_user:
+                self.send_error(
+                    message='You must log in first.',
+                    status_code=401)
+                return
+            return func(self, *args, **kwargs)
+        return _
 
     async def _get_geneset(self, _id):
         """Fetch a geneset document from Elasticsearch"""
@@ -89,10 +98,11 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
                 raise HTTPError(400, reason="Body element 'genes' is required.")
         return payload
 
+    @user_authenticated
     async def post(self):
         """Create a user geneset."""
         # Get user id
-        user = self._get_user_id()
+        user = self.current_user['login']
         # Get geneset parameters from request body
         payload = json.loads(self.request.body)
         payload = self._validate_input(self.request.method, payload)
@@ -120,9 +130,10 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
             # Return the document itself as the response
             self.finish({"new_document": geneset})
 
+    @user_authenticated
     async def put(self, _id):
         """Update an existing user geneset"""
-        user = self._get_user_id()
+        user = self.current_user['login']
         payload = json.loads(self.request.body)
         payload = self._validate_input(self.request.method, payload)
         # Retrieve document
@@ -183,7 +194,7 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
 
     async def delete(self, _id):
         """Delete a geneset."""
-        user = self._get_user_id()
+        user = self.current_user['login']
         # Retrieve document
         document = await self._get_geneset(_id)
         # Delete document if user has permission
