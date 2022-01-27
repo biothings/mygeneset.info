@@ -1,7 +1,8 @@
 import copy
 import re
 
-from biothings.web.settings.default import ANNOTATION_KWARGS, AUTHN_PROVIDERS, QUERY_KWARGS, APP_LIST
+from biothings.web.settings.default import (ANNOTATION_KWARGS, APP_LIST,
+                                            AUTHN_PROVIDERS, QUERY_KWARGS)
 from web.authn.authn_provider import UserCookieAuthProvider
 
 # *****************************************************************************
