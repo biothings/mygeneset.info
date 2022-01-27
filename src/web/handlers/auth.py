@@ -105,3 +105,4 @@ class GitHubLoginHandler(BaseAPIHandler, GithubOAuth2Mixin):
         if user.get('avatar_url'):
             user_data['avatar_url'] = user['avatar_url']
         return json.dumps(user_data)
+
