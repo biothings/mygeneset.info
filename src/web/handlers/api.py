@@ -9,12 +9,13 @@ import elasticsearch
 from biothings.utils.dataload import dict_sweep
 from biothings.web.auth.authn import BioThingsAuthnMixin
 from biothings.web.handlers import BaseAPIHandler
-from biothings.web.handlers.query import QueryHandler, BiothingHandler
+from biothings.web.handlers.query import BiothingHandler, QueryHandler
 from tornado.web import HTTPError
 from utils.geneset_utils import IDLookup
 
 
 class MyGenesetQueryHandler(BioThingsAuthnMixin, QueryHandler):
+    """"Handler for /{ver}/query endpoint."""
     def prepare(self):
         super().prepare()
         if self.current_user:
@@ -22,29 +23,13 @@ class MyGenesetQueryHandler(BioThingsAuthnMixin, QueryHandler):
 
 
 class MyGenesetBiothingHandler(BioThingsAuthnMixin, BiothingHandler):
+    """"Handler for /{ver}/geneset endpoint."""
     def prepare(self):
         super().prepare()
         if self.current_user:
             self.args['current_user'] = self.current_user['login']
 
-
-class UserInfoHandler(BioThingsAuthnMixin, BaseAPIHandler):
-    def get(self):
-        if self.current_user:
-            self.write(self.current_user)
-        else:
-            header = self.get_www_authenticate_header()
-            if header:
-                self.clear()
-                self.set_header('WWW-Authenticate', header)
-                self.set_status(401, "Unauthorized")
-                # raising HTTPError will cause headers to be emptied
-                self.finish()
-            else:
-                raise HTTPError(403)
-
-
-class UserGenesetHandler():
+class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
     """
         Operations on user geneset documents.
         Create - POST ./user_geneset/
