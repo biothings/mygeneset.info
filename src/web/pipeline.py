@@ -18,7 +18,6 @@ class MyGenesetQueryBuilder(ESQueryBuilder):
 
         # Filter results according to authenticated user permissions
         if options.current_user is not None:
-            logging.info("Filtering")
             search = search.filter(Q("match", is_public=True) | Q("match", author=options.current_user))
         else:
             search = search.filter(Q('match', is_public=True))

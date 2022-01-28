@@ -3,7 +3,6 @@ API handler for MyGeneset submit/ endpoint
 """
 
 import json
-import logging
 from datetime import datetime, timezone
 
 import elasticsearch
@@ -18,20 +17,16 @@ from utils.geneset_utils import IDLookup
 class MyGenesetQueryHandler(BioThingsAuthnMixin, QueryHandler):
     """"Handler for /{ver}/query endpoint."""
     def prepare(self):
-        logging.info("Preparing.")
         super().prepare()
         if self.current_user:
-            logging.info(self.current_user)
             self.args['current_user'] = self.current_user['username']
 
 
-class MyGenesetBiothingHandler(BioThingsAuthnMixin, QueryHandler):
+class MyGenesetBiothingHandler(BioThingsAuthnMixin, BiothingHandler):
     """"Handler for /{ver}/geneset endpoint."""
     def prepare(self):
-        logging.info("Preparing.")
         super().prepare()
         if self.current_user:
-            logging.info(self.current_user)
             self.args['current_user'] = self.current_user['username']
 
 class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
