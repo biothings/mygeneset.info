@@ -20,7 +20,7 @@ class MyGenesetQueryHandler(BioThingsAuthnMixin, QueryHandler):
     def prepare(self):
         super().prepare()
         if self.current_user:
-            self.args['current_user'] = self.current_user['login']
+            self.args['current_user'] = self.current_user['username']
 
 
 class MyGenesetBiothingHandler(BioThingsAuthnMixin, BiothingHandler):
@@ -28,7 +28,7 @@ class MyGenesetBiothingHandler(BioThingsAuthnMixin, BiothingHandler):
     def prepare(self):
         super().prepare()
         if self.current_user:
-            self.args['current_user'] = self.current_user['login']
+            self.args['current_user'] = self.current_user['username']
 
 class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
     """
@@ -102,7 +102,7 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
     async def post(self):
         """Create a user geneset."""
         # Get user id
-        user = self.current_user['login']
+        user = self.current_user['username']
         # Get geneset parameters from request body
         payload = json.loads(self.request.body)
         payload = self._validate_input(self.request.method, payload)
@@ -133,7 +133,7 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
     @user_authenticated
     async def put(self, _id):
         """Update an existing user geneset"""
-        user = self.current_user['login']
+        user = self.current_user['username']
         payload = json.loads(self.request.body)
         payload = self._validate_input(self.request.method, payload)
         # Retrieve document
@@ -192,9 +192,10 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
             raise HTTPError(403,
                 reason="You don't have permission to modify this document.")
 
+    @user_authenticated
     async def delete(self, _id):
         """Delete a geneset."""
-        user = self.current_user['login']
+        user = self.current_user['username']
         # Retrieve document
         document = await self._get_geneset(_id)
         # Delete document if user has permission

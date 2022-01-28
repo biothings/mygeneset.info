@@ -44,8 +44,8 @@ class ORCIDLoginHandler(BaseAPIHandler, OrcidOAuth2Mixin):
 
     def _format_user_record(self, user):
         user_data = {}
-        user_data['login'] = user.get("orcid-identifier", {}).get("path")
-        if not user_data['login']:
+        user_data['username'] = user.get("orcid-identifier", {}).get("path")
+        if not user_data['username']:
             return
         # Only first name is required when registering for ORCID
         first_name = user.get("person", {}).get("name", {}).get("given-names", {}).get("value")
@@ -97,8 +97,8 @@ class GitHubLoginHandler(BaseAPIHandler, GithubOAuth2Mixin):
 
     def _format_user_record(self, user):
         user_data = {}
-        user_data['login'] = user.get('login')
-        if not user_data['login']:
+        user_data['username'] = user.get('login')
+        if not user_data['username']:
             return
         if user.get('name'):
             user_data['name'] = user['name']
