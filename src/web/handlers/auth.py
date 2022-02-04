@@ -55,10 +55,10 @@ class ORCIDLoginHandler(BaseAPIHandler, OrcidOAuth2Mixin):
             user_data['name'] = first_name + " " + last_name
         # email
         email = user.get("person", {}).get("emails", {}).get("email")
-        if len(email) >=1:
+        if email and len(email) >=1:
             user_data['email'] = email[0]['email']
-        employment = user_data.get("person", {}).get("employments", {}).get("employment-symmary")
-        if len(employment) >= 1:
+        employment = user.get("activities-summary", {}).get("employments", {}).get("employment-summary")
+        if employment and len(employment) >= 1:
             user_data['organization'] = employment[0]['organization']['name']
         return json.dumps(user_data)
 
