@@ -2,42 +2,51 @@
 API handler for MyGeneset submit/ endpoint
 """
 
-from datetime import datetime, timezone
 import json
+from datetime import datetime, timezone
 
 import elasticsearch
 from biothings.utils.dataload import dict_sweep
-from biothings.web.handlers.query import BaseQueryHandler, QueryHandler, BiothingHandler
-
+from biothings.web.auth.authn import BioThingsAuthnMixin
+from biothings.web.handlers import BaseAPIHandler
+from biothings.web.handlers.query import BiothingHandler, QueryHandler
 from tornado.web import HTTPError
 from utils.geneset_utils import IDLookup
-from web.handlers.auth import BaseAuthHandler, authenticated_user
 
 
-class MyGenesetQueryHandler(BaseQueryHandler):
+class MyGenesetQueryHandler(BioThingsAuthnMixin, QueryHandler):
+    """"Handler for /{ver}/query endpoint."""
     def prepare(self):
         super().prepare()
         if self.current_user:
-            self.args['current_user'] = self.current_user['login']
+            self.args['current_user'] = self.current_user['username']
 
 
-class MyGenesetBiothingHandler(BiothingHandler):
+class MyGenesetBiothingHandler(BioThingsAuthnMixin, BiothingHandler):
+    """"Handler for /{ver}/geneset endpoint."""
     def prepare(self):
         super().prepare()
         if self.current_user:
-            self.args['current_user'] = self.current_user['login']
+            self.args['current_user'] = self.current_user['username']
 
-
-class UserGenesetHandler(BaseAuthHandler):
+class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
     """
         Operations on user geneset documents.
         Create - POST ./user_geneset/
         Update - PUT ./user_geneset/<_id>
         Remove - DELETE ./user_geneset/<_id>
     """
-    def _get_user_id(self):
-        user = self.get_current_user()
-        return user['login']
+
+    def user_authenticated(func):
+        """Checks if user is authenticated and sends 401 if not authenticated. """
+        def _(self, *args, **kwargs):
+            if not self.current_user:
+                self.send_error(
+                    message='You must log in first.',
+                    status_code=401)
+                return
+            return func(self, *args, **kwargs)
+        return _
 
     async def _get_geneset(self, _id):
         """Fetch a geneset document from Elasticsearch"""
@@ -88,11 +97,11 @@ class UserGenesetHandler(BaseAuthHandler):
                 raise HTTPError(400, reason="Body element 'genes' is required.")
         return payload
 
-    @authenticated_user
+    @user_authenticated
     async def post(self):
         """Create a user geneset."""
         # Get user id
-        user = self._get_user_id()
+        user = self.current_user['username']
         # Get geneset parameters from request body
         payload = json.loads(self.request.body)
         payload = self._validate_input(self.request.method, payload)
@@ -120,10 +129,10 @@ class UserGenesetHandler(BaseAuthHandler):
             # Return the document itself as the response
             self.finish({"new_document": geneset})
 
-    @authenticated_user
+    @user_authenticated
     async def put(self, _id):
         """Update an existing user geneset"""
-        user = self._get_user_id()
+        user = self.current_user['username']
         payload = json.loads(self.request.body)
         payload = self._validate_input(self.request.method, payload)
         # Retrieve document
@@ -182,11 +191,10 @@ class UserGenesetHandler(BaseAuthHandler):
             raise HTTPError(403,
                 reason="You don't have permission to modify this document.")
 
-
-    @authenticated_user
+    @user_authenticated
     async def delete(self, _id):
         """Delete a geneset."""
-        user = self._get_user_id()
+        user = self.current_user['username']
         # Retrieve document
         document = await self._get_geneset(_id)
         # Delete document if user has permission

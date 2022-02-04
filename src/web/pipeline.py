@@ -1,3 +1,5 @@
+import logging
+
 from biothings.web.query import ESQueryBuilder
 from elasticsearch_dsl import Q, Search
 from tornado.web import HTTPError
