@@ -38,7 +38,7 @@ STATUS_CHECK = {
 
 APP_LIST += [
         (r"/{ver}/query/?", "web.handlers.api.MyGenesetQueryHandler"),
-        (r"/{pre}/{ver}/{typ}(?:/([^/]+))?/?", 'web.handlers.api.MyGenesetBiothingHandler'),
+        (r"/{pre}/{ver}/{typ}(?:/([^/]+))?/?", "web.handlers.api.MyGenesetBiothingHandler"),
         (r"/{ver}/user_geneset/?", "web.handlers.api.UserGenesetHandler"),
         (r"/{ver}/user_geneset/([^/]+)/?", "web.handlers.api.UserGenesetHandler"),
         (r"/user_info", "web.handlers.login.UserInfoHandler"),
