@@ -13,10 +13,9 @@ class ORCIDLoginHandler(BaseAPIHandler, OrcidOAuth2Mixin):
     async def get(self):
         CLIENT_ID = self.biothings.config.ORCID_CLIENT_ID
         CLIENT_SECRET = self.biothings.config.ORCID_CLIENT_SECRET
-        redirect_uri = url_concat(self.request.protocol +
-                                    "://" + self.request.host +
-                                    self.CALLBACK_PATH,
-                                    {"next": self.get_argument('next', '/')})
+        redirect_uri = url_concat(self.biothings.config.WEB_HOST +
+                                  self.CALLBACK_PATH,
+                                  {"next": self.get_argument('next', '/')})
         code = self.get_argument('code', None)
         if code is None:
             logging.info('Redirecting to login...')
@@ -71,10 +70,9 @@ class GitHubLoginHandler(BaseAPIHandler, GithubOAuth2Mixin):
         CLIENT_ID = self.biothings.config.GITHUB_CLIENT_ID
         CLIENT_SECRET = self.biothings.config.GITHUB_CLIENT_SECRET
         code = self.get_argument('code', None)
-        redirect_uri = url_concat(self.request.protocol +
-                                   "://" + self.request.host +
-                                   self.CALLBACK_PATH,
-                                   {"next": self.get_argument('next', '/')})
+        redirect_uri = url_concat(self.biothings.config.WEB_HOST +
+                                  self.CALLBACK_PATH,
+                                  {"next": self.get_argument('next', '/')})
         if code is None:
             logging.info('Redirecting to login...')
             self.authorize_redirect(

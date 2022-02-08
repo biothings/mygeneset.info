@@ -134,3 +134,8 @@ ORCID_CLIENT_SECRET = ""
 
 # User geneset settings
 MAX_GENESET_SIZE = 2000
+
+# Web Server Hostname
+# http://localhost:8000 for dev or https://mygeneset.info for prod
+
+WEB_HOST = "https://mygeneset.info"
