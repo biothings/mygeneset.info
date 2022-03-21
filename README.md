@@ -19,7 +19,7 @@ MongoDB:
 
 Elasticsearch:
 
-    docker run -d -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" --name elasticsearch docker.elastic.co/elasticsearch/elasticsearch:6.8.13
+    docker run -d -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" --name elasticsearch docker.elastic.co/elasticsearch/elasticsearch:7.17.1
 
 #### 2. Clone this repo:
 
