@@ -9,7 +9,7 @@ MyGeneset.info is a web API for accessing gene set data.
 - Python>=3.6  (Python versions lower than 3.8 also require PyPI package `singledispatchmethod`)
 - Git
 - MongoDB
-- Elasticsearch>=6.0.0, <7.0.0
+- Elasticsearch>=6.0.0
 
 Elasticsearch and MongoDB can be installed locally, or run from Docker containers:
 
