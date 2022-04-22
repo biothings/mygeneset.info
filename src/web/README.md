@@ -15,7 +15,7 @@
 
 Arguments: 
 
-- `dry_run`: Preview response without modifying any documents 
+- **dry_run:** Preview response without modifying any documents 
 
 Body parameters:
 
@@ -26,7 +26,7 @@ Body parameters:
 
 Example requests:
 
-```
+```bash
 # Create a public geneset (dryrun)
 
 POST 'mygeneset.info/v1/user_geneset?dry_run=true' \
@@ -53,12 +53,12 @@ POST 'mygeneset.info/v1/user_geneset' \
 
 ### Update Genesets
 
-** PUT /user_geneset/{geneset_id}**
+**PUT /user_geneset/{geneset_id}**
 
 Arguments: 
 
-- `gene_operation`: What to do with the list of genes. Either 'replace', 'remove', or 'add'
-- `dry_run`: Preview response without modifying any documents 
+- **gene_operation:** What to do with the list of genes. Either 'replace', 'remove', or 'add'
+- **dry_run:** Preview response without modifying any documents 
 
 Body parameters:
 
@@ -69,7 +69,7 @@ Body parameters:
 
 Example requests:
 
-```
+```bash
 # Rename a geneset:
 PUT 'mygeneset.info0/v1/user_geneset/fdqOFX0B5sTLbCPOWILY'
 --header 'Content-Type: application/json' \
@@ -110,8 +110,11 @@ PUT 'mygeneset.info0/v1/user_geneset/fdqOFX0B5sTLbCPOWILY?gene_operation=remove'
 
 Arguments: 
 
-- `dry_run` Preview response without modifying any documents 
+- **dry_run:** Preview response without modifying any documents 
 
-```
+```bash
 DELETE 'mygeneset.info/v1/user_geneset/4MUTmnwB04_PHShjT_C3'
+
+# With dry_run
+DELETE 'mygeneset.info/v1/user_geneset/4MUTmnwB04_PHShjT_C3&dry_run=true'
 ```
