@@ -59,6 +59,7 @@ class ORCIDLoginHandler(BaseAPIHandler, OrcidOAuth2Mixin):
         employment = user.get("activities-summary", {}).get("employments", {}).get("employment-summary")
         if employment and len(employment) >= 1:
             user_data['organization'] = employment[0]['organization']['name']
+        user_data['provider'] = "ORCID"
         return json.dumps(user_data)
 
 
@@ -109,4 +110,5 @@ class GitHubLoginHandler(BaseAPIHandler, GithubOAuth2Mixin):
             user_data['avatar_url'] = user['avatar_url']
         if user.get('company'):
             user_data['organization'] = user['company']
+        user_data['provider'] = "GitHub"
         return json.dumps(user_data)
