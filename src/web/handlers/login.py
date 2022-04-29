@@ -2,7 +2,14 @@ from biothings.web.auth.authn import BioThingsAuthnMixin
 from biothings.web.handlers import BaseAPIHandler
 from tornado.web import HTTPError
 
-class UserInfoHandler(BioThingsAuthnMixin, BaseAPIHandler):
+
+class BaseLoginHandler(BaseAPIHandler):
+    def set_cache_header(self, cache_value):
+        # disable cache for auth-related handlers
+        self.set_header("Cache-Control", "private, max-age=0, no-cache")
+
+
+class UserInfoHandler(BioThingsAuthnMixin, BaseLoginHandler):
     """"Handler for /user_info endpoint."""
     def get(self):
         # Check for user cookie
@@ -21,7 +28,7 @@ class UserInfoHandler(BioThingsAuthnMixin, BaseAPIHandler):
                 raise HTTPError(403)
 
 
-class LogoutHandler(BaseAPIHandler):
+class LogoutHandler(BaseLoginHandler):
     """"Handler for /logout endpoint."""
     def get(self):
         self.clear_cookie("user")
