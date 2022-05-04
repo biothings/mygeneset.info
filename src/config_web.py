@@ -43,7 +43,6 @@ APP_LIST += [
         (r"/{ver}/user_geneset/([^/]+)/?", "web.handlers.api.UserGenesetHandler"),
         (r"/user_info", "web.handlers.login.UserInfoHandler"),
         (r"/logout", "web.handlers.login.LogoutHandler"),
-        (r"/login", "home.mockLogin"),
         (r"/login/github", "web.handlers.auth.GitHubLoginHandler"),
         (r"/login/orcid", "web.handlers.auth.ORCIDLoginHandler")
         ]
