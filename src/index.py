@@ -7,14 +7,18 @@ from biothings.web.launcher import main
 
 from config import FRONTEND_PATH
 
-#FRONTEND_PATH = "/home/ravila/Projects/mygeneset.info-website"
 ASSETS_PATH = os.path.join(FRONTEND_PATH, 'dist/')
 define("webapp", default=False, help="Run server with frontend webapp.")
 
 
 class WebAppHandler(RequestHandler):
     def get(self):
-        self.render(os.path.join(FRONTEND_PATH, 'dist/index.html'))
+        self.render(os.path.join(ASSETS_PATH, 'index.html'))
+
+
+class NotFoundHandler(RequestHandler):
+    def get(self):
+        self.render(os.path.join(ASSETS_PATH, "404.html"))
 
 
 if __name__ == "__main__":
@@ -24,11 +28,15 @@ if __name__ == "__main__":
         main([
             (r"/", WebAppHandler),
             (r"/css/(.*)", "tornado.web.StaticFileHandler", {
-                "path": os.path.join(ASSETS_PATH, "css")}),
+                "path": os.path.join(ASSETS_PATH, "css")
+            }),
             (r"/js/(.*)", "tornado.web.StaticFileHandler", {
-                "path": os.path.join(ASSETS_PATH, "js")}),
+                "path": os.path.join(ASSETS_PATH, "js")
+            }),
             (r"/img/(.*)", "tornado.web.StaticFileHandler", {
-                "path": os.path.join(ASSETS_PATH, "img")})
+                "path": os.path.join(ASSETS_PATH, "img")
+            }),
+            (r"/.*", NotFoundHandler)
         ])
     else:
         # Run only backend
