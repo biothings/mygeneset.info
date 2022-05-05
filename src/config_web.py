@@ -138,3 +138,4 @@ MAX_GENESET_SIZE = 2000
 # http://localhost:8000 for dev or https://mygeneset.info for prod
 
 WEB_HOST = "https://mygeneset.info"
+FRONTEND_PATH = ""
