@@ -42,9 +42,9 @@ Alternatively, using miniconda:
 
 #### 4. Install required Python modules:
 
+
     cd mygeneset.info
     pip install -r ./requirements_hub.txt
-
 
 #### 5. Make your own "config.py" file
 
@@ -70,9 +70,23 @@ Alternatively, using miniconda:
 Navigate to https://studio.biothings.io/ and create a connection to `http://localhost:HUB_API_PORT`,
 in which `HUB_API_PORT` is the port number specified in your configuration (default is 19480).
 
-## Running the Production API
+## Setting up the Web Server
 
-#### 1. Configure the Web Component
+#### 1. Pre-requisites:
+
+MongoDB is not required for running the web server
+
+- Python>=3.6  (Python versions lower than 3.8 also require PyPI package `singledispatchmethod`)
+- Git
+- Elasticsearch>=6.0.0
+
+
+### 2. Install requirements
+
+    pip install -r ./requirements_web.txt
+
+
+### 3. Configure the Web Component
 
 The API configuration file is located under `/src/config_web.py`.
 
@@ -84,8 +98,48 @@ The value of STATUS_CHECK.id should match an `_id` in the data.
         'doc_type': 'geneset'
     }
 
-Optionally, edit the port number and host in ES_HOST.
+You can override any settings from `config_web.py` in `config.py`:
 
-#### 2. Run API
+   >from config_web import *
+   >\# Add additional customizations
+
+
+Some required configurations:
+
+```python
+# A random string
+COOKIE_SECRET =
+
+# GitHub keys
+GITHUB_CLIENT_ID =
+GITHUB_CLIENT_SECRET =
+
+# ORCID keys
+ORCID_CLIENT_ID =
+ORCID_CLIENT_SECRET =
+
+WEB_HOST = "http://localhost:8000"
+
+# Path to local webapp folder
+FRONTEND_PATH =
+```
+
+`FRONTEND_PATH` is only required for running the API with the user interface. You need to first clone and build the web app project: https://github.com/biothings/mygeneset.info-website
+
+### 4. Create Elasticsearch Indices
+
+The ES indices defined in the `ES_INDEX` setting must exist.
+
+For example:
+
+```bash
+# Creating an empty user_genesets index
+curl -X PUT "localhost:9200/user_genesets"
+```
+### 5. Run API
 
 `python index.py`
+
+For launching alongside the web app:
+
+`python index.py --webapp`
