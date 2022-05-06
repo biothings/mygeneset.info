@@ -85,9 +85,9 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
         # is_public
         is_public = payload.get("is_public", "true")
         if is_public is not None:
-            if is_public in [True, "false", "False", "0"]:
+            if is_public in [False, "false", "False", "0"]:
                 payload['is_public'] = False
-            elif is_public in [False, "true", "True", "1"]:
+            elif is_public in [True, "true", "True", "1"]:
                 payload['is_public'] = True
             else:
                 raise HTTPError(400, reason="Body element 'is_public' must be 'True/False', 'true/false', or '1/0'.")
