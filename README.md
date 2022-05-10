@@ -78,7 +78,7 @@ MongoDB is not required for running the web server
 
 - Python>=3.6  (Python versions lower than 3.8 also require PyPI package `singledispatchmethod`)
 - Git
-- Elasticsearch>=6.0.0
+- Elasticsearch>=6.0.0 (See installation steps above)
 
 
 ### 2. Install requirements
