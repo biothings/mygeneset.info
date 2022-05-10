@@ -143,3 +143,8 @@ curl -X PUT "localhost:9200/user_genesets"
 For launching alongside the web app:
 
 `python index.py --webapp`
+
+To see debugging messages:
+
+
+`python index.py --debug`
