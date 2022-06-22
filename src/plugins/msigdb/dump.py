@@ -1,11 +1,13 @@
 import os
-import bs4
 
-import biothings, config
+import biothings
+import bs4
+import config
+
 biothings.config_for_app(config)
 
-from config import DATA_ARCHIVE_ROOT
 from biothings.hub.dataload.dumper import HTTPDumper
+from config import DATA_ARCHIVE_ROOT
 
 
 class msigdbDumper(HTTPDumper):
