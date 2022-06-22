@@ -9,11 +9,10 @@ from biothings.hub.dataload.dumper import HTTPDumper
 
 
 class msigdbDumper(HTTPDumper):
-
     SRC_NAME = "msigdb"
     SRC_ROOT_FOLDER = os.path.join(DATA_ARCHIVE_ROOT, SRC_NAME)
     BASE_URL = "https://data.broadinstitute.org/gsea-msigdb/msigdb/release/"
-    RELEASE_NOTES = "https://software.broadinstitute.org/cancer/software/gsea/wiki/index.php/Release_Notes"
+    HOMEPAGE = "http://www.gsea-msigdb.org/gsea/msigdb/index.jsp"
     SCHEDULE = "0 8 20 * *"
     __metadata__ = {
         "src_meta": {
@@ -24,27 +23,24 @@ class msigdbDumper(HTTPDumper):
         }
 
     def get_remote_version(self):
-        home = self.client.get(self.__class__.RELEASE_NOTES)
+        """Scrape version number from MSIGDB homepage.
+        Header 1 text ends with the version number.
+        """
+        home = self.client.get(self.__class__.HOMEPAGE)
         html = bs4.BeautifulSoup(home.text, "html.parser")
-        notes = html.find(id="MSigDB_Release_Notes")
-        # Releases table
-        table = notes.next_sibling.next_sibling.next_sibling
-        assert table.name =='table', "Could not find releases table in release notes."
-        # Grab first element from table
-        latest = table.find_all('tr')[1]
-        fields = latest.find_all('td')
-        version = fields[1].contents[0]
-        version = version.replace('*', '').replace('\xa0', '')
-        notes_link = fields[3].find('a').get('href')
-        assert notes_link.split('/')[-1].startswith('MSigDB'),\
-            "Could not fetch right version number from release notes."
+        header = html.find("h1", {"class": "msigdbhome"})
+        version = header.text.split(" ")[-1]
+        assert version.startswith("v"),\
+            "Could not parse version number from HTML field."
+        version = version[1:]
         return version
 
     def create_todump_list(self, force=False):
+        """Dump XML geneset file."""
         self.release = self.get_remote_version()
         if force or not self.current_release or float(self.release) > float(self.current_release):
             home = self.__class__.BASE_URL
-            name = "msigdb.v{}.entrez.gmt".format(self.release)
+            name = "msigdb_v{}.xml".format(self.release)
             url = home + self.release + '/' + name
             local_file = os.path.join(self.new_data_folder, name)
             self.to_dump.append({"remote": url, "local": local_file})
