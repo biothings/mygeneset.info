@@ -50,11 +50,7 @@ def parse_msigdb(data_file):
                 #members_symbolized = list(map(lambda x: x.replace(None, ""), members_symbolized))
                 gene_lookup = IDLookup(doc["taxid"])
                 gene_lookup.query_mygene(members, "entrezgene,ensembl.gene,uniprot,retired,accession")
-                try:
-                    gene_lookup.retry_failed_with_new_ids(members_symbolized, "symbol,alias")
-                except:
-                    print(members_symbolized)
-                    raise Exception("Failed to lookup genes")
+                gene_lookup.retry_failed_with_new_ids(members_symbolized, "symbol,alias")
                 genes = []
                 for i, j in zip(members, members_symbolized):
                     if gene_lookup.query_cache.get(i) is not None:
