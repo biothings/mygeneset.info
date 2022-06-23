@@ -1,49 +1,98 @@
-import glob
+import logging
 import os
+import xml.etree.ElementTree as ET
 
-from biothings.utils.dataload import tabfile_feeder
+# Some imports for running parser locally
+if __name__ == "__main__":
+    import json
+    import sys
+
+    sys.path.append("../../")
+    sys.path.append("../../../../")
+
+    import config
+    from dump import msigdbDumper
+
+from biothings.utils.dataload import dict_sweep
 from utils.geneset_utils import IDLookup
 
 
-def load_data(data_folder):
-    # Load .gmt (Gene Matrix Transposed) file with entrez ids
-    for f in glob.glob(os.path.join(data_folder, "msigdb.*.entrez.gmt")):
-        data = tabfile_feeder(f, header=0)
-        all_genes = set()
-        for rec in data:
-            genes = set(rec[2:])
-            all_genes = all_genes | genes
-        # Query gene info
-        lookup = IDLookup(9606)  # Human genes
-        lookup.query_mygene(all_genes, 'entrezgene')
-
-        data = tabfile_feeder(f, header=0)
-        for rec in data:
-            name = rec[0]
-            url = rec[1]
-            ncbigenes = rec[2:]
-            genes = []
-            for gene in ncbigenes:
-                if lookup.query_cache.get(gene):
-                    genes.append(lookup.query_cache[gene])
-            # Format schema
-            doc = {'_id': name,
-                   'is_public': True,
-                   'taxid': 9606,
-                   'genes': genes,
-                   'source': 'msigdb',
-                   'msigdb': {
-                       'id': name,
-                       'geneset_name': name,
-                       'url': url
-                       }
-                   }
-            yield doc
+def parse_msigdb(data_file):
+    TAXIDS = {
+        "Homo sapiens": 9606,
+        "Mus musculus": 10090,
+    }
+    with open(data_file, 'r') as f:
+        # File contains newline-delimited XML documents.
+        # Each document is a single gene set.
+        for line in f:
+            if line.startswith("<GENESET"):
+                doc = {}
+                tree = ET.fromstring(line)
+                assert tree.tag == "GENESET", "Expected GENESET tag"
+                data = tree.attrib
+                doc["_id"] = data["STANDARD_NAME"]
+                doc["name"] = data["STANDARD_NAME"].replace("_", " ").lower()
+                doc["description"] = data["DESCRIPTION_BRIEF"]
+                doc["taxid"] = TAXIDS[data.get("ORGANISM")]
+                doc["source"] = "msigdb"
+                doc["is_public"] = True
+                assert doc["taxid"] is not None, "Taxid not found: {}".format(data)
+                assert doc["taxid"] != "", "Taxid not found: {}".format(data)
+                # Look up gene IDs.DESCRIPTION_BRIEF Genes are stored in four different attributes in the data file:
+                # 1) MEMBERS contains a list of genes with their original identifier, which can be any of symbol, ensembl, entrez, or uniprot.
+                # 2) MEMBERS_SYMBOLIZED contains a list of genes converted to symbols.
+                # 3) MEMBERS_EZID contains a list of gene entrez IDs, but these have been converted from their original species to human.
+                # 4) MEMBERS_MAPPING contains tuples of the three above IDs.
+                # We will use MEMBERS_MAPPNG to extract MEMBERS as the prefered id for lookup, followed by MEMBERS_SYMBOLIZED as backup.
+                members = [mapping.split(",")[0] for mapping in data["MEMBERS_MAPPING"].split("|")]
+                members_symbolized = [mapping.split(",")[1] for mapping in data["MEMBERS_MAPPING"].split("|")]
+                #members_symbolized = list(map(lambda x: x.replace(None, ""), members_symbolized))
+                gene_lookup = IDLookup(doc["taxid"])
+                gene_lookup.query_mygene(members, "entrezgene,ensembl.gene,uniprot,retired,accession")
+                try:
+                    gene_lookup.retry_failed_with_new_ids(members_symbolized, "symbol,alias")
+                except:
+                    print(members_symbolized)
+                    raise Exception("Failed to lookup genes")
+                genes = []
+                for i, j in zip(members, members_symbolized):
+                    if gene_lookup.query_cache.get(i) is not None:
+                        genes.append(gene_lookup.query_cache[i])
+                    elif gene_lookup.query_cache.get(j) is not None:
+                        genes.append(gene_lookup.query_cache[j])
+                    else:
+                        logging.info("Could not find gene: {}".format(i))
+                doc["genes"] = genes
+                # Additional msigdb data
+                msigdb = {}
+                msigdb["id"] = data["STANDARD_NAME"]
+                msigdb["geneset_name"] = data["STANDARD_NAME"].replace("_", " ").lower()
+                msigdb["category_code"] = data["CATEGORY_CODE"]
+                msigdb["subcategory_code"] = data["SUB_CATEGORY_CODE"]
+                msigdb["authors"] = data.get("AUTHORS").split(",")
+                msigdb["contributor"] = data.get("CONTRIBUTOR")
+                msigdb["contributor_org"] = data.get("CONTRIBUTOR_ORG")
+                msigdb["source"]= data.get("EXACT_SOURCE")
+                msigdb["abstract"] = data.get("DESCRIPTION_FULL")
+                msigdb["pmid"] = data.get("PMID")
+                msigdb["geo_id"] = data.get("GEOID")
+                msigdb["tags"] = data.get("TAGS")
+                msigdb["url"] = {
+                    "external_details": data.get("EXTERNAL_DETAILS_URL"),
+                    "geneset_listing": data.get("GENESET_LISTING_URL")
+                }
+                doc["msigdb"] = msigdb
+                # Clean up empty fields
+                doc = dict_sweep(doc)
+                yield doc
 
 
 if __name__ == "__main__":
-    import json
-
-    annotations = load_data("./test_data")
+    dumper = msigdbDumper()
+    version = dumper.get_remote_version()
+    data_folder = os.path.join(config.DATA_ARCHIVE_ROOT, "msigdb", version)
+    xmlfile = os.path.join(data_folder, "msigdb_v{}.xml".format(version))
+    annotations = parse_msigdb(xmlfile)
     for a in annotations:
         print(json.dumps(a, indent=2))
