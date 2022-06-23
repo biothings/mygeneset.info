@@ -24,6 +24,7 @@ class IDLookup:
             id_type (str): query scope field for the ids.
                 Can be a comma-separated string for multiple scopes.
                 e.g. 'entrezgene,symbol'
+        To search all fields, pass "all" as the id_type.
         """
         self.ids = ids
         mg = mygene.MyGeneInfo()
@@ -73,6 +74,7 @@ class IDLookup:
             new_ids (iterable): is a list or set where the number of elements
                 matches the length and order of self.ids.
             new_id_type (str): query scope for the new set of ids."""
+        assert len(new_ids) == len(self.ids), "New ids must have the same length as old ids."
         retry_list = []
         for e in self.missing:
             indices = [i for i, x in enumerate(self.ids) if x == e]
