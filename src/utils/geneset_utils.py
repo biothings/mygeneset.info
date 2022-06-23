@@ -78,7 +78,7 @@ class IDLookup:
             indices = [i for i, x in enumerate(self.ids) if x == e]
             retry_list = retry_list + [new_ids[i] for i in indices]
         retry_list = list(set(retry_list))
-        logging.info("Retrying with ids:", retry_list)
+        logging.info("Retrying with ids: {}".format(retry_list))
         if len(retry_list) > 0:
             if len(retry_list) == 1 and retry_list[0] == "":
                 logging.info("No ids to retry.")
