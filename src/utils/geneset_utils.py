@@ -1,5 +1,7 @@
 import mygene
-from biothings.utils.dataload import unlist, dict_sweep
+import logging
+from biothings.utils.dataload import dict_sweep, unlist
+
 
 class IDLookup:
     """Query a list of IDs and scope against mygene.info.
@@ -75,8 +77,10 @@ class IDLookup:
         for e in self.missing:
             indices = [i for i, x in enumerate(self.ids) if x == e]
             retry_list = retry_list + [new_ids[i] for i in indices]
-        retry_list = set(retry_list)
-        #id_map = {i: j for i, j in zip(self.ids, new_ids)}
-        #retry_list = [id_map[e] for e in self.missing]
-        self.query_mygene(retry_list, new_id_type)
-        mg = mygene.MyGeneInfo()
+        retry_list = list(set(retry_list))
+        logging.info("Retrying with ids:", retry_list)
+        if len(retry_list) > 0:
+            if len(retry_list) == 1 and retry_list[0] == "":
+                logging.info("No ids to retry.")
+                return
+            self.query_mygene(retry_list, new_id_type)
