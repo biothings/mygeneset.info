@@ -38,8 +38,8 @@ def parse_msigdb(data_file):
                 doc["taxid"] = TAXIDS[data.get("ORGANISM")]
                 doc["source"] = "msigdb"
                 doc["is_public"] = True
-                assert doc["taxid"] is not None, "Taxid not found: {}".format(data)
-                assert doc["taxid"] != "", "Taxid not found: {}".format(data)
+                assert doc["taxid"] is not None, "Taxid not found. ORGANISM missing is source data: {}".format(data)
+                assert doc["taxid"] != "", "Taxid not found. ORGANISM missing is source data: {}".format(data)
                 # Look up gene IDs.DESCRIPTION_BRIEF Genes are stored in four different attributes in the data file:
                 # 1) MEMBERS contains a list of genes with their original identifier, which can be any type of ID.
                 # 2) MEMBERS_SYMBOLIZED contains a list of genes converted to symbols.
