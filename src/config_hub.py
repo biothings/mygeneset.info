@@ -104,7 +104,7 @@ READONLY_HUB_API_PORT = 19481
 
 # Hub name/icon url/version, for display purpose
 HUB_NAME = "MyGeneset.info API (backend)"
-HUB_ICON = "http://mygeneset.info/img/logo.f6c04a40.svg"
+HUB_ICON = "https://raw.githubusercontent.com/biothings/mygeneset.info/master/mygeneset.png"
 HUB_VERSION = "master"
 
 USE_RELOADER = True # so no need to restart hub when a datasource has changed
