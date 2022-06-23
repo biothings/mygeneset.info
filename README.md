@@ -1,6 +1,7 @@
+![geneset.png](mygeneset.png)
 # MyGeneset.info
 
-MyGeneset.info is a web API for accessing gene set data.
+MyGeneset.info is a web API for storing, searching, and accessing geneset data.
 
 ## Setting Up and Running BioThings Hub
 
