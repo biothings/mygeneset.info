@@ -1,5 +1,9 @@
+import glob
+import os
+
 import biothings.hub.dataload.uploader as uploader
-from .parser import load_data
+
+from .parser import parse_msigdb
 
 
 class msigdbUploader(uploader.BaseSourceUploader):
@@ -14,10 +18,12 @@ class msigdbUploader(uploader.BaseSourceUploader):
         }
 
     def load_data(self, data_folder):
-        self.logger.info("Load data from folder '%s'" % data_folder)
-        msigdb_docs = load_data(data_folder)
-        return msigdb_docs
-
+        """Load data from data folder"""
+        xmlfiles = glob.glob(os.path.join(data_folder, "msigdb_v*.xml"))
+        assert len(xmlfiles) == 1, "Expected one XML file in data folder"
+        input_file = xmlfiles[0]
+        docs = parse_msigdb(input_file)
+        return docs
 
     @classmethod
     def get_mapping(cls):
