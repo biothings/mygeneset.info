@@ -10,9 +10,31 @@ class IDLookup:
         query_cache (dict, optional): Dictionary to store queries (keys)
             and results (values). Defaults to empty dictionary.
         ids (iterable): Array or set of ids to query by default.
-        Todo: if scope is 'retired', make a note that original id is retired.
-    """
+        missing (list): List of ids that failed to query.
+        dups (list): List of ids that had multiple hits.
 
+    Usage:
+        Initialize with a list of ids and a species.
+
+        >>> from biothings.utils.geneset_utils import IDLookup
+        >>> ids = ["ENSG0000012345", "ENSG0000012346"]
+        >>> taxid = 9606  # human
+        >>> gene_lookup = IDLookup(taxid)
+        >>> gene_lookup.query_mygene(ids, "ensembl.gene")
+
+        Retry failed queries with new ids.
+
+        >>> new_ids = ["ABC123", "DEF456"]
+        >>> gene_lookup.retry_failed_with_new_ids(new_ids, "symbol")
+
+        Search query cache for hits.
+
+        >>> genes = []
+        >>> for id in ids:
+        >>>     if gene_lookup.query_cache.get(id):
+        >>>         # Hit can be a list or a single dict
+        >>>         genes += gene_lookup.query_cache[id]
+    """
     def __init__(self, species, cache_dict={}):
         self.species = species
         self.query_cache = cache_dict
@@ -43,6 +65,7 @@ class IDLookup:
                                 returnall=True)
         # Save failed queries
         self.missing = response['missing']
+        self.dups = response['dup']
         # Format successful queries
         for out in response['out']:
             query = out['query']
@@ -65,6 +88,12 @@ class IDLookup:
                 gene['uniprot'] = out['uniprot']['Swiss-Prot']
             gene = dict_sweep(gene)
             gene = unlist(gene)
+            # Handle multiple hits by appending to list
+            if self.query_cache.get(query):
+                if isinstance(self.query_cache[query], list):
+                    self.query_cache[query].append(gene)
+                else:
+                    self.query_cache[query] = [self.query_cache[query], gene]
             self.query_cache[query] = gene
 
     def retry_failed_with_new_ids(self, new_ids, new_id_type):
