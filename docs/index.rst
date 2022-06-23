@@ -4,7 +4,7 @@ MyGeneset.info documentation
 Introduction
 -------------
 
-.. image:: _static/logo.svg
+.. image:: _static/logo.png
    :align: left
    :height: 100px
    :width: 100px

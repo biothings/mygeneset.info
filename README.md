@@ -1,4 +1,4 @@
-![geneset.png](mygeneset.png)
+![MyGeneset Logo](mygeneset.png)
 # MyGeneset.info
 
 MyGeneset.info is a web API for storing, searching, and accessing geneset data.
