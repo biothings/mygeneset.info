@@ -21,7 +21,9 @@ def parse_msigdb(data_file):
     TAXIDS = {
         "Homo sapiens": 9606,
         "Mus musculus": 10090,
-        "Rattus norvegicus": 10116
+        "Rattus norvegicus": 10116,
+        "Macaca mulatta": 9544,
+        "Danio rerio": 7955
     }
     with open(data_file, 'r') as f:
         # File contains newline-delimited XML documents.
@@ -49,14 +51,14 @@ def parse_msigdb(data_file):
                 members = [mapping.split(",")[0] for mapping in data["MEMBERS_MAPPING"].split("|")]
                 members_symbolized = [mapping.split(",")[1] for mapping in data["MEMBERS_MAPPING"].split("|")]
                 gene_lookup = IDLookup(doc["taxid"])
-                gene_lookup.query_mygene(members, "all")
-                gene_lookup.retry_failed_with_new_ids(members_symbolized, "all")
+                gene_lookup.query_mygene(members, "symbol,ensembl.gene,entrezgene,uniprot,reporter,refseq,alias")
+                gene_lookup.retry_failed_with_new_ids(members, "all")
                 genes = []
                 for i, j in zip(members, members_symbolized):
                     if gene_lookup.query_cache.get(i) is not None:
-                        genes.append(gene_lookup.query_cache[i])
+                        genes += gene_lookup.query_cache[i]
                     elif gene_lookup.query_cache.get(j) is not None:
-                        genes.append(gene_lookup.query_cache[j])
+                        genes += gene_lookup.query_cache[j]
                     else:
                         logging.info("Could not find gene {} with taxid {}".format(i, doc["taxid"]))
                 doc["genes"] = genes
