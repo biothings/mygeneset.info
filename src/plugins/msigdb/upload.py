@@ -14,7 +14,8 @@ class msigdbUploader(uploader.BaseSourceUploader):
             'license_url': 'https://www.gsea-msigdb.org/gsea/msigdb_license_terms.jsp',
             'licence': 'CC Attribution 4.0 International',
             'url': 'https://www.gsea-msigdb.org/gsea/index.jsp'
-            }
+            },
+        "mapper": "count_genes"
         }
 
     def load_data(self, data_folder):
