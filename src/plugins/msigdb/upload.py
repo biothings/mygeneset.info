@@ -14,9 +14,9 @@ class msigdbUploader(uploader.BaseSourceUploader):
             'license_url': 'https://www.gsea-msigdb.org/gsea/msigdb_license_terms.jsp',
             'licence': 'CC Attribution 4.0 International',
             'url': 'https://www.gsea-msigdb.org/gsea/index.jsp'
-            },
+        },
         "mapper": "count_genes"
-        }
+    }
 
     def load_data(self, data_folder):
         """Load data from data folder"""
@@ -34,6 +34,18 @@ class msigdbUploader(uploader.BaseSourceUploader):
             },
             "taxid": {
                 "type": "integer"
+            },
+            "name": {
+                "type": "text",
+                "copy_to": [
+                    "all"
+                ]
+            },
+            "description": {
+                "type": "text",
+                "copy_to": [
+                    "all"
+                ]
             },
             "genes": {
                 "properties": {
@@ -72,12 +84,54 @@ class msigdbUploader(uploader.BaseSourceUploader):
                         ]
                     },
                     "geneset_name": {
+                        "type": "text",
+                    },
+                    "category_code": {
+                        "normalizer": "keyword_lowercase_normalizer",
+                        "type": "keyword"
+                    },
+                    "subcategory_code": {
+                        "normalizer": "keyword_lowercase_normalizer",
+                        "type": "keyword"
+                    },
+                    "authors": {
+                        "type": "text"
+                    },
+                    "contributor": {
+                        "type": "text"
+                    },
+                    "contributor_org": {
+                        "type": "text"
+                    },
+                    "source": {
+                        "normalizer": "keyword_lowercase_normalizer",
+                        "type": "keyword"
+                    },
+                    "abstract": {
+                        "type": "text",
+                        "copy_to": [
+                            "all"
+                        ]
+                    },
+                    "pmid": {
+                        "normalizer": "keyword_lowercase_normalizer",
+                        "type": "keyword"
+                    },
+                    "geo_id": {
                         "normalizer": "keyword_lowercase_normalizer",
                         "type": "keyword"
                     },
                     "url": {
-                        "normalizer": "keyword_lowercase_normalizer",
-                        "type": "keyword"
+                        "properties": {
+                            "geneset_listing": {
+                                "normalizer": "keyword_lowercase_normalizer",
+                                "type": "keyword"
+                            },
+                            "external_details": {
+                                "normalizer": "keyword_lowercase_normalizer",
+                                "type": "keyword"
+                            }
+                        }
                     }
                 }
             }
