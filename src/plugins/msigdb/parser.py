@@ -18,8 +18,6 @@ from utils.geneset_utils import IDLookup
 
 
 def parse_msigdb(data_file):
-    """Input is an msigdb xml file, sorted by organism. See post_dump() in dump.py"""
-
     TAXIDS = {
         "Homo sapiens": 9606,
         "Mus musculus": 10090,
@@ -30,8 +28,9 @@ def parse_msigdb(data_file):
     with open(data_file, 'r') as f:
         # File contains newline-delimited XML documents.
         # Each document is a single gene set.
+        # Documents have been sorted by their ORGANISM attribute using sort_genesets.xsl in post_dump() of dump.py
+        current_organism = ""
         for line in f:
-            current_organism = ""
             if line.lstrip().startswith("<GENESET"):
                 doc = {}
                 tree = ET.fromstring(line)
@@ -54,12 +53,13 @@ def parse_msigdb(data_file):
                 members = [mapping.split(",")[0] for mapping in data["MEMBERS_MAPPING"].split("|")]
                 if doc["taxid"] != current_organism:
                     current_organism = doc["taxid"]
+                    logging.info("Parsing msigdb data for organism {}".format(current_organism))
                     gene_lookup = IDLookup(doc["taxid"])
                 gene_lookup.query_mygene(members, "symbol,ensembl.gene,entrezgene,uniprot,reporter,refseq,alias")
                 gene_lookup.retry_failed_with_new_ids(members, "all")
                 genes = []
                 for _id in members:
-                    #  Append the genes that have hits (using += because hits can be a list)
+                    #  Append the genes that have hits using += because hits can be a list
                     if gene_lookup.query_cache.get(_id) is not None:
                         genes += gene_lookup.query_cache[_id]
                     else:
@@ -97,5 +97,5 @@ if __name__ == "__main__":
     assert os.path.exists(xmlfile), "Could not find input XML file."
     annotations = parse_msigdb(xmlfile)
     for a in annotations:
-        #pass
-        print(json.dumps(a, indent=2))
+        pass
+        #print(json.dumps(a, indent=2))
