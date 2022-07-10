@@ -1,8 +1,8 @@
 import logging
 import os
-import xml.etree.ElementTree as ET
+import lxml.etree as ET
 
-# Some imports for running parser locally
+# Some imports for running parser from file
 if __name__ == "__main__":
     import json
     import sys
@@ -18,6 +18,8 @@ from utils.geneset_utils import IDLookup
 
 
 def parse_msigdb(data_file):
+    """Input is an msigdb xml file, sorted by organism. See post_dump() in dump.py"""
+
     TAXIDS = {
         "Homo sapiens": 9606,
         "Mus musculus": 10090,
@@ -29,7 +31,8 @@ def parse_msigdb(data_file):
         # File contains newline-delimited XML documents.
         # Each document is a single gene set.
         for line in f:
-            if line.startswith("<GENESET"):
+            current_organism = ""
+            if line.lstrip().startswith("<GENESET"):
                 doc = {}
                 tree = ET.fromstring(line)
                 assert tree.tag == "GENESET", "Expected GENESET tag"
@@ -40,8 +43,8 @@ def parse_msigdb(data_file):
                 doc["taxid"] = TAXIDS[data.get("ORGANISM")]
                 doc["source"] = "msigdb"
                 doc["is_public"] = True
-                assert doc["taxid"] is not None, "Taxid not found. ORGANISM missing is source data: {}".format(data)
-                assert doc["taxid"] != "", "Taxid not found. ORGANISM missing is source data: {}".format(data)
+                assert doc["taxid"] is not None, "Taxid not found. ORGANISM missing in source data: {}".format(data)
+                assert doc["taxid"] != "", "Taxid not found. ORGANISM missing in source data: {}".format(data)
                 # Look up gene IDs.DESCRIPTION_BRIEF Genes are stored in four different attributes in the data file:
                 # 1) MEMBERS contains a list of genes with their original identifier, which can be any type of ID.
                 # 2) MEMBERS_SYMBOLIZED contains a list of genes converted to symbols.
@@ -49,11 +52,14 @@ def parse_msigdb(data_file):
                 # 4) MEMBERS_MAPPING contains tuples of the three above IDs.
                 # We will use MEMBERS_MAPPNG to extract MEMBERS as the prefered id for lookup, followed by MEMBERS_SYMBOLIZED as backup.
                 members = [mapping.split(",")[0] for mapping in data["MEMBERS_MAPPING"].split("|")]
-                gene_lookup = IDLookup(doc["taxid"])
+                if doc["taxid"] != current_organism:
+                    current_organism = doc["taxid"]
+                    gene_lookup = IDLookup(doc["taxid"])
                 gene_lookup.query_mygene(members, "symbol,ensembl.gene,entrezgene,uniprot,reporter,refseq,alias")
                 gene_lookup.retry_failed_with_new_ids(members, "all")
                 genes = []
                 for _id in members:
+                    #  Append the genes that have hits (using += because hits can be a list)
                     if gene_lookup.query_cache.get(_id) is not None:
                         genes += gene_lookup.query_cache[_id]
                     else:
@@ -87,8 +93,9 @@ if __name__ == "__main__":
     dumper = msigdbDumper()
     version = dumper.get_remote_version()
     data_folder = os.path.join(config.DATA_ARCHIVE_ROOT, "msigdb", version)
-    xmlfile = os.path.join(data_folder, "msigdb_v{}.xml".format(version))
+    xmlfile = os.path.join(data_folder, "msigdb_sorted.xml".format(version))
+    assert os.path.exists(xmlfile), "Could not find input XML file."
     annotations = parse_msigdb(xmlfile)
     for a in annotations:
-        pass
-        #print(json.dumps(a, indent=2))
+        #pass
+        print(json.dumps(a, indent=2))
