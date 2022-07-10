@@ -3,6 +3,7 @@ import os
 import biothings
 import bs4
 import config
+import lxml.etree as ET
 
 biothings.config_for_app(config)
 
@@ -44,5 +45,16 @@ class msigdbDumper(HTTPDumper):
             home = self.__class__.BASE_URL
             name = "msigdb_v{}.xml".format(self.release)
             url = home + self.release + '/' + name
-            local_file = os.path.join(self.new_data_folder, name)
-            self.to_dump.append({"remote": url, "local": local_file})
+            self.data_file = os.path.join(self.new_data_folder, name)
+            self.to_dump.append({"remote": url, "local": self.data_file})
+
+    def post_dump(self, *args, **kwargs):
+        """"Create a new XML file with genesets sorted by organism"""
+        self.logger.info("Sorting documents in XML file")
+        original_xml = ET.parse(self.data_file)
+        print(os.path.dirname(__file__))
+        xslt = ET.parse(os.path.join(os.path.dirname(__file__), "sort_genesets.xsl"))
+        transform = ET.XSLT(xslt)
+        new_xml = transform(original_xml)
+        with open(os.path.join(self.new_data_folder, 'msigdb_sorted.xml'), 'wb') as f:
+            new_xml.write(f, pretty_print=True, encoding='utf-8')
