@@ -108,8 +108,8 @@ class IDLookup:
                                         fields=fields_to_query,
                                         species=self.species,
                                         returnall=True)
-            except HTTPError as err:
-                if err.code == 400:
+            except HTTPError as e:
+                if e.response.status_code == 400:
                     continue
                 else:
                     raise
