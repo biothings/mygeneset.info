@@ -1,49 +1,139 @@
-import glob
+import logging
 import os
+import lxml.etree as ET
 
-from biothings.utils.dataload import tabfile_feeder
+# Some imports for running parser from file
+if __name__ == "__main__":
+    import json
+    import sys
+
+    sys.path.append("../../")
+    sys.path.append("../../../../")
+
+    import config
+    from dump import msigdbDumper
+
+from biothings.utils.dataload import dict_sweep
 from utils.geneset_utils import IDLookup
 
 
-def load_data(data_folder):
-    # Load .gmt (Gene Matrix Transposed) file with entrez ids
-    for f in glob.glob(os.path.join(data_folder, "msigdb.*.entrez.gmt")):
-        data = tabfile_feeder(f, header=0)
-        all_genes = set()
-        for rec in data:
-            genes = set(rec[2:])
-            all_genes = all_genes | genes
-        # Query gene info
-        lookup = IDLookup(9606)  # Human genes
-        lookup.query_mygene(all_genes, 'entrezgene')
-
-        data = tabfile_feeder(f, header=0)
-        for rec in data:
-            name = rec[0]
-            url = rec[1]
-            ncbigenes = rec[2:]
-            genes = []
-            for gene in ncbigenes:
-                if lookup.query_cache.get(gene):
-                    genes.append(lookup.query_cache[gene])
-            # Format schema
-            doc = {'_id': name,
-                   'is_public': True,
-                   'taxid': 9606,
-                   'genes': genes,
-                   'source': 'msigdb',
-                   'msigdb': {
-                       'id': name,
-                       'geneset_name': name,
-                       'url': url
-                       }
-                   }
-            yield doc
+def parse_msigdb(data_file):
+    TAXIDS = {
+        "Homo sapiens": 9606,
+        "Mus musculus": 10090,
+        "Rattus norvegicus": 10116,
+        "Macaca mulatta": 9544,
+        "Danio rerio": 7955
+    }
+    with open(data_file, 'r') as f:
+        # File contains newline-delimited XML documents.
+        # Each document is a single gene set.
+        # Documents have been sorted by their ORGANISM attribute using sort_genesets.xsl in post_dump() of dump.py
+        current_organism = ""
+        for line in f:
+            if line.lstrip().startswith("<GENESET"):
+                doc = {}
+                tree = ET.fromstring(line)
+                assert tree.tag == "GENESET", "Expected GENESET tag"
+                data = tree.attrib
+                doc["_id"] = data["STANDARD_NAME"]
+                doc["name"] = data["STANDARD_NAME"].replace("_", " ").lower()
+                doc["description"] = data["DESCRIPTION_BRIEF"]
+                doc["taxid"] = TAXIDS[data.get("ORGANISM")]
+                doc["source"] = "msigdb"
+                doc["is_public"] = True
+                assert doc["taxid"] is not None, "Taxid not found. ORGANISM missing in source data: {}".format(data)
+                assert doc["taxid"] != "", "Taxid not found. ORGANISM missing in source data: {}".format(data)
+                # MEMBERS contains a list of genes with their original identifier, which can be any type of ID.
+                # symbols contains a list of genes converted to symbols.
+                # MEMBERS_EZID contains a list of gene entrez IDs, but these have been converted from their corresponding human gene.
+                # MEMBERS_MAPPING contains tuples of the three above IDs.
+                members =  data["MEMBERS"].split(",")
+                symbols = [s.split(",")[1] for s in data["MEMBERS_MAPPING"].split("|")]
+                assert len(members) == len(symbols), "ID lists are not the same length."
+                id_list = list(zip(members, symbols))
+                if doc["taxid"] != current_organism:
+                    # Start a new query cache
+                    current_organism = doc["taxid"]
+                    logging.info("Parsing msigdb data for organism {}".format(current_organism))
+                    gene_lookup = IDLookup(doc["taxid"])
+                # Figure out which scopes to use
+                original_type = data.get("CHIP")
+                if original_type:
+                    if original_type.endswith("GENE_SYMBOL") or original_type == "HGNC_ID":
+                        scopes = 'symbol,alias'
+                    elif original_type.endswith("UniProt_ID"):
+                        scopes = 'uniprot'
+                    elif original_type.endswith("Ensembl_Gene_ID"):
+                        scopes = 'ensembl.gene'
+                    elif original_type.endswith("RefSeq"):
+                        scopes = 'refseq'
+                    elif original_type.endswith("NCBI_Gene_ID"):
+                        scopes = 'entrezgene,retired'
+                    elif original_type == "UniGene_ID":
+                        scopes = 'unigene'
+                    else:
+                        scopes = "symbol,ensembl.gene,entrezgene,uniprot,reporter,refseq,alias,unigene"
+                else:
+                    scopes = "symbol,ensembl.gene,entrezgene,uniprot,reporter,refseq,alias,unigene"
+                # Run query
+                gene_lookup.query_mygene(id_list, [scopes, 'symbol,alias'])
+                # Save resuls
+                genes = []
+                missing = []
+                dups = []
+                for i, j in id_list:
+                    if gene_lookup.query_cache.get(i) is not None:
+                        if isinstance(gene_lookup.query_cache[i], list):
+                            genes += gene_lookup.query_cache[i]
+                            dups.append((i, [g['mygene_id'] for g in gene_lookup.query_cache[i]]))
+                        else:
+                             genes.append(gene_lookup.query_cache[i])
+                    elif gene_lookup.query_cache.get(j) is not None:
+                        if isinstance(gene_lookup.query_cache[j], list):
+                            genes += gene_lookup.query_cache[j]
+                            dups.append((j, [g['mygene_id'] for g in gene_lookup.query_cache[j]]))
+                        else:
+                            genes.append(gene_lookup.query_cache[j])
+                    else:
+                        missing.append(i)
+                doc["genes"] = genes
+                doc["original_ids"] = members
+                doc["not_found"] = missing
+                doc["duplicates"] = dups
+                # Additional msigdb data
+                msigdb = {}
+                msigdb["id"] = data["STANDARD_NAME"]
+                msigdb["geneset_name"] = data["STANDARD_NAME"].replace("_", " ").lower()
+                msigdb["systematic_name"] = data["SYSTEMATIC_NAME"]
+                msigdb["category_code"] = data["CATEGORY_CODE"]
+                msigdb["subcategory_code"] = data["SUB_CATEGORY_CODE"]
+                msigdb["authors"] = data.get("AUTHORS").split(",")
+                msigdb["contributor"] = data.get("CONTRIBUTOR")
+                msigdb["contributor_org"] = data.get("CONTRIBUTOR_ORG")
+                msigdb["source"] = data.get("EXACT_SOURCE")
+                msigdb["source_identifier"] = original_type
+                msigdb["abstract"] = data.get("DESCRIPTION_FULL")
+                msigdb["pmid"] = data.get("PMID")
+                msigdb["geo_id"] = data.get("GEOID")
+                msigdb["tags"] = data.get("TAGS")
+                msigdb["url"] = {
+                    "external_details": data.get("EXTERNAL_DETAILS_URL"),
+                    "geneset_listing": data.get("GENESET_LISTING_URL")
+                }
+                doc["msigdb"] = msigdb
+                # Clean up empty fields
+                doc = dict_sweep(doc)
+                yield doc
 
 
 if __name__ == "__main__":
-    import json
-
-    annotations = load_data("./test_data")
+    dumper = msigdbDumper()
+    version = dumper.get_remote_version()
+    data_folder = os.path.join(config.DATA_ARCHIVE_ROOT, "msigdb", version)
+    xmlfile = os.path.join(data_folder, "msigdb_sorted.xml".format(version))
+    assert os.path.exists(xmlfile), "Could not find input XML file."
+    annotations = parse_msigdb(xmlfile)
     for a in annotations:
-        print(json.dumps(a, indent=2))
+        pass
+        #print(json.dumps(a, indent=2))
