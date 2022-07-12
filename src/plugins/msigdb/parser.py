@@ -50,7 +50,11 @@ def parse_msigdb(data_file):
                 # MEMBERS_MAPPING contains tuples of the three above IDs.
                 members =  data["MEMBERS"].split(",")
                 symbols = [s.split(",")[1] for s in data["MEMBERS_MAPPING"].split("|")]
-                assert len(members) == len(symbols), "ID lists are not the same length."
+                if len(members) != len(symbols):
+                    # This edge case shouldn't happen, but we can use another altnative
+                    members = [s.split(",")[0] for s in data["MEMBERS_MAPPING"].split("|")]
+                assert len(members) == len(symbols), "ID lists are not the same length: {} {}".format(
+                    len(members), len(symbols))
                 id_list = list(zip(members, symbols))
                 if doc["taxid"] != current_organism:
                     # Start a new query cache
