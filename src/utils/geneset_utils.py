@@ -110,6 +110,7 @@ class IDLookup:
                                         returnall=True)
             except HTTPError as e:
                 if e.response.status_code == 400:
+                    current_try += 1
                     continue
                 else:
                     raise
