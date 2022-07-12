@@ -1,4 +1,5 @@
 import logging
+from urllib.error import HTTPError
 
 import mygene
 from biothings.utils.dataload import dict_sweep, unlist
@@ -101,11 +102,17 @@ class IDLookup:
             # Query mygene.info
             mg = mygene.MyGeneInfo()
             fields_to_query = "entrezgene,ensembl.gene,uniprot.Swiss-Prot,symbol,name"
-            response = mg.querymany(to_query,
-                                    scopes=scopes,
-                                    fields=fields_to_query,
-                                    species=self.species,
-                                    returnall=True)
+            try:
+                response = mg.querymany(to_query,
+                                        scopes=scopes,
+                                        fields=fields_to_query,
+                                        species=self.species,
+                                        returnall=True)
+            except HTTPError as err:
+                if err.code == 400:
+                    continue
+                else:
+                    raise
             # Format successful queries
             for out in response['out']:
                 query = out['query']
