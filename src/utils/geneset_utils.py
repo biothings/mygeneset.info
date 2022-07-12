@@ -1,8 +1,8 @@
 import logging
-from urllib.error import HTTPError
 
 import mygene
 from biothings.utils.dataload import dict_sweep, unlist
+from requests.exceptions import HTTPError
 
 
 class IDLookup:
