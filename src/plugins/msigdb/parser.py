@@ -44,37 +44,75 @@ def parse_msigdb(data_file):
                 doc["is_public"] = True
                 assert doc["taxid"] is not None, "Taxid not found. ORGANISM missing in source data: {}".format(data)
                 assert doc["taxid"] != "", "Taxid not found. ORGANISM missing in source data: {}".format(data)
-                # Look up gene IDs.DESCRIPTION_BRIEF Genes are stored in four different attributes in the data file:
-                # 1) MEMBERS contains a list of genes with their original identifier, which can be any type of ID.
-                # 2) MEMBERS_SYMBOLIZED contains a list of genes converted to symbols.
-                # 3) MEMBERS_EZID contains a list of gene entrez IDs, but these have been converted from their corresponding human gene.
-                # 4) MEMBERS_MAPPING contains tuples of the three above IDs.
-                # We will use MEMBERS_MAPPNG to extract MEMBERS as the prefered id for lookup, followed by MEMBERS_SYMBOLIZED as backup.
-                members = [mapping.split(",")[0] for mapping in data["MEMBERS_MAPPING"].split("|")]
+                # MEMBERS contains a list of genes with their original identifier, which can be any type of ID.
+                # symbols contains a list of genes converted to symbols.
+                # MEMBERS_EZID contains a list of gene entrez IDs, but these have been converted from their corresponding human gene.
+                # MEMBERS_MAPPING contains tuples of the three above IDs.
+                members =  data["MEMBERS"].split(",")
+                symbols = [s.split(",")[1] for s in data["MEMBERS_MAPPING"].split("|")]
+                assert len(members) == len(symbols), "ID lists are not the same length."
+                id_list = list(zip(members, symbols))
                 if doc["taxid"] != current_organism:
+                    # Start a new query cache
                     current_organism = doc["taxid"]
                     logging.info("Parsing msigdb data for organism {}".format(current_organism))
                     gene_lookup = IDLookup(doc["taxid"])
-                gene_lookup.query_mygene(members, "symbol,ensembl.gene,entrezgene,uniprot,reporter,refseq,alias")
-                gene_lookup.retry_failed_with_new_ids(members, "all")
-                genes = []
-                for _id in members:
-                    #  Append the genes that have hits using += because hits can be a list
-                    if gene_lookup.query_cache.get(_id) is not None:
-                        genes += gene_lookup.query_cache[_id]
+                # Figure out which scopes to use
+                original_type = data.get("CHIP")
+                if original_type:
+                    if original_type.endswith("GENE_SYMBOL") or original_type == "HGNC_ID":
+                        scopes = 'symbol,alias'
+                    elif original_type.endswith("UniProt_ID"):
+                        scopes = 'uniprot'
+                    elif original_type.endswith("Ensembl_Gene_ID"):
+                        scopes = 'ensembl.gene'
+                    elif original_type.endswith("RefSeq"):
+                        scopes = 'refseq'
+                    elif original_type.endswith("NCBI_Gene_ID"):
+                        scopes = 'entrezgene,retired'
+                    elif original_type == "UniGene_ID":
+                        scopes = 'unigene'
                     else:
-                        logging.info("Could not find gene {} with taxid {}".format(_id, doc["taxid"]))
+                        scopes = "symbol,ensembl.gene,entrezgene,uniprot,reporter,refseq,alias,unigene"
+                else:
+                    scopes = "symbol,ensembl.gene,entrezgene,uniprot,reporter,refseq,alias,unigene"
+                # Run query
+                gene_lookup.query_mygene(id_list, [scopes, 'symbol,alias'])
+                # Save resuls
+                genes = []
+                missing = []
+                dups = []
+                for i, j in id_list:
+                    if gene_lookup.query_cache.get(i) is not None:
+                        if isinstance(gene_lookup.query_cache[i], list):
+                            genes += gene_lookup.query_cache[i]
+                            dups.append((i, [g['mygene_id'] for g in gene_lookup.query_cache[i]]))
+                        else:
+                             genes.append(gene_lookup.query_cache[i])
+                    elif gene_lookup.query_cache.get(j) is not None:
+                        if isinstance(gene_lookup.query_cache[j], list):
+                            genes += gene_lookup.query_cache[j]
+                            dups.append((j, [g['mygene_id'] for g in gene_lookup.query_cache[j]]))
+                        else:
+                            genes.append(gene_lookup.query_cache[j])
+                    else:
+                        missing.append(i)
                 doc["genes"] = genes
+                doc["original_ids"] = members
+                doc["not_found"] = missing
+                doc["duplicates"] = dups
                 # Additional msigdb data
                 msigdb = {}
                 msigdb["id"] = data["STANDARD_NAME"]
                 msigdb["geneset_name"] = data["STANDARD_NAME"].replace("_", " ").lower()
+                msigdb["systematic_name"] = data["SYSTEMATIC_NAME"]
                 msigdb["category_code"] = data["CATEGORY_CODE"]
                 msigdb["subcategory_code"] = data["SUB_CATEGORY_CODE"]
                 msigdb["authors"] = data.get("AUTHORS").split(",")
                 msigdb["contributor"] = data.get("CONTRIBUTOR")
                 msigdb["contributor_org"] = data.get("CONTRIBUTOR_ORG")
-                msigdb["source"]= data.get("EXACT_SOURCE")
+                msigdb["source"] = data.get("EXACT_SOURCE")
+                msigdb["source_identifier"] = original_type
                 msigdb["abstract"] = data.get("DESCRIPTION_FULL")
                 msigdb["pmid"] = data.get("PMID")
                 msigdb["geo_id"] = data.get("GEOID")
