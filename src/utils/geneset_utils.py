@@ -1,5 +1,6 @@
-import mygene
 import logging
+
+import mygene
 from biothings.utils.dataload import dict_sweep, unlist
 
 
@@ -84,6 +85,9 @@ class IDLookup:
             if diff > 0:
                 logging.info(f"Found {diff} genes in query cache.")
             ids = new_ids
+            if len(ids) == 0:
+                continue
+            logging.info(f"Searching for {len(ids)} genes...")
             # Generate params for query
             if retry:
                 to_query = [n[current_try] for n in ids]
@@ -91,6 +95,9 @@ class IDLookup:
             else:
                 to_query = ids
                 scopes = id_types
+            # Querying a one element list causes an HTTP 400 error
+            if len(to_query) == 1:
+                    to_query = to_query[0]
             # Query mygene.info
             mg = mygene.MyGeneInfo()
             fields_to_query = "entrezgene,ensembl.gene,uniprot.Swiss-Prot,symbol,name"
