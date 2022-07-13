@@ -30,8 +30,10 @@ def parse_msigdb(data_file):
         # Each document is a single gene set.
         # Documents have been sorted by their ORGANISM attribute using sort_genesets.xsl in post_dump() of dump.py
         current_organism = ""
+        geneset_index = 0
         for line in f:
             if line.lstrip().startswith("<GENESET"):
+                geneset_index += 1
                 doc = {}
                 tree = ET.fromstring(line)
                 assert tree.tag == "GENESET", "Expected GENESET tag"
@@ -82,6 +84,7 @@ def parse_msigdb(data_file):
                 else:
                     scopes = "symbol,ensembl.gene,entrezgene,uniprot,reporter,refseq,alias,unigene"
                 # Run query
+                logging.info("Queryng genes for geneset #{}: {}".format(geneset_index, doc["_id"]))
                 gene_lookup.query_mygene(id_list, ['symbol,alias', scopes])
                 query_results = gene_lookup.get_results(id_list)
                 doc.update(query_results)  # Merge doc with query results
