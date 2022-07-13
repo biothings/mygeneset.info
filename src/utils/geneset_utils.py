@@ -1,4 +1,5 @@
 import logging
+from tkinter import W
 
 import mygene
 from biothings.utils.dataload import dict_sweep, unlist
@@ -6,7 +7,7 @@ from requests.exceptions import HTTPError
 
 
 class IDLookup:
-    """Query a list of IDs and scope against mygene.info.
+    """Query a list of IDs and scopes against mygene.info.
     Attributes:
         species (str, int): Species common name or taxid.
         query_cache (dict, optional): Dictionary to store queries (keys)
@@ -31,12 +32,12 @@ class IDLookup:
         >>> gene_lookup = IDLookup(taxid)
         >>> gene_lookup.query_mygene(ids, ["symbol", "ensembl.gene"])
 
-        Finally, search query cache for hits.
+        Finally, get the search results:
 
-        >>> genes = []
-        >>> for id in ids:
-        >>>     if gene_lookup.query_cache.get(id):
-        >>>         genes += gene_lookup.query_cache[id]
+        >>> geneset = {"_id": id, "name": geneset_name, "description": desc,
+                       "is_public": is_public, "taxid": species, "source": source}
+        >>> lookup_results = gene_lookup.get_results(ids)
+        >>> geneset = geneset.update(lookup_results)
     """
 
     def __init__(self, species, cache_dict={}):
@@ -119,7 +120,7 @@ class IDLookup:
                 query = out['query']
                 if out.get('notfound'):
                     continue
-                gene = {'mygene_id': out['_id']}
+                gene = {'mygene_id': out['_id'], 'source_id': query}
                 if out.get('symbol') is not None:
                     gene['symbol'] = out['symbol']
                 if out.get('name') is not None:
@@ -157,3 +158,36 @@ class IDLookup:
             else:
                 logging.info(f"Could not find {len(failed_ids)} genes.")
             current_try += 1
+
+    def get_results(self, ids):
+        """Get query results for a list of ids.
+        Returns:
+            Dictionary containing genes, count, duplicates and failed ids.
+        """
+        genes = []
+        missing = []
+        dups = []
+        retry_count = len(ids[0])
+        for q in ids:
+            i = 0
+            found = False
+            while i < retry_count:
+                if self.query_cache.get(q[i]):
+                    if isinstance(self.query_cache[q[i]], list):
+                        genes += self.query_cache[q[i]]
+                        dups.append({'id': q[i],
+                                     'count': len(self.query_cache[q[i]])})
+                    else:
+                        genes.append(self.query_cache[q[i]])
+                    found = True
+                    break
+                i += 1
+            if not found:
+                missing.append(q[0])
+
+        results = {}
+        results['genes'] = genes
+        results["count"] = len(genes)
+        results['duplicates'] = {'dups': dups, 'count': len(dups)}
+        results['not_found'] = {'ids': missing, 'count': len(missing)}
+        return results

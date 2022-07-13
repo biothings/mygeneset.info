@@ -83,29 +83,8 @@ def parse_msigdb(data_file):
                     scopes = "symbol,ensembl.gene,entrezgene,uniprot,reporter,refseq,alias,unigene"
                 # Run query
                 gene_lookup.query_mygene(id_list, ['symbol,alias', scopes])
-                # Save resuls
-                genes = []
-                missing = []
-                dups = []
-                for i, j in id_list:
-                    if gene_lookup.query_cache.get(i) is not None:
-                        if isinstance(gene_lookup.query_cache[i], list):
-                            genes += gene_lookup.query_cache[i]
-                            dups.append((i, [g['mygene_id'] for g in gene_lookup.query_cache[i]]))
-                        else:
-                             genes.append(gene_lookup.query_cache[i])
-                    elif gene_lookup.query_cache.get(j) is not None:
-                        if isinstance(gene_lookup.query_cache[j], list):
-                            genes += gene_lookup.query_cache[j]
-                            dups.append((j, [g['mygene_id'] for g in gene_lookup.query_cache[j]]))
-                        else:
-                            genes.append(gene_lookup.query_cache[j])
-                    else:
-                        missing.append(i)
-                doc["genes"] = genes
-                doc["original_ids"] = members
-                doc["not_found"] = missing
-                doc["duplicates"] = dups
+                query_results = gene_lookup.get_results(id_list)
+                doc.update(query_results)  # Merge doc with query results
                 # Additional msigdb data
                 msigdb = {}
                 msigdb["id"] = data["STANDARD_NAME"]
@@ -140,5 +119,5 @@ if __name__ == "__main__":
     assert os.path.exists(xmlfile), "Could not find input XML file."
     annotations = parse_msigdb(xmlfile)
     for a in annotations:
-        pass
-        #print(json.dumps(a, indent=2))
+        #pass
+        print(json.dumps(a, indent=2))
