@@ -78,10 +78,9 @@ class IDLookup:
         while current_try <= retry_times:
             # Remove ids that already in the cache
             if retry:
-                new_ids = [n for n in ids if n[current_try]
-                           not in self.query_cache.keys()]
+                new_ids = [n for n in ids if n[current_try] not in self.query_cache]
             else:
-                new_ids = [n for n in ids if n not in self.query_cache.keys()]
+                new_ids = [n for n in ids if n not in self.query_cache]
             diff = len(ids) - len(new_ids)
             assert diff >= 0, "This shouldn't have happened!"
             if diff > 0:
