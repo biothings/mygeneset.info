@@ -85,9 +85,9 @@ class IDLookup:
             assert diff >= 0, "This shouldn't have happened!"
             if diff > 0:
                 logging.info(f"Found {diff} genes in query cache.")
-            ids = new_ids
-            if len(ids) == 0:
+            elif len(ids) == 0:
                 continue
+            ids = new_ids
             logging.info(f"Searching for {len(ids)} genes...")
             # Generate params for query
             if retry:
