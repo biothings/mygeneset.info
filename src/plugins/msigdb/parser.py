@@ -55,13 +55,14 @@ def parse_msigdb(data_file):
                     members = [s.split(",")[0] for s in data["MEMBERS_MAPPING"].split("|")]
                 assert len(members) == len(symbols), "ID lists are not the same length: {} {}".format(
                     len(members), len(symbols))
-                id_list = list(zip(members, symbols))
+                # Using symbols as the preferred id, because it consistently gives the most hits across datasets
+                id_list = list(zip(symbols, members))
                 if doc["taxid"] != current_organism:
                     # Start a new query cache
                     current_organism = doc["taxid"]
                     logging.info("Parsing msigdb data for organism {}".format(current_organism))
                     gene_lookup = IDLookup(doc["taxid"])
-                # Figure out which scopes to use
+                # Figure out which scopes to use for the retry query
                 original_type = data.get("CHIP")
                 if original_type:
                     if original_type.endswith("GENE_SYMBOL") or original_type == "HGNC_ID":
@@ -81,7 +82,7 @@ def parse_msigdb(data_file):
                 else:
                     scopes = "symbol,ensembl.gene,entrezgene,uniprot,reporter,refseq,alias,unigene"
                 # Run query
-                gene_lookup.query_mygene(id_list, [scopes, 'symbol,alias'])
+                gene_lookup.query_mygene(id_list, ['symbol,alias', scopes])
                 # Save resuls
                 genes = []
                 missing = []
