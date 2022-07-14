@@ -1,5 +1,4 @@
 import logging
-from tkinter import W
 
 import mygene
 from biothings.utils.dataload import dict_sweep, unlist
