@@ -187,6 +187,8 @@ class IDLookup:
         results = {}
         results['genes'] = genes
         results["count"] = len(genes)
-        results['duplicates'] = {'dups': dups, 'count': len(dups)}
-        results['not_found'] = {'ids': missing, 'count': len(missing)}
+        if len(dups) > 0:
+            results['duplicates'] = {'dups': dups, 'count': len(dups)}
+        if len(missing) > 0:
+            results['not_found'] = {'ids': missing, 'count': len(missing)}
         return results
