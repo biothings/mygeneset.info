@@ -35,6 +35,7 @@ def parse_msigdb(data_file):
             if line.lstrip().startswith("<GENESET"):
                 geneset_index += 1
                 doc = {}
+                line = line.replace("&quot;", "") # Some lines have random html quote codes
                 tree = ET.fromstring(line)
                 assert tree.tag == "GENESET", "Expected GENESET tag"
                 data = tree.attrib
@@ -104,7 +105,7 @@ def parse_msigdb(data_file):
                 # Using symbols as the preferred id, because it consistently gives the most hits across datasets
                 id_list = list(zip(symbols, members))
                 # Run query
-                logging.info("Queryng genes for geneset #{}: {}".format(geneset_index, doc["_id"]))
+                logging.info("Querying genes for geneset #{}: {}".format(geneset_index, doc["_id"]))
                 gene_lookup.query_mygene(id_list, ['symbol,alias', members_scopes])
                 query_results = gene_lookup.get_results(id_list)
                 doc.update(query_results)  # Merge doc with query results
