@@ -45,9 +45,16 @@ class msigdbUploader(uploader.BaseSourceUploader):
                     "all"
                 ]
             },
+            "count": {
+                "type": "integer"
+            },
             "genes": {
                 "properties": {
                     "mygene_id": {
+                        "normalizer": "keyword_lowercase_normalizer",
+                        "type": "keyword"
+                    },
+                    "source_id": {
                         "normalizer": "keyword_lowercase_normalizer",
                         "type": "keyword"
                     },
@@ -72,6 +79,35 @@ class msigdbUploader(uploader.BaseSourceUploader):
                     }
                 }
             },
+            "duplicates": {
+                "properties": {
+                    "dups": {
+                        "properties": {
+                            "id": {
+                                "normalizer": "keyword_lowercase_normalizer",
+                                "type": "keyword"
+                            },
+                            "count": {
+                                "type": "integer"
+                            }
+                        }
+                    },
+                    "count": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "not_found": {
+                "properties": {
+                    "ids": {
+                        "normalizer": "keyword_lowercase_normalizer",
+                        "type": "keyword"
+                    },
+                    "count": {
+                        "type": "integer"
+                    }
+                }
+            },
             "msigdb": {
                 "properties": {
                     "id": {
@@ -83,6 +119,10 @@ class msigdbUploader(uploader.BaseSourceUploader):
                     },
                     "geneset_name": {
                         "type": "text",
+                    },
+                    "systematic_name": {
+                        "normalizer": "keyword_lowercase_normalizer",
+                        "type": "keyword"
                     },
                     "category_code": {
                         "normalizer": "keyword_lowercase_normalizer",
@@ -102,6 +142,10 @@ class msigdbUploader(uploader.BaseSourceUploader):
                         "type": "text"
                     },
                     "source": {
+                        "normalizer": "keyword_lowercase_normalizer",
+                        "type": "keyword"
+                    },
+                    "source_identifier": {
                         "normalizer": "keyword_lowercase_normalizer",
                         "type": "keyword"
                     },
