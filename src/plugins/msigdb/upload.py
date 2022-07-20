@@ -80,7 +80,7 @@ class msigdbUploader(uploader.BaseSourceUploader):
             },
             "duplicates": {
                 "properties": {
-                    "dups": {
+                    "ids": {
                         "properties": {
                             "id": {
                                 "normalizer": "keyword_lowercase_normalizer",
