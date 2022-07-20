@@ -1,7 +1,14 @@
 import glob
 import os
+import logging
 
 from biothings.utils.dataload import tabfile_feeder
+
+if __name__ == "__main__":
+    import sys
+
+    sys.path.append("../../")
+
 from utils.geneset_utils import IDLookup
 
 
@@ -21,26 +28,30 @@ def load_data(data_folder):
                   "Gallus gallus": 9031,
                   "Oryza sativa": 39947,
                   "Pan troglodytes": 9598,
+                  "Solanum lycopersicum": 4081,
                   "Rattus norvegicus": 10116,
                   "Saccharomyces cerevisiae": 559292,
                   "Populus trichocarpa": 3694,
                   "Sus scrofa": 9823}
-        return taxids[species]
+        if species in taxids:
+            return taxids[species]
+        else:
+            logging.error("Taxid not found for species {}".format(species))
 
     # Load .gmt (Gene Matrix Transposed) files
     for f in glob.glob(os.path.join(data_folder, "*.gmt")):
         # Get species name from the filename and convert to taxid
         species = f.replace(".gmt", "").split("-")[-1].replace("_", " ")
         taxid = get_taxid(species)
-        print("Parsing data for {} ({})".format(species, taxid))
+        logging.info("Parsing data for {} ({})".format(species, taxid))
         # Read entire file and fetch data for joint set of all genes
         data = tabfile_feeder(f, header=0)
         all_genes = []
         for rec in data:
             all_genes += rec[2:]
         all_genes = set(all_genes)
-        lookup = IDLookup(taxid)
-        lookup.query_mygene(all_genes, 'entrezgene')
+        gene_lookup = IDLookup(taxid)
+        gene_lookup.query_mygene(all_genes, 'entrezgene,retired')
 
         # Parse each individual document
         data = tabfile_feeder(f, header=0)
@@ -53,17 +64,11 @@ def load_data(data_folder):
             # Get URL and gene list
             url = rec[1]
             ncbigenes = rec[2:]
-            genes = []
-            for g in ncbigenes:
-                if lookup.query_cache.get(g):
-                    genes.append(lookup.query_cache[g])
-
-            # Format schema
+            # Format document
             doc = {'_id': wikipathways_id,
                    'name': pathway_name,
                    'is_public': True,
                    'taxid': taxid,
-                   'genes': genes,
                    'source': 'wikipathways',
                    'wikipathways': {
                        'id': wikipathways_id,
@@ -71,6 +76,9 @@ def load_data(data_folder):
                        'url': url
                        }
                    }
+            # Get gene objects from lookup
+            lookup_results = gene_lookup.get_results(ncbigenes)
+            doc.update(lookup_results)
             yield doc
 
 
@@ -78,6 +86,6 @@ if __name__ == "__main__":
     import json
 
     annotations = load_data("./test_data")
-    with open("out.json", 'a') as outfile:
-        for a in annotations:
-            outfile.write(json.dumps(a, indent=2))
+    for a in annotations:
+        # pass
+        print(json.dumps(a, indent=2))
