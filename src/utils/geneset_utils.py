@@ -165,6 +165,9 @@ class IDLookup:
         genes = []
         missing = []
         dups = []
+        if isinstance(ids[0], str):
+            ids = [(i,) for i in ids]
+        assert isinstance(ids[0], tuple), "Ids is not a list of tuples."
         retry_count = len(ids[0])
         for q in ids:
             i = 0
