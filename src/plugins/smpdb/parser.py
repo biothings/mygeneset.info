@@ -34,6 +34,7 @@ def load_data(data_folder):
             doc.update(genesets[smpdb_id])
         if chemsets.get(smpdb_id):
             doc['metabolites'] = chemsets[smpdb_id]
+            doc['metabolites_count'] = len(chemsets[smpdb_id])
         if doc.get('metabolites') or doc.get('genes'):
             doc = dict_sweep(doc, vals=[',', None])
             yield doc
