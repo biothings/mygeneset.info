@@ -13,7 +13,7 @@ if __name__ == "__main__":
     import config
     from dump import msigdbDumper
 
-from biothings.utils.dataload import dict_sweep
+from biothings.utils.dataload import dict_sweep, unlist
 from utils.geneset_utils import IDLookup
 
 
@@ -130,6 +130,8 @@ def parse_msigdb(data_file):
                     "geneset_listing": data.get("GENESET_LISTING_URL")
                 }
                 doc["msigdb"] = msigdb
+                # Remove lists with only one item
+                doc = unlist(doc)
                 # Clean up empty fields
                 doc = dict_sweep(doc)
                 yield doc
