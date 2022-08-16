@@ -165,9 +165,17 @@ class IDLookup:
         genes = []
         missing = []
         dups = []
-        if isinstance(ids[0], str):
-            ids = [(i,) for i in ids]
-        assert isinstance(ids[0], tuple), "Ids is not a list of tuples."
+        # Force each element into tuples if it's not already
+        for idx, elem in enumerate(ids):
+            if not isinstance(elem, tuple):
+                assert isinstance(elem, str), "All ids must be strings."
+                ids[idx] = (elem,)
+        # Make sure each element has the same length
+        if len(ids) > 0:
+            first_len = len(ids[0])
+            for elem in ids:
+                assert len(elem) == first_len, \
+                    "All tuples must have the same length."
         retry_count = len(ids[0])
         for q in ids:
             i = 0
