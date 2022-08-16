@@ -1,20 +1,30 @@
 #!/usr/bin/env python3
 
-import json
 import os
 import re
-import sys
 
-import mygene
 from biothings.utils.dataload import dict_sweep, unlist
 
-try:                         # run as a data plugin module of Biothings SDK
-    from biothings import config
-    logging = config.logger
-except Exception:            # run locally as a standalone script
+if __name__ == "__main__":
+    # Run locally as a standalone script
     import logging
-    LOG_LEVEL=logging.WARNING
+    import sys
+
+    sys.path.append("../../")
+
+    import config
+
+    LOG_LEVEL = logging.WARNING
     logging.basicConfig(level=LOG_LEVEL, format='%(asctime)s: %(message)s')
+
+else:
+    # Run as a data plugin module of Biothings SDK
+    from biothings import config
+
+    logging = config.logger
+
+from utils.geneset_utils import IDLookup
+
 
 TAX_ID = 9606  # Taxonomy ID of human being
 
@@ -606,53 +616,6 @@ def create_gs_abstract(do_term, doid_omim_dict):
     return abstract
 
 
-def query_mygene(entrez_set, tax_id):
-    """Query MyGene.info to get detailed gene information."""
-
-    q_genes = entrez_set
-    q_scopes = ['entrezgene', 'retired']
-    output_fields = ['entrezgene', 'ensembl.gene', 'symbol', 'name', 'uniprot']
-
-    mg = mygene.MyGeneInfo()
-    logging.info(f"Querying {q_scopes} in MyGene.info ...")
-    q_results = mg.querymany(
-        q_genes,
-        scopes=q_scopes,
-        fields=output_fields,
-        species=tax_id,
-        returnall=True
-    )
-
-    genes_info = dict()
-    for gene in q_results['out']:
-        q_str = gene["query"]
-
-        # Ensembl gene ID
-        ensembl_id = None
-        ensembl = gene.get('ensembl', None)
-        if ensembl:
-            if len(gene['ensembl']) > 1:
-                ensembl_id = [g['gene'] for g in gene['ensembl'] if 'gene' in g]
-            elif 'gene' in gene['ensembl']:
-                ensembl_id = gene['ensembl']['gene']
-
-        # Only keep 'Swiss-Prot' component in 'uniprot'
-        uniprot = gene.get('uniprot', None)
-        if uniprot:
-            uniprot = uniprot.get('Swiss-Prot', None)
-
-        genes_info[q_str] = {
-            'mygene_id': gene.get('_id', None),
-            'ncbigene': gene.get('entrezgene', None),
-            'ensemblgene': ensembl_id,
-            'symbol': gene.get('symbol', None),
-            'name': gene.get('name', None),
-            'uniprot': uniprot
-        }
-
-    return genes_info
-
-
 # Based on `process_do_terms()` in "annotation-refinery/process_do.py".
 # See https://github.com/greenelab/annotation-refinery
 # Changed from a regular function to generator to work with Biothings SDK.
@@ -673,7 +636,9 @@ def get_genesets(obo_filename, genemap_filename):
         mim_diseases
     )
 
-    genes_info = query_mygene(entrez_set, TAX_ID)
+    gene_lookup = IDLookup(TAX_ID)
+    gene_lookup.query_mygene(entrez_set, 'entrezgene,retired')
+
     disease_ontology.populated = True
     disease_ontology.propagate()
 
@@ -693,14 +658,15 @@ def get_genesets(obo_filename, genemap_filename):
             my_geneset['name'] = term.full_name
             do_abstract = create_gs_abstract(term, doid_omim_dict)
             my_geneset['description'] = do_abstract
-
-            # Genes in a geneset are sorted by their IDs to make output reproducible.
-            my_geneset['genes'] = [genes_info[str(gid)] for gid in sorted(gid_set)]
-
             my_geneset['do'] = {
                 'id': term_id,
                 'abstract': do_abstract
             }
+
+            # Add the gene lookup info to the geneset.
+            genes = [str(gid) for gid in gid_set]
+            lookup_results = gene_lookup.get_results(genes)
+            my_geneset.update(lookup_results)
 
             my_geneset = dict_sweep(my_geneset, vals=[None], remove_invalid_list=True)
             my_geneset = unlist(my_geneset)
@@ -714,6 +680,12 @@ def load_data(data_dir):
 
     obo_filename = os.path.join(data_dir, "HumanDO.obo")
     genemap_filename = os.path.join(data_dir, "genemap2.txt")
+    print(obo_filename)
+    print(genemap_filename)
+    assert os.path.exists(obo_filename), \
+        f"Could not find file: {obo_filename}"
+    assert os.path.exists(genemap_filename), \
+        f"Could not find file: {genemap_filename}"
 
     genesets = get_genesets(obo_filename, genemap_filename)
     for gs in genesets:
@@ -722,7 +694,14 @@ def load_data(data_dir):
 
 # Test harness
 if __name__ == "__main__":
-    data_dir = "./data/latest"
+
+    import json
+    from version import get_release
+
+    # Get data dir
+    version = get_release(None)
+    data_dir = os.path.join(config.DATA_ARCHIVE_ROOT, 'do', version)
+
     genesets = list(load_data(data_dir))
     for gs in genesets:
         print(json.dumps(gs, indent=2))
