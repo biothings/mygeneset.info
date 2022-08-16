@@ -7,7 +7,7 @@
     "url": "https://www.kegg.jp"
   },
   "dumper": {
-    "data_url": ["http://rest.kegg.jp/list/module"],
+    "data_url": ["http://rest.kegg.jp/list/module", "http://rest.kegg.jp/list/disease"],
     "uncompress": false,
     "release": "version:get_release",
     "schedule": "13 2 * * 6"
