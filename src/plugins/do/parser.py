@@ -468,7 +468,7 @@ def build_mim_diseases_dict(genemap_filename):
         tokens = line.strip('\n').split('\t')
 
         try:
-            mim_geneid = tokens[5].strip()
+            # mim_geneid = tokens[5].strip()
             entrez_id = tokens[9].strip()
             disorders = tokens[12].strip()
         except IndexError:
