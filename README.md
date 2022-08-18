@@ -30,16 +30,9 @@ Elasticsearch:
 
 #### 3. Setup a Python virtual environment (optional, but highly recommended):
 
-With virtualenv:
-
     mkdir -p ~/venvs
     virtualenv ~/venvs/mygeneset
     source ~/venvs/mygeneset/bin/activate
-
-Alternatively, using miniconda:
-
-    conda create -n mygeneset python=3.8
-    conda activate mygeneset
 
 #### 4. Install required Python modules:
 
