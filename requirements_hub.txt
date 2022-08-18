@@ -1,2 +1,1 @@
 -e git+https://github.com/biothings/biothings.api.git@0.11.x#egg=biothings[hub]
-elasticsearch>=7
