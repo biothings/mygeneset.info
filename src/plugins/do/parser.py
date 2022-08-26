@@ -23,7 +23,7 @@ else:
 
     logging = config.logger
 
-from utils.geneset_utils import IDLookup
+from utils.mygene_lookup import MyGeneLookup
 
 
 TAX_ID = 9606  # Taxonomy ID of human being
@@ -636,7 +636,7 @@ def get_genesets(obo_filename, genemap_filename):
         mim_diseases
     )
 
-    gene_lookup = IDLookup(TAX_ID)
+    gene_lookup = MyGeneLookup(TAX_ID)
     gene_lookup.query_mygene(entrez_set, 'entrezgene,retired')
 
     disease_ontology.populated = True

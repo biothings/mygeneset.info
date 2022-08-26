@@ -7,7 +7,7 @@ try:
     # Run as a data plugin module of Biothings SDK
     from biothings import config
     from kegg.species import organisms
-    from utils.geneset_utils import IDLookup
+    from utils.mygene_lookup import MyGeneLookup
 
     logging = config.logger
 
@@ -19,7 +19,7 @@ except ImportError:
     from species import organisms
 
     sys.path.append("../../")
-    from utils.geneset_utils import IDLookup
+    from utils.mygene_lookup import MyGeneLookup
 
     LOG_LEVEL = logging.DEBUG
     logging.basicConfig(level=LOG_LEVEL, format='%(asctime)s: %(message)s')
@@ -148,7 +148,7 @@ def load_data(data_dir):
 
         # Query mygene for all genes for this species
         gene_id_types = ','.join(conf['gene_id_types'])
-        gene_lookup = IDLookup(tax_id)
+        gene_lookup = MyGeneLookup(tax_id)
         gene_lookup.query_mygene(uniq_genes, gene_id_types)
 
         for gs_entry, genes in genes_in_gs.items():

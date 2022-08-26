@@ -7,7 +7,7 @@ if __name__ == "__main__":
 
     sys.path.append("../../")
 
-from utils.geneset_utils import IDLookup
+from utils.mygene_lookup import MyGeneLookup
 
 
 def load_data(data_folder):
@@ -19,7 +19,7 @@ def load_data(data_folder):
         genes = set(rec[2:])
         all_genes = all_genes | genes
     # Query gene info
-    gene_lookup = IDLookup(9606)  # Human genes
+    gene_lookup = MyGeneLookup(9606)  # Human genes
     gene_lookup.query_mygene(all_genes, 'symbol,alias')
 
     data = tabfile_feeder(f, header=0)

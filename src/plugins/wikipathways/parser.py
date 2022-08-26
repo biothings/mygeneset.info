@@ -9,7 +9,7 @@ if __name__ == "__main__":
 
     sys.path.append("../../")
 
-from utils.geneset_utils import IDLookup
+from utils.mygene_lookup import MyGeneLookup
 
 
 def load_data(data_folder):
@@ -50,7 +50,7 @@ def load_data(data_folder):
         for rec in data:
             all_genes += rec[2:]
         all_genes = set(all_genes)
-        gene_lookup = IDLookup(taxid)
+        gene_lookup = MyGeneLookup(taxid)
         gene_lookup.query_mygene(all_genes, 'entrezgene,retired')
 
         # Parse each individual document

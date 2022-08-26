@@ -8,7 +8,7 @@ if __name__ == "__main__":
 import biothings_client
 import pandas as pd
 from biothings.utils.dataload import dict_sweep
-from utils.geneset_utils import IDLookup
+from utils.mygene_lookup import MyGeneLookup
 
 
 def load_data(data_folder):
@@ -51,7 +51,7 @@ def parse_genes(data_folder):
             continue
         all_genes = all_genes | set(zip(tmp_df['Uniprot ID'], tmp_df['Gene Name']))
     all_genes = list(all_genes)
-    gene_lookup = IDLookup(9606)
+    gene_lookup = MyGeneLookup(9606)
     gene_lookup.query_mygene(all_genes, ['uniprot', 'symbol,alias'])
 
     # Every file contains a separate geneset

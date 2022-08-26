@@ -5,7 +5,7 @@ import sys
 
 sys.path.append("../../")
 from biothings.utils.dataload import tabfile_feeder, dict_sweep, unlist
-from utils.geneset_utils import IDLookup
+from utils.mygene_lookup import MyGeneLookup
 
 
 def load_data(data_folder):
@@ -28,7 +28,7 @@ def load_data(data_folder):
         symbols = [j for i, j in all_genes]
         taxid = annotations['taxid']
         # Fetch gene data from mygene.info
-        lookup = IDLookup(taxid)
+        lookup = MyGeneLookup(taxid)
         lookup.query_mygene(uniprot, "uniprot,retired,accession")
         lookup.retry_failed_with_new_ids(symbols, "symbol")
 
@@ -42,10 +42,10 @@ def load_data(data_folder):
                 annotations['description'] = annotations['go']['description']
                 new_genes = []
                 for u, s in annotations['genes']:
-                    if lookup.query_cache.get(u) is not None:
-                        new_genes.append(lookup.query_cache[u])
-                    elif lookup.query_cache.get(s) is not None:
-                        new_genes.append(lookup.query_cache[s])
+                    if lookup._query_cache.get(u) is not None:
+                        new_genes.append(lookup._query_cache[u])
+                    elif lookup._query_cache.get(s) is not None:
+                        new_genes.append(lookup._query_cache[s])
                 annotations['genes'] = new_genes
             else:
                 # No genes in set
@@ -56,10 +56,10 @@ def load_data(data_folder):
                 if annotations.get(key) is not None:
                     new_genes = []
                     for u, s in annotations.pop(key):
-                        if lookup.query_cache.get(u) is not None:
-                            new_genes.append(lookup.query_cache[u])
-                        elif lookup.query_cache.get(s) is not None:
-                            new_genes.append(lookup.query_cache[s])
+                        if lookup._query_cache.get(u) is not None:
+                            new_genes.append(lookup._query_cache[u])
+                        elif lookup._query_cache.get(s) is not None:
+                            new_genes.append(lookup._query_cache[s])
                     annotations['go'][key] = new_genes
             # Clean up data
             annotations = unlist(annotations)
