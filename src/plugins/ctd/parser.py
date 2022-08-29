@@ -182,4 +182,4 @@ if __name__ == '__main__':
     data_dir = os.path.join(config.DATA_ARCHIVE_ROOT, 'ctd', version)
 
     for gs in load_data(data_dir):
-        print(json.dumps(gs, indent=2)
+        print(json.dumps(gs, indent=2))
