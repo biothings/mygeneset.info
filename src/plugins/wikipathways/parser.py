@@ -34,7 +34,7 @@ def load_data(data_folder):
                   "Populus trichocarpa": 3694,
                   "Sus scrofa": 9823}
         if species in taxids:
-            return taxids[species]
+            return str(taxids[species])
         else:
             logging.error("Taxid not found for species {}".format(species))
 
