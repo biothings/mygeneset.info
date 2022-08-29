@@ -55,8 +55,8 @@ class MyGeneLookup:
         e.g.: [9606, 10090] or '9606,10090'.
         To search against all species, use 'all'.
         """
-        if not isinstance(species, list) and not isinstance(species, str):
-            raise ValueError("Species must be a string or list.")
+        if not isinstance(species, list) and not isinstance(species, str) and not isinstance(species, int):
+            raise ValueError("Species must be a string, integer, or list.")
         self.species = self._normalize_species(species)
         self.clear_cache()
         if cache_dict:
@@ -64,9 +64,11 @@ class MyGeneLookup:
         self.fields_to_query = ["entrezgene", "ensembl.gene", "uniprot.Swiss-Prot", "symbol", "name"]
 
     def _normalize_species(self, species):
+        if isinstance(species, int):
+            species = str(species)
         if isinstance(species, str):
             species = species.split(',')
-        species = [self.SPECIES_MAP[s] if s in self.SPECIES_MAP else s for s in species]
+        species = [self.SPECIES_MAP[s] if s in self.SPECIES_MAP else str(s) for s in species]
         if len(species) == 1:
             species = species[0]
         return species
