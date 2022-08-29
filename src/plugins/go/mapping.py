@@ -6,9 +6,16 @@ def get_customized_mapping(cls):
         "taxid": {
             "type": "integer"
         },
+        "count": {
+            "type": "integer"
+        },
         "genes": {
             "properties": {
                 "mygene_id": {
+                    "normalizer": "keyword_lowercase_normalizer",
+                    "type": "keyword"
+                },
+                "source_id": {
                     "normalizer": "keyword_lowercase_normalizer",
                     "type": "keyword"
                 },
@@ -61,85 +68,228 @@ def get_customized_mapping(cls):
                     "type": "keyword"
                 },
                 "contributing_genes": {
-                    "properties": {
-                        "mygene_id": {
-                            "normalizer": "keyword_lowercase_normalizer",
-                            "type": "keyword"
-                        },
-                        "symbol": {
-                            "normalizer": "keyword_lowercase_normalizer",
-                            "type": "keyword"
-                        },
-                        "ncbigene": {
-                            "normalizer": "keyword_lowercase_normalizer",
-                            "type": "keyword"
-                        },
-                        "ensemblgene": {
-                            "normalizer": "keyword_lowercase_normalizer",
-                            "type": "keyword"
-                        },
-                        "uniprot": {
-                            "normalizer": "keyword_lowercase_normalizer",
-                            "type": "keyword"
-                        },
-                        "name": {
-                            "type": "text"
+                    "genes": {
+                        "properties": {
+                            "mygene_id": {
+                                "normalizer": "keyword_lowercase_normalizer",
+                                "type": "keyword"
+                            },
+                            "source_id": {
+                                "normalizer": "keyword_lowercase_normalizer",
+                                "type": "keyword"
+                            },
+                            "symbol": {
+                                "normalizer": "keyword_lowercase_normalizer",
+                                "type": "keyword"
+                            },
+                            "ncbigene": {
+                                "normalizer": "keyword_lowercase_normalizer",
+                                "type": "keyword"
+                            },
+                            "ensemblgene": {
+                                "normalizer": "keyword_lowercase_normalizer",
+                                "type": "keyword"
+                            },
+                            "uniprot": {
+                                "normalizer": "keyword_lowercase_normalizer",
+                                "type": "keyword"
+                            },
+                            "name": {
+                                "type": "text"
+                            }
+                        }
+                    },
+                    "count": {
+                        "type": "integer"
+                    },
+                    "duplicates": {
+                        "properties": {
+                            "ids": {
+                                "properties": {
+                                    "id": {
+                                        "normalizer": "keyword_lowercase_normalizer",
+                                        "type": "keyword"
+                                    },
+                                    "count": {
+                                        "type": "integer"
+                                    }
+                                }
+                            },
+                            "count": {
+                                "type": "integer"
+                            }
+                        }
+                    },
+                    "not_found": {
+                        "properties": {
+                            "ids": {
+                                "normalizer": "keyword_lowercase_normalizer",
+                                "type": "keyword"
+                            },
+                            "count": {
+                                "type": "integer"
+                            }
                         }
                     }
                 },
                 "colocalized_genes": {
-                    "properties": {
-                        "mygene_id": {
-                            "normalizer": "keyword_lowercase_normalizer",
-                            "type": "keyword"
-                        },
-                        "symbol": {
-                            "normalizer": "keyword_lowercase_normalizer",
-                            "type": "keyword"
-                        },
-                        "ncbigene": {
-                            "normalizer": "keyword_lowercase_normalizer",
-                            "type": "keyword"
-                        },
-                        "ensemblgene": {
-                            "normalizer": "keyword_lowercase_normalizer",
-                            "type": "keyword"
-                        },
-                        "uniprot": {
-                            "normalizer": "keyword_lowercase_normalizer",
-                            "type": "keyword"
-                        },
-                        "name": {
-                            "type": "text"
+                    "genes": {
+                        "properties": {
+                            "mygene_id": {
+                                "normalizer": "keyword_lowercase_normalizer",
+                                "type": "keyword"
+                            },
+                            "source_id": {
+                                "normalizer": "keyword_lowercase_normalizer",
+                                "type": "keyword"
+                            },
+                            "symbol": {
+                                "normalizer": "keyword_lowercase_normalizer",
+                                "type": "keyword"
+                            },
+                            "ncbigene": {
+                                "normalizer": "keyword_lowercase_normalizer",
+                                "type": "keyword"
+                            },
+                            "ensemblgene": {
+                                "normalizer": "keyword_lowercase_normalizer",
+                                "type": "keyword"
+                            },
+                            "uniprot": {
+                                "normalizer": "keyword_lowercase_normalizer",
+                                "type": "keyword"
+                            },
+                            "name": {
+                                "type": "text"
+                            }
+                        }
+                    },
+                    "count": {
+                        "type": "integer"
+                    },
+                    "duplicates": {
+                        "properties": {
+                            "ids": {
+                                "properties": {
+                                    "id": {
+                                        "normalizer": "keyword_lowercase_normalizer",
+                                        "type": "keyword"
+                                    },
+                                    "count": {
+                                        "type": "integer"
+                                    }
+                                }
+                            },
+                            "count": {
+                                "type": "integer"
+                            }
+                        }
+                    },
+                    "not_found": {
+                        "properties": {
+                            "ids": {
+                                "normalizer": "keyword_lowercase_normalizer",
+                                "type": "keyword"
+                            },
+                            "count": {
+                                "type": "integer"
+                            }
                         }
                     }
                 },
                 "excluded_genes": {
-                    "properties": {
-                        "mygene_id": {
-                            "normalizer": "keyword_lowercase_normalizer",
-                            "type": "keyword"
-                        },
-                        "symbol": {
-                            "normalizer": "keyword_lowercase_normalizer",
-                            "type": "keyword"
-                        },
-                        "ncbigene": {
-                            "normalizer": "keyword_lowercase_normalizer",
-                            "type": "keyword"
-                        },
-                        "ensemblgene": {
-                            "normalizer": "keyword_lowercase_normalizer",
-                            "type": "keyword"
-                        },
-                        "uniprot": {
-                            "normalizer": "keyword_lowercase_normalizer",
-                            "type": "keyword"
-                        },
-                        "name": {
-                            "type": "text"
+                    "genes": {
+                        "properties": {
+                            "mygene_id": {
+                                "normalizer": "keyword_lowercase_normalizer",
+                                "type": "keyword"
+                            },
+                            "source_id": {
+                                "normalizer": "keyword_lowercase_normalizer",
+                                "type": "keyword"
+                            },
+                            "symbol": {
+                                "normalizer": "keyword_lowercase_normalizer",
+                                "type": "keyword"
+                            },
+                            "ncbigene": {
+                                "normalizer": "keyword_lowercase_normalizer",
+                                "type": "keyword"
+                            },
+                            "ensemblgene": {
+                                "normalizer": "keyword_lowercase_normalizer",
+                                "type": "keyword"
+                            },
+                            "uniprot": {
+                                "normalizer": "keyword_lowercase_normalizer",
+                                "type": "keyword"
+                            },
+                            "name": {
+                                "type": "text"
+                            }
+                        }
+                    },
+                    "count": {
+                        "type": "integer"
+                    },
+                    "duplicates": {
+                        "properties": {
+                            "ids": {
+                                "properties": {
+                                    "id": {
+                                        "normalizer": "keyword_lowercase_normalizer",
+                                        "type": "keyword"
+                                    },
+                                    "count": {
+                                        "type": "integer"
+                                    }
+                                }
+                            },
+                            "count": {
+                                "type": "integer"
+                            }
+                        }
+                    },
+                    "not_found": {
+                        "properties": {
+                            "ids": {
+                                "normalizer": "keyword_lowercase_normalizer",
+                                "type": "keyword"
+                            },
+                            "count": {
+                                "type": "integer"
+                            }
                         }
                     }
+                }
+            }
+        },
+        "duplicates": {
+            "properties": {
+                "ids": {
+                    "properties": {
+                        "id": {
+                            "normalizer": "keyword_lowercase_normalizer",
+                            "type": "keyword"
+                        },
+                        "count": {
+                            "type": "integer"
+                        }
+                    }
+                },
+                "count": {
+                    "type": "integer"
+                }
+            }
+        },
+        "not_found": {
+            "properties": {
+                "ids": {
+                    "normalizer": "keyword_lowercase_normalizer",
+                    "type": "keyword"
+                },
+                "count": {
+                    "type": "integer"
                 }
             }
         },

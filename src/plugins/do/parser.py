@@ -1,26 +1,38 @@
 #!/usr/bin/env python3
 
-import json
 import os
 import re
-import sys
 
-import mygene
 from biothings.utils.dataload import dict_sweep, unlist
 
-try:                         # run as a data plugin module of Biothings SDK
-    from biothings import config
-    logging = config.logger
-except Exception:            # run locally as a standalone script
+if __name__ == "__main__":
+    # Run locally as a standalone script
     import logging
-    LOG_LEVEL=logging.WARNING
+    import sys
+
+    sys.path.append("../../")
+
+    import config
+
+    LOG_LEVEL = logging.WARNING
     logging.basicConfig(level=LOG_LEVEL, format='%(asctime)s: %(message)s')
+
+else:
+    # Run as a data plugin module of Biothings SDK
+    from biothings import config
+
+    logging = config.logger
+
+from utils.mygene_lookup import MyGeneLookup
+
 
 TAX_ID = 9606  # Taxonomy ID of human being
 
-# Varibles when searching MIM Disease ID from "Phenotypes" column in "genemap2.txt"
+# Varibles when searching MIM Disease ID from "Phenotypes" column
+# in "genemap2.txt"
 FIND_MIMID = re.compile('\, [0-9]* \([1-4]\)')  # Regex pattern
 PHENOTYPE_FILTER = '(3)'
+
 
 # Based on `go` class in "annotation-refinery/go.py".
 # See https://github.com/greenelab/annotation-refinery
@@ -83,10 +95,10 @@ class GO:
 
             elif inside and fields[0] == 'id:':
                 if fields[1] in self.go_terms:
-                    #logging.debug("Term %s exists in GO()", fields[1])
+                    # logging.debug("Term %s exists in GO()", fields[1])
                     gterm = self.go_terms[fields[1]]
                 else:
-                    #logging.debug("Adding term %s to GO()", fields[1])
+                    # logging.debug("Adding term %s to GO()", fields[1])
                     gterm = GOTerm(fields[1])
                     self.go_terms[gterm.get_id()] = gterm
             elif inside and fields[0] == 'def:':
@@ -108,7 +120,7 @@ class GO:
                 gterm.alt_id.append(fields[1])
                 self.alt_id2std_id[fields[1]] = gterm.get_id()
             elif inside and fields[0] == 'is_a:':
-                #logging.debug("Making term.head for term %s = False", gterm)
+                # logging.debug("Making term.head for term %s = False", gterm)
                 gterm.head = False
                 fields.pop(0)
                 pgo_id = fields.pop(0)
@@ -123,7 +135,7 @@ class GO:
                     # Has part is not a parental relationship --
                     # it is actually for children.
                     continue
-                #logging.debug("Making term.head for term %s = False", gterm)
+                # logging.debug("Making term.head for term %s = False", gterm)
                 gterm.head = False
                 pgo_id = fields[2]
                 if pgo_id not in self.go_terms:
@@ -136,12 +148,13 @@ class GO:
                 elif fields[1] == 'part_of':
                     gterm.relationship_part_of.append(self.go_terms[pgo_id])
                 else:
-                    logging.info("Unkown relationship %s", self.go_terms[pgo_id].name)
+                    logging.info("Unkown relationship %s",
+                                 self.go_terms[pgo_id].name)
 
                 self.go_terms[pgo_id].parent_of.add(gterm)
                 gterm.child_of.add(self.go_terms[pgo_id])
             elif inside and fields[0] == 'is_obsolete:':
-                #logging.debug("Making term.head for term %s = False", gterm)
+                # logging.debug("Making term.head for term %s = False", gterm)
                 gterm.head = False
                 del self.go_terms[gterm.get_id()]
 
@@ -150,10 +163,10 @@ class GO:
         for term_id, term in self.go_terms.items():
             if term.head:
                 if term not in self.heads:
-                    #logging.debug("Term %s not in self.heads, adding now", term)
+                    # logging.debug("Term %s not in self.heads, adding now", term)
                     self.heads.append(term)
 
-        #logging.debug("Terms that are heads: %s", self.heads)
+        # logging.debug("Terms that are heads: %s", self.heads)
 
     def propagate(self):
         """
@@ -167,7 +180,7 @@ class GO:
 
     def propagate_recurse(self, gterm):
         if not len(gterm.parent_of):
-            #logging.debug("Base case with term %s", gterm.name)
+            # logging.debug("Base case with term %s", gterm.name)
             return
 
         for child_term in gterm.parent_of:
@@ -199,7 +212,7 @@ class GO:
             gterm.annotations = gterm.annotations | new_annotations
 
     def get_term(self, tid):
-        #logging.debug('get_term: %s', tid)
+        # logging.debug('get_term: %s', tid)
         term = None
         try:
             term = self.go_terms[tid]
@@ -302,9 +315,6 @@ class GOTerm:
         self.counts = None
         self.desc = None
         self.votes = set([])
-
-    def __cmp__(self, other):
-        return cmp(self.go_id, other.go_id)
 
     def __hash__(self):
         return(self.go_id.__hash__())
@@ -458,7 +468,7 @@ def build_mim_diseases_dict(genemap_filename):
         tokens = line.strip('\n').split('\t')
 
         try:
-            mim_geneid = tokens[5].strip()
+            # mim_geneid = tokens[5].strip()
             entrez_id = tokens[9].strip()
             disorders = tokens[12].strip()
         except IndexError:
@@ -470,7 +480,7 @@ def build_mim_diseases_dict(genemap_filename):
 
         # Log message for empty "Entrez Gene ID" column
         if entrez_id == '':
-            #logging.info(f"Empty Entrez Gene ID for MIM Number {mim_geneid}")
+            # logging.info(f"Empty Entrez Gene ID for MIM Number {mim_geneid}")
             continue
 
         # Split disorders and handle them one by one
@@ -527,7 +537,7 @@ def add_term_annotations(doid_omim_dict, disease_ontology, mim_diseases):
     A set of Entrez gene IDs, which will be used in MyGene.info query.
     """
 
-    #logging.debug(disease_ontology.go_terms)
+    # logging.debug(disease_ontology.go_terms)
 
     entrez_set = set()
     for doid in doid_omim_dict.keys():
@@ -535,7 +545,7 @@ def add_term_annotations(doid_omim_dict, disease_ontology, mim_diseases):
         if term is None:
             continue
 
-        #logging.info("Processing %s", term)
+        # logging.info("Processing %s", term)
 
         omim_id_list = doid_omim_dict[doid]
         for omim_id in omim_id_list:
@@ -602,55 +612,8 @@ def create_gs_abstract(do_term, doid_omim_dict):
         + omim_clause
     )
 
-    #logging.info(abstract)
+    # logging.info(abstract)
     return abstract
-
-
-def query_mygene(entrez_set, tax_id):
-    """Query MyGene.info to get detailed gene information."""
-
-    q_genes = entrez_set
-    q_scopes = ['entrezgene', 'retired']
-    output_fields = ['entrezgene', 'ensembl.gene', 'symbol', 'name', 'uniprot']
-
-    mg = mygene.MyGeneInfo()
-    logging.info(f"Querying {q_scopes} in MyGene.info ...")
-    q_results = mg.querymany(
-        q_genes,
-        scopes=q_scopes,
-        fields=output_fields,
-        species=tax_id,
-        returnall=True
-    )
-
-    genes_info = dict()
-    for gene in q_results['out']:
-        q_str = gene["query"]
-
-        # Ensembl gene ID
-        ensembl_id = None
-        ensembl = gene.get('ensembl', None)
-        if ensembl:
-            if len(gene['ensembl']) > 1:
-                ensembl_id = [g['gene'] for g in gene['ensembl'] if 'gene' in g]
-            elif 'gene' in gene['ensembl']:
-                ensembl_id = gene['ensembl']['gene']
-
-        # Only keep 'Swiss-Prot' component in 'uniprot'
-        uniprot = gene.get('uniprot', None)
-        if uniprot:
-            uniprot = uniprot.get('Swiss-Prot', None)
-
-        genes_info[q_str] = {
-            'mygene_id': gene.get('_id', None),
-            'ncbigene': gene.get('entrezgene', None),
-            'ensemblgene': ensembl_id,
-            'symbol': gene.get('symbol', None),
-            'name': gene.get('name', None),
-            'uniprot': uniprot
-        }
-
-    return genes_info
 
 
 # Based on `process_do_terms()` in "annotation-refinery/process_do.py".
@@ -673,7 +636,9 @@ def get_genesets(obo_filename, genemap_filename):
         mim_diseases
     )
 
-    genes_info = query_mygene(entrez_set, TAX_ID)
+    gene_lookup = MyGeneLookup(TAX_ID)
+    gene_lookup.query_mygene(entrez_set, 'entrezgene,retired')
+
     disease_ontology.populated = True
     disease_ontology.propagate()
 
@@ -693,16 +658,18 @@ def get_genesets(obo_filename, genemap_filename):
             my_geneset['name'] = term.full_name
             do_abstract = create_gs_abstract(term, doid_omim_dict)
             my_geneset['description'] = do_abstract
-
-            # Genes in a geneset are sorted by their IDs to make output reproducible.
-            my_geneset['genes'] = [genes_info[str(gid)] for gid in sorted(gid_set)]
-
             my_geneset['do'] = {
                 'id': term_id,
                 'abstract': do_abstract
             }
 
-            my_geneset = dict_sweep(my_geneset, vals=[None], remove_invalid_list=True)
+            # Add the gene lookup info to the geneset.
+            genes = [str(gid) for gid in gid_set]
+            lookup_results = gene_lookup.get_results(genes)
+            my_geneset.update(lookup_results)
+
+            my_geneset = dict_sweep(my_geneset, vals=[None],
+                                    remove_invalid_list=True)
             my_geneset = unlist(my_geneset)
             genesets.append(my_geneset)
 
@@ -714,6 +681,12 @@ def load_data(data_dir):
 
     obo_filename = os.path.join(data_dir, "HumanDO.obo")
     genemap_filename = os.path.join(data_dir, "genemap2.txt")
+    print(obo_filename)
+    print(genemap_filename)
+    assert os.path.exists(obo_filename), \
+        f"Could not find file: {obo_filename}"
+    assert os.path.exists(genemap_filename), \
+        f"Could not find file: {genemap_filename}"
 
     genesets = get_genesets(obo_filename, genemap_filename)
     for gs in genesets:
@@ -722,7 +695,14 @@ def load_data(data_dir):
 
 # Test harness
 if __name__ == "__main__":
-    data_dir = "./data/latest"
+
+    import json
+    from version import get_release
+
+    # Get data dir
+    version = get_release(None)
+    data_dir = os.path.join(config.DATA_ARCHIVE_ROOT, 'do', version)
+
     genesets = list(load_data(data_dir))
     for gs in genesets:
         print(json.dumps(gs, indent=2))

@@ -11,7 +11,7 @@ from biothings.web.auth.authn import BioThingsAuthnMixin
 from biothings.web.handlers import BaseAPIHandler
 from biothings.web.handlers.query import BiothingHandler, QueryHandler
 from tornado.web import HTTPError
-from utils.geneset_utils import IDLookup
+from utils.mygene_lookup import MyGeneLookup
 
 
 class MyGenesetQueryHandler(BioThingsAuthnMixin, QueryHandler):
@@ -60,9 +60,9 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
 
     async def _query_mygene(self, genes):
         """"Take a list of mygene.info ids and return a list of gene objects."""
-        mygene = IDLookup(species="all", cache_dict={})
+        mygene = MyGeneLookup(species="all", cache_dict={})
         mygene.query_mygene(genes, id_type="_id")
-        return [gene for gene in mygene.query_cache.values()]
+        return [gene for gene in mygene._query_cache.values()]
 
     async def _create_user_geneset(self, name, author, genes=[], is_public=True, description=""):
         """"Create a user geneset document."""

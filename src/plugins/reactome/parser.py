@@ -1,7 +1,13 @@
 import os
 
 from biothings.utils.dataload import tabfile_feeder
-from utils.geneset_utils import IDLookup
+
+if __name__ == "__main__":
+    import sys
+
+    sys.path.append("../../")
+
+from utils.mygene_lookup import MyGeneLookup
 
 
 def load_data(data_folder):
@@ -13,30 +19,27 @@ def load_data(data_folder):
         genes = set(rec[2:])
         all_genes = all_genes | genes
     # Query gene info
-    lookup = IDLookup(9606)  # Human genes
-    lookup.query_mygene(all_genes, 'symbol')
+    gene_lookup = MyGeneLookup(9606)  # Human genes
+    gene_lookup.query_mygene(all_genes, 'symbol,alias')
 
     data = tabfile_feeder(f, header=0)
     for rec in data:
         name = rec[0]
         _id = rec[1]
         ncbigenes = rec[2:]
-        genes = []
-        for gene in ncbigenes:
-            if lookup.query_cache.get(gene):
-                genes.append(lookup.query_cache[gene])
+        lookup_results = gene_lookup.get_results(ncbigenes)
         # Format schema
         doc = {'_id': _id,
                'name': name,
                'is_public': True,
                'taxid': 9606,
-               'genes': genes,
                'source': 'reactome',
                'reactome': {
                    'id': _id,
                    'geneset_name': name,
                    }
                }
+        doc.update(lookup_results)
         yield doc
 
 

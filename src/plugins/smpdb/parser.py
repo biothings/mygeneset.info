@@ -1,12 +1,14 @@
 import os
 from glob import glob
-# import sys
-# sys.path.append("../../")
 
-import pandas as pd
+if __name__ == "__main__":
+    import sys
+    sys.path.append("../../")
+
 import biothings_client
+import pandas as pd
 from biothings.utils.dataload import dict_sweep
-from utils.geneset_utils import IDLookup
+from utils.mygene_lookup import MyGeneLookup
 
 
 def load_data(data_folder):
@@ -23,14 +25,16 @@ def load_data(data_folder):
                'taxid': 9606,
                'smpdb': {
                    'id': smpdb_id,
+                   'geneset_name': data['Name'][i],
                    'pw_id': data['PW ID'][i],
                    'pathway_subject': data['Subject'][i],
                    }
                }
         if genesets.get(smpdb_id):
-            doc['genes'] = genesets[smpdb_id]
+            doc.update(genesets[smpdb_id])
         if chemsets.get(smpdb_id):
             doc['metabolites'] = chemsets[smpdb_id]
+            doc['metabolites_count'] = len(chemsets[smpdb_id])
         if doc.get('metabolites') or doc.get('genes'):
             doc = dict_sweep(doc, vals=[',', None])
             yield doc
@@ -46,12 +50,12 @@ def parse_genes(data_folder):
         if len(tmp_df) == 0:
             continue
         all_genes = all_genes | set(zip(tmp_df['Uniprot ID'], tmp_df['Gene Name']))
-    uniprot = [i for i, j in all_genes]
-    symbols = [j for i, j in all_genes]
-    gene_lookup = IDLookup(9606)
-    gene_lookup.query_mygene(uniprot, 'uniprot')
-    gene_lookup.retry_failed_with_new_ids(symbols, 'symbol')
+    all_genes = list(all_genes)
+    gene_lookup = MyGeneLookup(9606)
+    gene_lookup.query_mygene(all_genes, ['uniprot', 'symbol,alias'])
 
+    # Every file contains a separate geneset
+    # We must open each file again and add the genes to the correct set
     gene_sets = {}
     fields = ['SMPDB ID', 'Uniprot ID', 'Gene Name', 'GenBank ID', 'Locus']
     for f in glob(os.path.join(data_folder, "*_proteins.csv")):
@@ -59,14 +63,8 @@ def parse_genes(data_folder):
         if len(data) == 0:
             continue
         smpdb_id = data['SMPDB ID'][0]
-        genes = []
-        for gene in data['Uniprot ID']:
-            if gene_lookup.query_cache.get(gene):
-                genes.append(gene_lookup.query_cache[gene])
-        for gene in data['Gene Name']:
-            if gene_lookup.query_cache.get(gene):
-                genes.append(gene_lookup.query_cache[gene])
-        gene_sets[smpdb_id] = genes
+        genes = list(zip(data['Uniprot ID'], data['Gene Name']))
+        gene_sets[smpdb_id] = gene_lookup.get_results(genes)
     return gene_sets
 
 
@@ -81,7 +79,7 @@ def parse_metabolites(data_folder):
         all_compounds = all_compounds | set(tmp_df['InChI Key'])
     # Query MyChem.info
     mc = biothings_client.MyChemInfo()
-    resp = mc.getchems(all_compounds, fields='pubchem.cid, chembl.molecule_chembl_id', dotfield=True)
+    resp = mc.getchems(all_compounds, fields='pubchem.cid,chembl.molecule_chembl_id', dotfield=True)
     results = {}
     not_found = []
     for r in resp:
@@ -149,4 +147,5 @@ if __name__ == "__main__":
 
     annotations = load_data("./test_data")
     for a in annotations:
+        #pass
         print(json.dumps(a, indent=2))

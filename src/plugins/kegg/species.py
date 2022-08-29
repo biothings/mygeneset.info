@@ -1,10 +1,5 @@
 """KEGG configuration module."""
 
-import logging
-
-BASE_URL = "http://rest.kegg.jp/"
-LOG_LEVEL = logging.DEBUG
-
 # Possible gene_id_types:
 #  * '_id'
 #  * 'entrezgene'

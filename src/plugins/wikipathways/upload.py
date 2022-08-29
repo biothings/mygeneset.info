@@ -33,9 +33,16 @@ class WikiPathwaysUploader(uploader.BaseSourceUploader):
             "taxid": {
                 "type": "integer"
             },
+            "count": {
+                "type": "integer"
+            },
             "genes": {
                 "properties": {
                     "mygene_id": {
+                        "normalizer": "keyword_lowercase_normalizer",
+                        "type": "keyword"
+                    },
+                    "source_id": {
                         "normalizer": "keyword_lowercase_normalizer",
                         "type": "keyword"
                     },
@@ -60,6 +67,35 @@ class WikiPathwaysUploader(uploader.BaseSourceUploader):
                     },
                     "name": {
                         "type": "text"
+                    }
+                }
+            },
+            "duplicates": {
+                "properties": {
+                    "ids": {
+                        "properties": {
+                            "id": {
+                                "normalizer": "keyword_lowercase_normalizer",
+                                "type": "keyword"
+                            },
+                            "count": {
+                                "type": "integer"
+                            }
+                        }
+                    },
+                    "count": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "not_found": {
+                "properties": {
+                    "ids": {
+                        "normalizer": "keyword_lowercase_normalizer",
+                        "type": "keyword"
+                    },
+                    "count": {
+                        "type": "integer"
                     }
                 }
             },

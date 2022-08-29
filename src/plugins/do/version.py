@@ -25,7 +25,7 @@ def get_release(self):
             break
 
     # Get release date of "genemap2.txt" data file:
-    genemap2_url = "https://raw.githubusercontent.com/greenelab/disease_ontology_geneset/master/data/latest/genemap2.txt"
+    genemap2_url = "https://data.omim.org/downloads/V3TcgUTzQge_hC0CEPEBgA/genemap2.txt"
     genemap2_resp = requests.get(genemap2_url)
     genemap2_text_lines = genemap2_resp.text.strip('\n').split('\n')
     genemap2_release = ""

@@ -13,8 +13,8 @@ if __name__ == "__main__":
     import config
     from dump import msigdbDumper
 
-from biothings.utils.dataload import dict_sweep
-from utils.geneset_utils import IDLookup
+from biothings.utils.dataload import dict_sweep, unlist
+from utils.mygene_lookup import MyGeneLookup
 
 
 def parse_msigdb(data_file):
@@ -51,7 +51,7 @@ def parse_msigdb(data_file):
                 if doc["taxid"] != current_organism:
                     current_organism = doc["taxid"]
                     logging.info("Parsing msigdb data for organism {}".format(current_organism))
-                    gene_lookup = IDLookup(doc["taxid"])
+                    gene_lookup = MyGeneLookup(doc["taxid"])
                 # MEMBERS contains a "," delimited list of genes with their original identifier.
                 # MEMBERS_SYMBOLIZED contains a "," delimited list of genes converted to symbols (but sometimes containsother types of ids).
                 # MEMBERS_EZID contains a "," delimited list of entrez IDs, but these have been converted from their corresponding human gene.
@@ -130,6 +130,8 @@ def parse_msigdb(data_file):
                     "geneset_listing": data.get("GENESET_LISTING_URL")
                 }
                 doc["msigdb"] = msigdb
+                # Remove lists with only one item
+                doc = unlist(doc)
                 # Clean up empty fields
                 doc = dict_sweep(doc)
                 yield doc
