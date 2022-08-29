@@ -112,7 +112,7 @@ def load_data(data_dir):
 
     for conf in organisms:
         organism_name = conf['name']
-        tax_id = conf['tax_id']
+        tax_id = str(conf['tax_id'])
 
         logging.info("=" * 60)
         logging.info(

@@ -19,7 +19,7 @@ def load_data(data_folder):
         genes = set(rec[2:])
         all_genes = all_genes | genes
     # Query gene info
-    gene_lookup = MyGeneLookup(9606)  # Human genes
+    gene_lookup = MyGeneLookup('9606')  # Human genes
     gene_lookup.query_mygene(all_genes, 'symbol,alias')
 
     data = tabfile_feeder(f, header=0)
@@ -32,7 +32,7 @@ def load_data(data_folder):
         doc = {'_id': _id,
                'name': name,
                'is_public': True,
-               'taxid': 9606,
+               'taxid': '9606',
                'source': 'reactome',
                'reactome': {
                    'id': _id,
