@@ -26,7 +26,7 @@ else:
 from utils.mygene_lookup import MyGeneLookup
 
 
-TAX_ID = 9606  # Taxonomy ID of human being
+TAX_ID = "9606"  # Taxonomy ID of human being
 
 # Varibles when searching MIM Disease ID from "Phenotypes" column
 # in "genemap2.txt"
