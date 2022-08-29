@@ -1,10 +1,11 @@
 import glob
 import json
+import logging
 import os
 import sys
 
 sys.path.append("../../")
-from biothings.utils.dataload import tabfile_feeder, dict_sweep, unlist
+from biothings.utils.dataload import dict_sweep, tabfile_feeder, unlist
 from utils.mygene_lookup import MyGeneLookup
 
 
@@ -14,23 +15,21 @@ def load_data(data_folder):
     goterms = parse_ontology(go_file)
     # Gene annotation files
     for f in glob.glob(os.path.join(data_folder, "*.gaf.gz")):
-        print("Parsing {}".format(f))
+        logging.info("Parsing {}".format(f))
         docs = parse_gene_annotations(f)
 
-        # Create gene ID cache. Join all gene sets and fetch ids.
+        # Create a set of all gene-related annotations
+        # Each gene is a tuple (uniprot, symbol)
         all_genes = set()
         for _id, annotations in docs.items():
-            for key in ["genes", "excluded_genes", "contributing_genes",
-                        "colocalized_genes"]:
+            for key in ["genes", "excluded", "contributing",
+                        "colocalized"]:
                 if annotations.get(key) is not None:
                     all_genes = all_genes | annotations[key]
-        uniprot = [i for i, j in all_genes]
-        symbols = [j for i, j in all_genes]
         taxid = annotations['taxid']
         # Fetch gene data from mygene.info
         lookup = MyGeneLookup(taxid)
-        lookup.query_mygene(uniprot, "uniprot,retired,accession")
-        lookup.retry_failed_with_new_ids(symbols, "symbol")
+        lookup.query_mygene(list(all_genes), ["uniprot,retired,accession", "symbol,alias"])
 
         for _id, annotations in docs.items():
             # Add ontology annotations
@@ -40,27 +39,18 @@ def load_data(data_folder):
             if annotations.get("genes") is not None:
                 annotations['name'] = annotations['go']['name']
                 annotations['description'] = annotations['go']['description']
-                new_genes = []
-                for u, s in annotations['genes']:
-                    if lookup._query_cache.get(u) is not None:
-                        new_genes.append(lookup._query_cache[u])
-                    elif lookup._query_cache.get(s) is not None:
-                        new_genes.append(lookup._query_cache[s])
-                annotations['genes'] = new_genes
+                # Add gene lookup data
+                annotations.update(lookup.get_results(list(annotations['genes'])))
             else:
                 # No genes in set
                 continue
 
-            for key in ["excluded_genes", "contributing_genes",
-                        "colocalized_genes"]:
+            # TODO: I don't quite like how this data is structured.
+            # It might be better to create sepparate genesets with different _id and names
+            # for example: "GO_XXXXX_TAXID_excluded" and "GO_XXXXX_TAXID_contributing"
+            for key in ["excluded", "contributing", "colocalized"]:
                 if annotations.get(key) is not None:
-                    new_genes = []
-                    for u, s in annotations.pop(key):
-                        if lookup._query_cache.get(u) is not None:
-                            new_genes.append(lookup._query_cache[u])
-                        elif lookup._query_cache.get(s) is not None:
-                            new_genes.append(lookup._query_cache[s])
-                    annotations['go'][key] = new_genes
+                    annotations['go'][key] = lookup.get_results(list(annotations.pop(key)))
             # Clean up data
             annotations = unlist(annotations)
             annotations = dict_sweep(annotations)
@@ -75,7 +65,7 @@ def parse_gene_annotations(f):
         if not rec[0].startswith("!"):
             _id = rec[4].replace(":", "_")
             if genesets.get(_id) is None:
-                taxid = int(rec[12].split("|")[0].replace("taxon:", ""))
+                taxid = str(rec[12].split("|")[0].replace("taxon:", ""))
                 genesets[_id] = {"_id":  _id + "_" + str(taxid),
                                  "is_public": True,
                                  "taxid": taxid}
@@ -85,15 +75,15 @@ def parse_gene_annotations(f):
             # The gene can belong to several sets:
             if "NOT" in qualifiers:
                 # Genes similar to genes in go term, but should be excluded
-                genesets[_id].setdefault("excluded_genes", set()).add(
+                genesets[_id].setdefault("excluded", set()).add(
                         (uniprot, symbol))
             if "contributes_to" in qualifiers:
                 # Genes that contribute to the specified go term
-                genesets[_id].setdefault("contributing_genes", set()).add(
+                genesets[_id].setdefault("contributing", set()).add(
                         (uniprot, symbol))
             if "colocalizes_with" in qualifiers:
                 # Genes colocalized with specified go term
-                genesets[_id].setdefault("colocalized_genes", set()).add(
+                genesets[_id].setdefault("colocalized", set()).add(
                         (uniprot, symbol))
             else:
                 # Default set: genes that belong to go term
@@ -113,8 +103,10 @@ def parse_ontology(f):
         _id = url.split("/")[-1]
         if not _id.startswith("GO_"):
             continue
-        go_terms[_id] = {"id": _id,
-                         "url": url,}
+        go_terms[_id] = {
+            "id": _id.replace("GO_", "GO:"),  # Convert to CURIE format
+            "url": url
+        }
         properties = node['meta'].get('basicPropertyValues')
         for p in properties:
             if p['val'] in ["biological_process", "cellular_component", "molecular_function"]:
@@ -130,8 +122,7 @@ def parse_ontology(f):
 
 
 if __name__ == "__main__":
-    import os
     annotations = load_data("./test_data")
-    with open("out.json", 'a') as outfile:
-        for a in annotations:
-            outfile.write(json.dumps(a, indent=2))
+
+    for a in annotations:
+        print(json.dumps(a, indent=2))
