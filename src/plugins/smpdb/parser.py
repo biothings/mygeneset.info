@@ -22,7 +22,7 @@ def load_data(data_folder):
                'name': data['Name'][i],
                'description': data['Description'][i],
                'source': 'smpdb',
-               'taxid': 9606,
+               'taxid': '9606',
                'smpdb': {
                    'id': smpdb_id,
                    'geneset_name': data['Name'][i],
@@ -51,7 +51,7 @@ def parse_genes(data_folder):
             continue
         all_genes = all_genes | set(zip(tmp_df['Uniprot ID'], tmp_df['Gene Name']))
     all_genes = list(all_genes)
-    gene_lookup = MyGeneLookup(9606)
+    gene_lookup = MyGeneLookup('9606')
     gene_lookup.query_mygene(all_genes, ['uniprot', 'symbol,alias'])
 
     # Every file contains a separate geneset
