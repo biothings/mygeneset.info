@@ -20,7 +20,7 @@ def load_data(data_folder):
         all_genes = all_genes | genes
     # Query gene info
     gene_lookup = MyGeneLookup('9606')  # Human genes
-    gene_lookup.query_mygene(all_genes, 'symbol,alias')
+    gene_lookup.query_mygene(list(all_genes), 'symbol,alias')
 
     data = tabfile_feeder(f, header=0)
     for rec in data:

@@ -149,7 +149,7 @@ def load_data(data_dir):
         # Query mygene for all genes for this species
         gene_id_types = ','.join(conf['gene_id_types'])
         gene_lookup = MyGeneLookup(tax_id)
-        gene_lookup.query_mygene(uniq_genes, gene_id_types)
+        gene_lookup.query_mygene(list(uniq_genes), gene_id_types)
 
         for gs_entry, genes in genes_in_gs.items():
             gs_type = all_genesets[gs_entry]['type']

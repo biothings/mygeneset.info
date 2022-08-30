@@ -49,7 +49,7 @@ def load_data(data_folder):
         all_genes = []
         for rec in data:
             all_genes += rec[2:]
-        all_genes = set(all_genes)
+        all_genes = list(set(all_genes))
         gene_lookup = MyGeneLookup(taxid)
         gene_lookup.query_mygene(all_genes, 'entrezgene,retired')
 
