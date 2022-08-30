@@ -63,13 +63,20 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
         """"Take a list of mygene.info ids and return a list of gene objects."""
         mygene = MyGeneLookup(species="all", cache_dict={})
         mygene.query_mygene(genes, id_types="_id")
-        return [gene for gene in mygene._query_cache.values()]
+        results = mygene.get_results(genes)
+        return results
 
     async def _create_user_geneset(self, name, author, genes=[], is_public=True, description=""):
         """"Create a user geneset document."""
-        genes = await self._query_mygene(genes)
-        geneset = {"name": name, "author": author, "description": description,
-                   "is_public": is_public, "genes": genes}
+        geneset = await self._query_mygene(genes)
+        geneset.update(
+            {
+                "name": name,
+                "author": author,
+                "description": description,
+                "is_public": is_public
+            }
+        )
         geneset = dict_sweep(geneset, vals=[None])
         return geneset
 
