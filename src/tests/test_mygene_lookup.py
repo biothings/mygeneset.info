@@ -98,7 +98,6 @@ class TestMyGeneLookup:
         lookup.fields_to_query = ['taxid', 'homologene']
         lookup.query_mygene(genes, 'entrezgene,retired')
         results = lookup.get_results(genes)
-        print(results)
         assert results['count'] == 1
         for field in ['homologene', 'taxid']:
             assert field in results['genes'][0].keys(), "Field {} not found".format(field)
