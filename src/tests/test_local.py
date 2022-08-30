@@ -5,7 +5,6 @@ import os
 
 from biothings.tests.web import BiothingsWebTest
 from selenium.webdriver.common.by import By
-from seleniumwire.utils import decode
 
 from .bot import Bot
 
