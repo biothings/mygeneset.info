@@ -132,7 +132,3 @@ class TestUserGenesets(MyGenesetLocalTestBase):
             }
         }
         assert res.json() == expected_respone, "The response document does not match the expected one."
-
-
-if __name__ == '__main__':
-    TestUserLogin().test_login_github()
