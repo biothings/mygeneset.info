@@ -117,6 +117,7 @@ class TestUserGenesets(MyGenesetLocalTestBase):
                 "name": "Test",
                 "author": "ravila4",
                 "is_public": True,
+                "count": 1,
                 "genes": [
                     {
                         "mygene_id": "1001",
