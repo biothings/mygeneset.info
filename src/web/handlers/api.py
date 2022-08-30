@@ -29,6 +29,7 @@ class MyGenesetBiothingHandler(BioThingsAuthnMixin, BiothingHandler):
         if self.current_user:
             self.args['current_user'] = self.current_user['username']
 
+
 class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
     """
         Operations on user geneset documents.
@@ -61,7 +62,7 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
     async def _query_mygene(self, genes):
         """"Take a list of mygene.info ids and return a list of gene objects."""
         mygene = MyGeneLookup(species="all", cache_dict={})
-        mygene.query_mygene(genes, id_type="_id")
+        mygene.query_mygene(genes, id_types="_id")
         return [gene for gene in mygene._query_cache.values()]
 
     async def _create_user_geneset(self, name, author, genes=[], is_public=True, description=""):
@@ -123,7 +124,7 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
             self.finish({
                 "success": True,
                 "result": response['result'],
-                "_id":response['_id'],
+                "_id": response['_id'],
                 "name": name,
                 "user": user
             })
@@ -141,7 +142,7 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
         document = await self._get_geneset(_id)
         # Update document if user has permission
         document_name = document['_source']['name']
-        document_owner =  document['_source']['author']
+        document_owner = document['_source']['author']
         geneset = document['_source']
         if document_owner == user:
             # Update metadata
@@ -170,10 +171,10 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
                     geneset.update({
                         'genes': geneset['genes'] + [gene for gene in new_genes if gene not in geneset['genes']]})
                 else:
-                    raise HTTPError(401,
-                        reason="Argument 'gene operation' must be one of: 'replace', 'add', 'remove'.")
-
-            # Update geneset
+                    raise HTTPError(
+                        401,
+                        reason="Argument 'gene operation' must be one of: 'replace', 'add', 'remove'."
+                    )
             dry_run = self.get_argument("dry_run", default=None)
             if dry_run is None or dry_run.lower() == "false":
                 _now = datetime.now(timezone.utc).isoformat()
@@ -183,15 +184,17 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
                 self.finish({
                     "success": True,
                     "result": response['result'],
-                    "_id":response['_id'],
+                    "_id": response['_id'],
                     "name": document_name,
                     "user": document_owner
                 })
             else:
                 self.finish({"new_document": geneset})
         else:
-            raise HTTPError(403,
-                reason="You don't have permission to modify this document.")
+            raise HTTPError(
+                403,
+                reason="You don't have permission to modify this document."
+            )
 
     @user_authenticated
     async def delete(self, _id):
@@ -201,7 +204,7 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
         document = await self._get_geneset(_id)
         # Delete document if user has permission
         document_name = document['_source']['name']
-        document_owner =  document['_source'].get('author')
+        document_owner = document['_source'].get('author')
         if document_owner == user:
             response = await self.biothings.elasticsearch.async_client.delete(
                     id=_id, index=self.biothings.config.ES_USER_INDEX)
@@ -213,5 +216,7 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
                 "user": document_owner
             })
         else:
-            raise HTTPError(403,
-                reason="You don't have permission to delete this document.")
+            raise HTTPError(
+                403,
+                reason="You don't have permission to delete this document."
+            )
