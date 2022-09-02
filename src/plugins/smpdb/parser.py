@@ -21,6 +21,7 @@ def load_data(data_folder):
         doc = {'_id': smpdb_id,
                'name': data['Name'][i],
                'description': data['Description'][i],
+               'is_public': True,
                'source': 'smpdb',
                'taxid': '9606',
                'smpdb': {
