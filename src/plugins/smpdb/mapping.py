@@ -13,6 +13,9 @@ def get_customized_mapping(cls):
         "metabolites_count": {
             "type": "integer"
         },
+        "is_public": {
+            "type": "boolean"
+        },
         "smpdb": {
             "properties": {
                 "id": {
