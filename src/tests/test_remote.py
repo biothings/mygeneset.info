@@ -1,8 +1,8 @@
 
-from biothings.tests.web import BiothingsDataTest
+from biothings.tests.web import BiothingsWebTest
 
 
-class MyGenesetWebTestBase(BiothingsDataTest):
+class MyGenesetWebTestBase(BiothingsWebTest):
     host = 'mygeneset.info'
 
 
