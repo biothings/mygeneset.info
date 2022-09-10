@@ -148,7 +148,7 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
         payload = self._validate_input(self.request.method, payload)
         # Retrieve document
         document = await self._get_geneset(_id)
-        # Update document if user has permission
+        # Check if user has permission to update document
         document_name = document['_source']['name']
         document_owner = document['_source']['author']
         geneset = document['_source']
@@ -161,7 +161,7 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
             if payload.get('genes'):
                 gene_operation = self.get_argument("gene_operation", None)
                 if gene_operation is None:
-                    raise HTTPError(401, reason="Missing argument 'gene_operation'.")
+                    raise HTTPError(400, reason="Missing argument 'gene_operation'.")
                 if gene_operation == "replace":
                     geneset = await self._create_user_geneset(
                             name=geneset['name'],
@@ -185,7 +185,7 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
                     geneset["count"] = len(geneset["genes"])
                 else:
                     raise HTTPError(
-                        401,
+                        400,
                         reason="Argument 'gene operation' must be one of: 'replace', 'add', 'remove'."
                     )
             dry_run = self.get_argument("dry_run", default=None)
