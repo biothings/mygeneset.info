@@ -133,7 +133,8 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
                 "result": response['result'],
                 "_id": response['_id'],
                 "name": name,
-                "user": user
+                "author": user,
+                "count": geneset['count']
             })
         else:
             # Return the document itself as the response
@@ -173,10 +174,15 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
                     for geneid in payload['genes']:
                         gene_dict.pop(geneid, None)
                     geneset.update({'genes': list(gene_dict.values())})
+                    # Update count
+                    geneset["count"] = len(geneset["genes"])
                 elif gene_operation == "add":
-                    new_genes = await self._query_mygene(payload['genes'])
+                    query_results = await self._query_mygene(payload['genes'])
+                    new_genes = query_results['genes']
                     geneset.update({
                         'genes': geneset['genes'] + [gene for gene in new_genes if gene not in geneset['genes']]})
+                    # Update count
+                    geneset["count"] = len(geneset["genes"])
                 else:
                     raise HTTPError(
                         401,
@@ -193,7 +199,8 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
                     "result": response['result'],
                     "_id": response['_id'],
                     "name": document_name,
-                    "user": document_owner
+                    "author": document_owner,
+                    "count": geneset['count']
                 })
             else:
                 self.finish({"new_document": geneset})
@@ -220,7 +227,7 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
                 "result": response['result'],
                 "_id": response['_id'],
                 "name": document_name,
-                "user": document_owner
+                "author": document_owner
             })
         else:
             raise HTTPError(
