@@ -155,7 +155,7 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
         if document_owner == user:
             # Update metadata
             for elem in ['name', 'description', 'is_public']:
-                if payload.get(elem):
+                if payload.get(elem) is not None:
                     geneset.update({elem: payload[elem]})
             # Update genes
             if payload.get('genes'):
