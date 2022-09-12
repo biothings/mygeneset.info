@@ -91,11 +91,10 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
             if payload.get("name") == "":
                 raise HTTPError(400, reason="Body element 'name' cannot be empty.")
         # is_public
-        is_public = payload.get("is_public", "true")
-        if is_public is not None:
-            if is_public in [False, "false", "False", "0"]:
+        if payload.get("is_public") is not None:
+            if payload['is_public'] in [False, "false", "False", "0"]:
                 payload['is_public'] = False
-            elif is_public in [True, "true", "True", "1"]:
+            elif payload['is_public'] in [True, "true", "True", "1"]:
                 payload['is_public'] = True
             else:
                 raise HTTPError(400, reason="Body element 'is_public' must be 'True/False', 'true/false', or '1/0'.")
@@ -118,7 +117,7 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
         name = payload['name']
         description = payload.get('description')
         genes = payload['genes']
-        is_public = payload['is_public']
+        is_public = payload.get('is_public', True)
         # Generate body for ES request
         geneset = await self._create_user_geneset(name, user, genes, is_public, description)
         dry_run = self.get_argument("dry_run", default=None)
