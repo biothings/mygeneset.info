@@ -168,6 +168,8 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
                             author=user,
                             description=geneset.get('description'),
                             is_public=geneset['is_public'])
+                    if geneset.get('genes') is None:
+                        geneset['genes'] = []
                 elif gene_operation == "remove":
                     gene_dict = {gene['mygene_id']: gene for gene in geneset['genes']}
                     for geneid in payload['genes']:
