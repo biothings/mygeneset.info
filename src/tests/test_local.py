@@ -582,7 +582,6 @@ class TestUserGenesets(MyGenesetLocalTestBase):
         )
         assert res.reason == "Body element 'genes' is required."
 
-
     def test_create_geneset_invalid3(self):
         headers = {
             'Cookie': 'user=%s' % open('user_cookie.txt').read(),
