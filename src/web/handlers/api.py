@@ -82,7 +82,6 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
 
     def _validate_input(self, request_type, payload):
         """Validate request body."""
-        genes = payload.get('genes')
         # name
         if request_type == "POST":
             if not payload.get("name"):
