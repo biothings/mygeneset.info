@@ -101,6 +101,11 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
         if request_type == 'POST':
             if payload.get("genes") is None:
                 raise HTTPError(400, reason="Body element 'genes' is required.")
+            if not isinstance(payload['genes'], list):
+                raise HTTPError(400, reason="Body element 'genes' must be a list.")
+        elif request_type == 'PUT':
+            if payload.get("genes") is not None and not isinstance(payload['genes'], list):
+                raise HTTPError(400, reason="Body element 'genes' must be a list.")
         return payload
 
     @user_authenticated
