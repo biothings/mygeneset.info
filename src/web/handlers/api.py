@@ -181,6 +181,10 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
                     geneset.update({'genes': list(gene_dict.values())})
                     # Update count
                     geneset["count"] = len(geneset["genes"])
+                    # Remove genes from not_found list
+                    if geneset.get("not_found"):
+                        geneset['not_found']['ids'] = list(set(geneset['not_found']['ids']) - set(payload['genes']))
+                        geneset['not_found']['count'] = len(geneset['not_found']['ids'])
                 elif gene_operation == "add":
                     query_results = await self._query_mygene(payload['genes'])
                     new_genes = query_results['genes']
@@ -188,6 +192,11 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
                         'genes': geneset['genes'] + [gene for gene in new_genes if gene not in geneset['genes']]})
                     # Update count
                     geneset["count"] = len(geneset["genes"])
+                    # Add not_found to not_found list
+                    if query_results.get('not_found'):
+                        geneset['not_found']['ids'] = list(
+                            set(geneset.get('not_found', {}).get('ids', [])) | set(query_results['not_found']['ids']))
+                        geneset['not_found']['count'] = len(geneset['not_found']['ids'])
                 else:
                     raise HTTPError(
                         400,
