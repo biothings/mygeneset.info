@@ -89,7 +89,7 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
                 raise HTTPError(400, reason="Missing required body element 'name'.")
         elif request_type == "PUT":
             if payload.get("name") == "":
-                raise HTTPError(400, reason="Body element 'name' cannot be empty.")
+                raise HTTPError(400, reason="Body element 'name' cannot be an empty string.")
         # is_public
         if payload.get("is_public") is not None:
             if payload['is_public'] in [False, "false", "False", "0"]:
