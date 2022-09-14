@@ -82,20 +82,18 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
 
     def _validate_input(self, request_type, payload):
         """Validate request body."""
-        genes = payload.get('genes')
         # name
         if request_type == "POST":
             if not payload.get("name"):
                 raise HTTPError(400, reason="Missing required body element 'name'.")
         elif request_type == "PUT":
             if payload.get("name") == "":
-                raise HTTPError(400, reason="Body element 'name' cannot be empty.")
+                raise HTTPError(400, reason="Body element 'name' cannot be an empty string.")
         # is_public
-        is_public = payload.get("is_public", "true")
-        if is_public is not None:
-            if is_public in [False, "false", "False", "0"]:
+        if payload.get("is_public") is not None:
+            if payload['is_public'] in [False, "false", "False", "0"]:
                 payload['is_public'] = False
-            elif is_public in [True, "true", "True", "1"]:
+            elif payload['is_public'] in [True, "true", "True", "1"]:
                 payload['is_public'] = True
             else:
                 raise HTTPError(400, reason="Body element 'is_public' must be 'True/False', 'true/false', or '1/0'.")
@@ -103,6 +101,11 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
         if request_type == 'POST':
             if payload.get("genes") is None:
                 raise HTTPError(400, reason="Body element 'genes' is required.")
+            if not isinstance(payload['genes'], list):
+                raise HTTPError(400, reason="Body element 'genes' must be a list.")
+        elif request_type == 'PUT':
+            if payload.get("genes") is not None and not isinstance(payload['genes'], list):
+                raise HTTPError(400, reason="Body element 'genes' must be a list.")
         return payload
 
     @user_authenticated
@@ -118,7 +121,7 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
         name = payload['name']
         description = payload.get('description')
         genes = payload['genes']
-        is_public = payload['is_public']
+        is_public = payload.get('is_public', True)
         # Generate body for ES request
         geneset = await self._create_user_geneset(name, user, genes, is_public, description)
         dry_run = self.get_argument("dry_run", default=None)
@@ -133,7 +136,8 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
                 "result": response['result'],
                 "_id": response['_id'],
                 "name": name,
-                "user": user
+                "author": user,
+                "count": geneset['count']
             })
         else:
             # Return the document itself as the response
@@ -147,20 +151,20 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
         payload = self._validate_input(self.request.method, payload)
         # Retrieve document
         document = await self._get_geneset(_id)
-        # Update document if user has permission
+        # Check if user has permission to update document
         document_name = document['_source']['name']
         document_owner = document['_source']['author']
         geneset = document['_source']
         if document_owner == user:
             # Update metadata
             for elem in ['name', 'description', 'is_public']:
-                if payload.get(elem):
+                if payload.get(elem) is not None:
                     geneset.update({elem: payload[elem]})
             # Update genes
             if payload.get('genes'):
                 gene_operation = self.get_argument("gene_operation", None)
                 if gene_operation is None:
-                    raise HTTPError(401, reason="Missing argument 'gene_operation'.")
+                    raise HTTPError(400, reason="Missing argument 'gene_operation'.")
                 if gene_operation == "replace":
                     geneset = await self._create_user_geneset(
                             name=geneset['name'],
@@ -168,18 +172,34 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
                             author=user,
                             description=geneset.get('description'),
                             is_public=geneset['is_public'])
+                    if geneset.get('genes') is None:
+                        geneset['genes'] = []
                 elif gene_operation == "remove":
                     gene_dict = {gene['mygene_id']: gene for gene in geneset['genes']}
                     for geneid in payload['genes']:
                         gene_dict.pop(geneid, None)
                     geneset.update({'genes': list(gene_dict.values())})
+                    # Update count
+                    geneset["count"] = len(geneset["genes"])
+                    # Remove genes from not_found list
+                    if geneset.get("not_found"):
+                        geneset['not_found']['ids'] = list(set(geneset['not_found']['ids']) - set(payload['genes']))
+                        geneset['not_found']['count'] = len(geneset['not_found']['ids'])
                 elif gene_operation == "add":
-                    new_genes = await self._query_mygene(payload['genes'])
+                    query_results = await self._query_mygene(payload['genes'])
+                    new_genes = query_results['genes']
                     geneset.update({
                         'genes': geneset['genes'] + [gene for gene in new_genes if gene not in geneset['genes']]})
+                    # Update count
+                    geneset["count"] = len(geneset["genes"])
+                    # Add not_found to not_found list
+                    if query_results.get('not_found'):
+                        geneset['not_found']['ids'] = list(
+                            set(geneset.get('not_found', {}).get('ids', [])) | set(query_results['not_found']['ids']))
+                        geneset['not_found']['count'] = len(geneset['not_found']['ids'])
                 else:
                     raise HTTPError(
-                        401,
+                        400,
                         reason="Argument 'gene operation' must be one of: 'replace', 'add', 'remove'."
                     )
             dry_run = self.get_argument("dry_run", default=None)
@@ -193,7 +213,8 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
                     "result": response['result'],
                     "_id": response['_id'],
                     "name": document_name,
-                    "user": document_owner
+                    "author": document_owner,
+                    "count": geneset['count']
                 })
             else:
                 self.finish({"new_document": geneset})
@@ -220,7 +241,7 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
                 "result": response['result'],
                 "_id": response['_id'],
                 "name": document_name,
-                "user": document_owner
+                "author": document_owner
             })
         else:
             raise HTTPError(

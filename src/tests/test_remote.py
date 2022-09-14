@@ -1,10 +1,13 @@
+import os
 
 from biothings.tests.web import BiothingsWebTest
 
 
 class MyGenesetWebTestBase(BiothingsWebTest):
-    host = 'mygeneset.info'
-
+    if os.environ.get('HOST'):
+        HOST = os.environ['HOST']
+    else:
+        HOST = 'mygeneset.info'
 
 class TestMyGenesetDataIntegrity(MyGenesetWebTestBase):
 
