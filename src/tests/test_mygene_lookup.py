@@ -245,3 +245,19 @@ class TestMyGeneLookup:
         assert results['count'] == 1
         assert results['genes'][0]['mygene_id'] == '16334'
         assert results['genes'][0]['source_id'] == ['3630', '16334', 'P01308', 'P01326']
+
+    def test_50_empty_gene_list(self):
+        """Test empty gene list"""
+        lookup = MyGeneLookup()
+        lookup.query_mygene([], "entrezgene")
+        results = lookup.get_results([])
+        assert results['genes'] == []
+        assert results['count'] == 0
+
+    def test_51_empty_homolog_gene_list(self):
+        """Empty gene list"""
+        lookup = MyGeneLookup()
+        lookup.query_mygene_homologs([], "entrezgene", new_species="human")
+        results = lookup.get_results([])
+        assert results['genes'] == []
+        assert results['count'] == 0
