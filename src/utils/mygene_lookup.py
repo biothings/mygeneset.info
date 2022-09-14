@@ -98,7 +98,8 @@ class MyGeneLookup:
             retry = False
         else:
             raise TypeError("id_types must be a string or list")
-
+        if len(ids) == 0:
+            return self
         if retry:
             assert isinstance(ids[0], tuple), "To use retry, ids must be a list of tuples."
             assert len(ids[0]) == len(id_types), "The size of each tuple must match the size of id_types"
@@ -360,7 +361,8 @@ class MyGeneLookup:
                     "All tuples must have the same length."
         # Check if any of the ids are in the cache, using the first element of the tuple as the key
         # If there are more than one element in the tuple, we use subsequent elements as retry attempts
-        retry_count = len(ids[0])
+        if len(ids) > 0:
+            retry_count = len(ids[0])
         for q in ids:
             i = 0
             found = False
