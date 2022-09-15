@@ -136,7 +136,8 @@ class TestUserGenesets(MyGenesetLocalTestBase):
                         "ensemblgene": "ENSG00000062038",
                         "uniprot": "P22223"
                     }
-                ]
+                ],
+                "taxid": 9606
             }
         }
         assert res.json() == expected_respone, "The response document does not match the expected one."
@@ -175,6 +176,7 @@ class TestUserGenesets(MyGenesetLocalTestBase):
         assert res.json()["author"] == self.ORCID_USERNAME
         assert res.json()["count"] == 1
         assert res.json()["is_public"] is True
+        assert res.json()["taxid"] == 9606
         assert res.json()["description"] == "Test public geneset description"
         assert res.json()["genes"][0]["mygene_id"] == "1001"
         assert res.json()["genes"][0]["source_id"] == "1001"
@@ -227,6 +229,7 @@ class TestUserGenesets(MyGenesetLocalTestBase):
         assert res.json()["author"] == self.ORCID_USERNAME
         assert res.json()["count"] == 1
         assert res.json()["is_public"] is False
+        assert res.json()["taxid"] == 9606
         assert res.json()["description"] == "Test private geneset description"
         assert res.json()["genes"][0]["mygene_id"] == "1001"
         assert res.json()["genes"][0]["source_id"] == "1001"
@@ -511,6 +514,28 @@ class TestUserGenesets(MyGenesetLocalTestBase):
         assert res.json()["genes"][1]["mygene_id"] == "1004"
         assert res.json()["genes"][2]["mygene_id"] == "1005"
 
+    def test_update_geneset_does_not_exist(self):
+        headers = {
+            'Cookie': 'user=%s' % open('user_cookie.txt').read(),
+        }
+        # Update the geneset
+        payload = json.dumps(
+            {
+                "description": "Replace genes on a non-existent geneset",
+                "is_public": False,
+                "genes": ["1003", "1004", "1005"],
+            }
+        )
+        res = self.request(
+            f'{self.HOST}/v1/user_geneset/fake-id?gene_operation=replace',
+            method='PUT',
+            headers=headers,
+            data=payload,
+            expect=404
+        )
+        assert res.json()["success"] is False
+        assert res.json()["error"] == "Document does not exist."
+
     def test_create_geneset_empty(self):
         headers = {
             'Cookie': 'user=%s' % open('user_cookie.txt').read(),
@@ -600,3 +625,178 @@ class TestUserGenesets(MyGenesetLocalTestBase):
             data=payload, expect=400
         )
         assert res.reason == "Missing required body element 'name'."
+
+    def test_create_multispecies_geneset(self):
+        headers = {
+            'Cookie': 'user=%s' % open('user_cookie.txt').read(),
+        }
+        payload = json.dumps(
+            {
+                "name": "Test multispecies geneset",
+                "description": "This geneset contains one human gene and one mouse gene",
+                "genes": ["98660", "147968"],
+                "is_public": True
+            }
+        )
+        res = self.request(
+            f'{self.HOST}/v1/user_geneset',
+            method='POST',
+            headers=headers,
+            data=payload
+        )
+        _id = res.json()["_id"]
+        time.sleep(2)
+        # Query to make sure it's updated
+        res = self.request(
+            f'{self.HOST}/v1/geneset/{_id}',
+            method='GET'
+        )
+        assert res.json()["name"] == "Test multispecies geneset"
+        assert res.json()["author"] == self.ORCID_USERNAME
+        assert res.json()["count"] == 2
+        assert res.json()["is_public"] is True
+        assert res.json()["taxid"] == [10090, 9606]
+        assert res.json()["genes"][0]["mygene_id"] == "98660"
+        assert res.json()["genes"][1]["mygene_id"] == "147968"
+        assert res.json()["genes"][0]["taxid"] == 10090
+        assert res.json()["genes"][1]["taxid"] == 9606
+
+    def test_update_multispecies_geneset_add(self):
+        headers = {
+            'Cookie': 'user=%s' % open('user_cookie.txt').read(),
+        }
+        # Create a geneset
+        payload = json.dumps(
+            {
+                "name": "Test multispecies geneset",
+                "description": "This geneset contains one human gene and one mouse gene",
+                "genes": ["98660", "147968"],
+                "is_public": True
+            }
+        )
+        res = self.request(
+            f'{self.HOST}/v1/user_geneset',
+            method='POST',
+            headers=headers,
+            data=payload
+        )
+        _id = res.json()["_id"]
+        time.sleep(2)
+        # Add one more gene of another species
+        payload = json.dumps(
+            {
+                "genes": ["1001", "507781"]
+            }
+        )
+        res = self.request(
+            f'{self.HOST}/v1/user_geneset/{_id}?gene_operation=add',
+            method='PUT',
+            headers=headers,
+            data=payload
+        )
+        time.sleep(2)
+        # Query to make sure it's updated
+        res = self.request(
+            f'{self.HOST}/v1/geneset/{_id}',
+            method='GET'
+        )
+        assert res.json()["count"] == 4
+        assert res.json()["genes"][0]["mygene_id"] == "98660"
+        assert res.json()["genes"][0]["taxid"] == 10090
+        assert res.json()["genes"][1]["mygene_id"] == "147968"
+        assert res.json()["genes"][1]["taxid"] == 9606
+        assert res.json()["genes"][2]["mygene_id"] == "1001"
+        assert res.json()["genes"][2]["taxid"] == 9606
+        assert res.json()["genes"][3]["mygene_id"] == "507781"
+        assert res.json()["genes"][3]["taxid"] == 9913
+        assert len(res.json()["taxid"]) == 3
+
+    def test_update_multispecies_geneset_remove(self):
+        headers = {
+            'Cookie': 'user=%s' % open('user_cookie.txt').read(),
+        }
+        # Create a geneset
+        payload = json.dumps(
+            {
+                "name": "Test multispecies geneset",
+                "description": "This geneset contains one human gene and one mouse gene",
+                "genes": ["98660", "147968", "507781"],
+                "is_public": True
+            }
+        )
+        res = self.request(
+            f'{self.HOST}/v1/user_geneset',
+            method='POST',
+            headers=headers,
+            data=payload
+        )
+        _id = res.json()["_id"]
+        time.sleep(2)
+        # Remove two genes
+        payload = json.dumps(
+            {
+                "genes": ["98660", "507781"]
+            }
+        )
+        res = self.request(
+            f'{self.HOST}/v1/user_geneset/{_id}?gene_operation=remove',
+            method='PUT',
+            headers=headers,
+            data=payload
+        )
+        time.sleep(2)
+        # Query to make sure it's updated
+        res = self.request(
+            f'{self.HOST}/v1/geneset/{_id}',
+            method='GET'
+        )
+        assert res.json()["count"] == 1
+        assert res.json()["genes"][0]["mygene_id"] == "147968"
+        assert res.json()["taxid"] == 9606
+        assert res.json()["genes"][0].get("taxid") is None
+
+    def test_update_multispecies_geneset_replace(self):
+        headers = {
+            'Cookie': 'user=%s' % open('user_cookie.txt').read(),
+        }
+        # Create a geneset
+        payload = json.dumps(
+            {
+                "name": "Test multispecies geneset",
+                "description": "This geneset contains one human gene and one mouse gene",
+                "genes": ["98660", "147968"],
+                "is_public": True
+            }
+        )
+        res = self.request(
+            f'{self.HOST}/v1/user_geneset',
+            method='POST',
+            headers=headers,
+            data=payload
+        )
+        _id = res.json()["_id"]
+        time.sleep(2)
+        # Replace genes
+        payload = json.dumps(
+            {
+                "genes": ["1001", "507781"]
+            }
+        )
+        res = self.request(
+            f'{self.HOST}/v1/user_geneset/{_id}?gene_operation=replace',
+            method='PUT',
+            headers=headers,
+            data=payload
+        )
+        time.sleep(2)
+        # Query to make sure it's updated
+        res = self.request(
+            f'{self.HOST}/v1/geneset/{_id}',
+            method='GET'
+        )
+        assert res.json()["count"] == 2
+        assert res.json()["genes"][0]["mygene_id"] == "1001"
+        assert res.json()["genes"][0]["taxid"] == 9606
+        assert res.json()["genes"][1]["mygene_id"] == "507781"
+        assert res.json()["genes"][1]["taxid"] == 9913
+        assert len(res.json()["taxid"]) == 2
