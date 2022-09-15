@@ -62,12 +62,14 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
     async def _query_mygene(self, genes):
         """"Take a list of mygene.info ids and return a list of gene objects."""
         mygene = MyGeneLookup(species="all", cache_dict={})
+        mygene.fields_to_query.append("taxid")  # We need the taxid to generate the species list.
         mygene.query_mygene(genes, id_types="_id")
         results = mygene.get_results(genes)
         return results
 
     async def _create_user_geneset(self, name, author, genes=[], is_public=True, description=""):
-        """"Create a user geneset document."""
+        """"Create a user geneset document.
+        Used by POST ./user_geneset/ and PUT ./user_geneset/<_id> when gene_opertation is 'replace'."""
         geneset = await self._query_mygene(genes)
         geneset.update(
             {
@@ -78,6 +80,24 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
             }
         )
         geneset = dict_sweep(geneset, vals=[None])
+        geneset.setdefault("genes", [])  # HACK: Should we allow empty genesets?
+        # TODO: Check with frontend wether 'genes' field is required for all genesets.
+        # It may be better to either return an error, or omit the field if empty.
+        geneset = self._update_taxid(geneset)
+        return geneset
+
+    def _update_taxid(self, geneset):
+        """Annotate 'taxid' field in a geneset document.
+        If multispecies, the toplevel taxid field should be a list of all unique taxids,
+        and each individual gene in the 'genes' list should contain it's own taxid field.
+        If there is only one unique taxid, remove this taxid field from individual genes.
+        """
+        unique_species = set([gene['taxid'] for gene in geneset['genes']])
+        geneset['taxid'] = list(unique_species)
+        if len(geneset['taxid']) == 1:
+            for gene in geneset['genes']:
+                gene.pop('taxid')
+            geneset['taxid'] = geneset['taxid'][0]
         return geneset
 
     def _validate_input(self, request_type, payload):
@@ -185,6 +205,7 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
                     if geneset.get("not_found"):
                         geneset['not_found']['ids'] = list(set(geneset['not_found']['ids']) - set(payload['genes']))
                         geneset['not_found']['count'] = len(geneset['not_found']['ids'])
+                    geneset = self._update_taxid(geneset)
                 elif gene_operation == "add":
                     query_results = await self._query_mygene(payload['genes'])
                     new_genes = query_results['genes']
@@ -197,6 +218,7 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
                         geneset['not_found']['ids'] = list(
                             set(geneset.get('not_found', {}).get('ids', [])) | set(query_results['not_found']['ids']))
                         geneset['not_found']['count'] = len(geneset['not_found']['ids'])
+                    geneset = self._update_taxid(geneset)
                 else:
                     raise HTTPError(
                         400,
