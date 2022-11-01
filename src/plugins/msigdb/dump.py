@@ -1,3 +1,5 @@
+import glob
+import logging
 import os
 
 import biothings
@@ -8,6 +10,7 @@ import lxml.etree as ET
 biothings.config_for_app(config)
 
 from biothings.hub.dataload.dumper import HTTPDumper
+from biothings.utils.common import unzipall
 from config import DATA_ARCHIVE_ROOT
 
 
@@ -15,7 +18,7 @@ class msigdbDumper(HTTPDumper):
     SRC_NAME = "msigdb"
     SRC_ROOT_FOLDER = os.path.join(DATA_ARCHIVE_ROOT, SRC_NAME)
     BASE_URL = "https://data.broadinstitute.org/gsea-msigdb/msigdb/release/"
-    HOMEPAGE = "http://www.gsea-msigdb.org/gsea/msigdb/index.jsp"
+    VERSION_HOME = "https://software.broadinstitute.org/cancer/software/gsea/wiki/index.php/MSigDB_Latest_Release_Notes"
     SCHEDULE = "0 8 20 * *"
     __metadata__ = {
         "src_meta": {
@@ -29,13 +32,12 @@ class msigdbDumper(HTTPDumper):
         """Scrape version number from MSIGDB homepage.
         Header 1 text ends with the version number.
         """
-        home = self.client.get(self.__class__.HOMEPAGE)
-        html = bs4.BeautifulSoup(home.text, "html.parser")
-        header = html.find("h1", {"class": "msigdbhome"})
-        version = header.text.split(" ")[-1]
-        assert version.startswith("v"),\
-            "Could not parse version number from HTML field."
-        version = version[1:]
+        release_notes = self.client.get(self.__class__.VERSION_HOME)
+        html = bs4.BeautifulSoup(release_notes.text, "html.parser")
+        content = html.find("div", {"id": "content"})
+        p = content.find_all("p")
+        version_txt = p[0].find("a").text
+        version = version_txt.replace("MSigDB_v", "").replace(".Hs_Release_Notes", "")
         return version
 
     def create_todump_list(self, force=False):
@@ -43,18 +45,40 @@ class msigdbDumper(HTTPDumper):
         self.release = self.get_remote_version()
         if force or not self.current_release or float(self.release) > float(self.current_release):
             home = self.__class__.BASE_URL
-            name = "msigdb_v{}.xml".format(self.release)
-            url = home + self.release + '/' + name
-            self.data_file = os.path.join(self.new_data_folder, name)
-            self.to_dump.append({"remote": url, "local": self.data_file})
+            long_version_str = "msigdb_v" + self.release  # Should have the format "msigdb_v2022.1"
+            human_file_name = long_version_str + '.Hs_files_to_download_locally.zip'
+            mouse_file_name = long_version_str + '.Mm_files_to_download_locally.zip'
+            # The url for human file should look like this:
+            # https://data.broadinstitute.org/gsea-msigdb/msigdb/release/2022.1.Hs/msigdb_v2022.1.Hs_files_to_download_locally.zip
+            human_url = home + self.release + '.Hs/' + human_file_name
+            # The url for the mouse file should look like this:
+            # https://data.broadinstitute.org/gsea-msigdb/msigdb/release/2022.1.Mm/msigdb_v2022.1.Mm_files_to_download_locally.zip
+            mouse_url = home + self.release + '.Mm/' + mouse_file_name
+            self.human_data_file = os.path.join(self.new_data_folder, human_file_name)
+            self.mouse_data_file = os.path.join(self.new_data_folder, mouse_file_name)
+            self.to_dump.append({"remote": human_url, "local": self.human_data_file})
+            self.to_dump.append({"remote": mouse_url, "local": self.mouse_data_file})
+
+    def sort_xml(self, file, output_file):
+        """Sort XML file by organism
+        Args:
+            file (str): path to XML file
+            output_file (str): path to new XML file
+        """
+        original_xml = ET.parse(file)
+        logging.info("Sorting documents in XML file: ", file)
+        # Use XSLT file to sort XML file
+        xslt = ET.parse(os.path.join(os.path.dirname(__file__), "sort_genesets.xsl"))
+        transform = ET.XSLT(xslt)
+        new_xml = transform(original_xml)
+        with open(output_file, 'wb') as f:
+            new_xml.write(f, pretty_print=True, encoding='utf-8')
 
     def post_dump(self, *args, **kwargs):
         """"Create a new XML file with genesets sorted by organism"""
         self.logger.info("Sorting documents in XML file")
-        original_xml = ET.parse(self.data_file)
-        print(os.path.dirname(__file__))
-        xslt = ET.parse(os.path.join(os.path.dirname(__file__), "sort_genesets.xsl"))
-        transform = ET.XSLT(xslt)
-        new_xml = transform(original_xml)
-        with open(os.path.join(self.new_data_folder, 'msigdb_sorted.xml'), 'wb') as f:
-            new_xml.write(f, pretty_print=True, encoding='utf-8')
+        unzipall(self.new_data_folder)
+        human_file_path = glob.glob(self.human_data_file.replace(".zip", "") + "/msigdb_v*.Hs.xml")
+        mouse_file_path = glob.glob(self.mouse_data_file.replace(".zip", "") + "/msigdb_v*.Mm.xml")
+        self.sort_xml(human_file_path[0], os.path.join(self.new_data_folder, "human_genesets.xml"))
+        self.sort_xml(mouse_file_path[0], os.path.join(self.new_data_folder, "mouse_genesets.xml"))
