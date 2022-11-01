@@ -1,4 +1,5 @@
 import os
+from itertools import chain
 
 import biothings.hub.dataload.uploader as uploader
 
@@ -18,10 +19,12 @@ class msigdbUploader(uploader.BaseSourceUploader):
 
     def load_data(self, data_folder):
         """Load data from data folder"""
-        data_file = os.path.join(data_folder, "msigdb_sorted.xml")
-        assert os.path.exists(data_file), "Could not find 'msigdb_sorted.xml in data folder."
-        docs = parse_msigdb(data_file)
-        return docs
+        human_data_file = os.path.join(data_folder, "human_genesets.xml")
+        mouse_data_file = os.path.join(data_folder, "mouse_genesets.xml")
+        for file in [human_data_file, mouse_data_file]:
+            if not os.path.exists(file):
+                raise FileNotFoundError("Missing data file: %s" % file)
+        return parse_msigdb(data_folder)
 
     @classmethod
     def get_mapping(cls):
@@ -123,13 +126,29 @@ class msigdbUploader(uploader.BaseSourceUploader):
                         "normalizer": "keyword_lowercase_normalizer",
                         "type": "keyword"
                     },
-                    "category_code": {
+                    "dataset": {
                         "normalizer": "keyword_lowercase_normalizer",
                         "type": "keyword"
                     },
-                    "subcategory_code": {
-                        "normalizer": "keyword_lowercase_normalizer",
-                        "type": "keyword"
+                    "category": {
+                        "properties": {
+                            "code": {
+                                "normalizer": "keyword_lowercase_normalizer",
+                                "type": "keyword"
+                            },
+                            "name": {
+                                "normalizer": "keyword_lowercase_normalizer",
+                                "type": "keyword"
+                            }
+                        }
+                    },
+                    "subcategory": {
+                       "properties": {
+                            "code": {
+                                "normalizer": "keyword_lowercase_normalizer",
+                                "type": "keyword"
+                            }
+                        }
                     },
                     "authors": {
                         "type": "text"
