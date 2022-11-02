@@ -66,7 +66,7 @@ class msigdbDumper(HTTPDumper):
             output_file (str): path to new XML file
         """
         original_xml = ET.parse(file)
-        logging.info("Sorting documents in XML file: ", file)
+        logging.info(f"Sorting documents in XML file: {file}")
         # Use XSLT file to sort XML file
         xslt = ET.parse(os.path.join(os.path.dirname(__file__), "sort_genesets.xsl"))
         transform = ET.XSLT(xslt)
