@@ -150,7 +150,7 @@ def parse_msigdb(data_folder):
                     msigdb["dataset"] = DATASET
                     msigdb["category"] = {}
                     msigdb["category"]["code"] = data["CATEGORY_CODE"]
-                    msigdb["category"]["name"] = CATEGORY_CODES[data["CATEGORY_CODE"][-1]]
+                    msigdb["category"]["name"] = CATEGORY_CODES.get(data["CATEGORY_CODE"][-1])
                     msigdb["subcategory"] = {}
                     msigdb["subcategory"]["code"] = data["SUB_CATEGORY_CODE"]
                     msigdb["authors"] = data.get("AUTHORS").split(",")
@@ -170,7 +170,7 @@ def parse_msigdb(data_folder):
                     # Remove lists with only one item
                     doc = unlist(doc)
                     # Clean up empty fields
-                    doc = dict_sweep(doc)
+                    doc = dict_sweep(doc, vals=[None])
                     yield doc
 
 
