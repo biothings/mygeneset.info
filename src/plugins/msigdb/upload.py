@@ -1,6 +1,6 @@
 import os
-from itertools import chain
 
+import biothings.hub.dataload.storage as storage
 import biothings.hub.dataload.uploader as uploader
 
 from .parser import parse_msigdb
@@ -9,6 +9,9 @@ from .parser import parse_msigdb
 class msigdbUploader(uploader.BaseSourceUploader):
 
     name = "msigdb"
+    # Ignore documents with duplicate _id
+    storage_class = storage.IgnoreDuplicatedStorage
+    
     __metadata__ = {
         "src_meta": {
             'license_url': 'https://www.gsea-msigdb.org/gsea/msigdb_license_terms.jsp',
