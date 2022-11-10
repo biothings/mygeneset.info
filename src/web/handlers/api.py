@@ -144,7 +144,6 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
         # Get geneset parameters from request body
         if not self.request.body:
             raise HTTPError(400, reason="Expecting a JSON body.")
-        print(self.request.body)
         payload = json.loads(self.request.body)
         payload = self._validate_input(self.request.method, payload)
         name = payload['name']
