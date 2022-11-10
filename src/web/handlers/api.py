@@ -38,6 +38,12 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
         Remove - DELETE ./user_geneset/<_id>
     """
 
+    def prepare(self):
+        super().prepare()
+        # Enable XSRF protection for POST requests when user is not authenticated
+        # if self.request.method == "POST" and not self.current_user:
+        #    self.check_xsrf_cookie()
+
     def user_authenticated(func):
         """Checks if user is authenticated and sends 401 if not authenticated. """
         def _(self, *args, **kwargs):
@@ -81,7 +87,7 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
         )
         geneset = dict_sweep(geneset, vals=[None])
         geneset.setdefault("genes", [])  # HACK: Should we allow empty genesets?
-        # TODO: Check with frontend wether 'genes' field is required for all genesets.
+        # TODO: Check with frontend whether 'genes' field is required for all genesets.
         # It may be better to either return an error, or omit the field if empty.
         geneset = self._update_taxid(geneset)
         return geneset
@@ -128,20 +134,26 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
                 raise HTTPError(400, reason="Body element 'genes' must be a list.")
         return payload
 
-    @user_authenticated
     async def post(self):
         """Create a user geneset."""
         # Get user id
-        user = self.current_user['username']
+        if self.current_user:
+            user = self.current_user['username']
+        else:
+            user = None
         # Get geneset parameters from request body
         if not self.request.body:
             raise HTTPError(400, reason="Expecting a JSON body.")
+        print(self.request.body)
         payload = json.loads(self.request.body)
         payload = self._validate_input(self.request.method, payload)
         name = payload['name']
         description = payload.get('description')
         genes = payload['genes']
+        # User genesets are public by default, and anonymous users can only create public genesets.
         is_public = payload.get('is_public', True)
+        if not user and not is_public:
+            raise HTTPError(403, reason="Anonymous users can only create public genesets.")
         # Generate body for ES request
         geneset = await self._create_user_geneset(name, user, genes, is_public, description)
         dry_run = self.get_argument("dry_run", default=None)
