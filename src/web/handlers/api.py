@@ -112,9 +112,20 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
         if request_type == "POST":
             if not payload.get("name"):
                 raise HTTPError(400, reason="Missing required body element 'name'.")
+            if not isinstance(payload.get("name"), str):
+                raise HTTPError(400, reason="Invalid type, expected string for field 'name'.")
         elif request_type == "PUT":
             if payload.get("name") == "":
                 raise HTTPError(400, reason="Body element 'name' cannot be an empty string.")
+            if payload.get("name") and not isinstance(payload.get("name"), str):
+                raise HTTPError(400, reason="Invalid type, expected string for field 'name'.")
+        # description
+        if payload.get("description"):
+            # If description is a list, join all its elements into a string.
+            if isinstance(payload["description"], list):
+                payload["description"] = " ".join([str(item) for item in payload["description"]])
+            elif not isinstance(payload["description"], str):
+                raise HTTPError(400, reason="Invalid type, expected string for field 'description'.")
         # is_public
         if payload.get("is_public") is not None:
             if payload['is_public'] in [False, "false", "False", "0"]:
@@ -144,7 +155,10 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
         # Get geneset parameters from request body
         if not self.request.body:
             raise HTTPError(400, reason="Expecting a JSON body.")
-        payload = json.loads(self.request.body)
+        try:
+            payload = json.loads(self.request.body)
+        except json.decoder.JSONDecodeError:
+            raise HTTPError(400, reason="Invalid JSON.")
         payload = self._validate_input(self.request.method, payload)
         name = payload['name']
         description = payload.get('description')
@@ -178,7 +192,10 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
     async def put(self, _id):
         """Update an existing user geneset"""
         user = self.current_user['username']
-        payload = json.loads(self.request.body)
+        try:
+            payload = json.loads(self.request.body)
+        except json.decoder.JSONDecodeError:
+            raise HTTPError(400, reason="Invalid JSON.")
         payload = self._validate_input(self.request.method, payload)
         # Retrieve document
         document = await self._get_geneset(_id)
