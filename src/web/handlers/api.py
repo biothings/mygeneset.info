@@ -63,7 +63,6 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
         # Generate six random integers between 0 and 61
         random_ints = [random.randint(0, 61) for _ in range(6)]
         # Convert to BASE62
-        # I have replaced the ambiguous characters "0Ol1oI" from the alpabet with "@&=$-*""
         alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
         base62str = "".join([alphabet[i] for i in random_ints])
         return f"mygst:{base62str}"
@@ -144,7 +143,7 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
                 raise HTTPError(400, reason="Body element 'genes' must be a list.")
         elif request_type == 'PUT':
             if payload.get("genes") is not None and not isinstance(payload['genes'], list):
-                raise HTTPError(400, reason="Body element 'genes' must beADAM17,APH1A,APH1B,NCSTN,NFKB1,NGFR,PSEN1,PSEN2,PSENEN,RELA,TRAF6 a list.")
+                raise HTTPError(400, reason="Body element 'genes' must be a list.")
         return payload
 
     async def post(self):
@@ -173,10 +172,10 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
             _now = str(datetime.now(timezone.utc).replace(microsecond=0).isoformat())
             geneset.update({"created": _now})
             geneset.update({"updated": _now})
-            while True:  
+            while True:
                 try:
                     _id = self._generate_geneset_id()
-                    # The op_type=create option indexes the document only if _id doesn't exist
+                    # The param op_type=create indexes the document only if _id doesn't exist
                     response = await self.biothings.elasticsearch.async_client.index(
                             id=_id, body=geneset, index=self.biothings.config.ES_USER_INDEX, op_type="create")
                     break
