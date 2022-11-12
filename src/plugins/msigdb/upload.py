@@ -81,6 +81,9 @@ class msigdbUploader(uploader.BaseSourceUploader):
                     },
                     "name": {
                         "type": "text"
+                    },
+                    "taxid": {
+                        "type": "integer"
                     }
                 }
             },

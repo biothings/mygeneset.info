@@ -37,6 +37,9 @@ def get_customized_mapping(cls):
                 },
                 "name": {
                     "type": "text"
+                },
+                "taxid": {
+                    "type": "integer"
                 }
             }
         },
@@ -97,6 +100,9 @@ def get_customized_mapping(cls):
                                 },
                                 "name": {
                                     "type": "text"
+                                },
+                                "taxid": {
+                                    "type": "integer"
                                 }
                             }
                         },
@@ -164,6 +170,9 @@ def get_customized_mapping(cls):
                                 },
                                 "name": {
                                     "type": "text"
+                                },
+                                "taxid": {
+                                    "type": "integer"
                                 }
                             }
                         },
@@ -231,6 +240,9 @@ def get_customized_mapping(cls):
                                 },
                                 "name": {
                                     "type": "text"
+                                },
+                                "taxid": {
+                                    "type": "integer"
                                 }
                             }
                         },

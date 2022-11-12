@@ -53,6 +53,9 @@ def get_customized_mapping(cls):
                 "uniprot": {
                     "normalizer": "keyword_lowercase_normalizer",
                     "type": "keyword"
+                },
+                "taxid": {
+                    "type": "integer"
                 }
             }
         },
