@@ -3,6 +3,7 @@ API handler for MyGeneset submit/ endpoint
 """
 
 import json
+import random
 from datetime import datetime, timezone
 
 import elasticsearch
@@ -11,6 +12,7 @@ from biothings.web.auth.authn import BioThingsAuthnMixin
 from biothings.web.handlers import BaseAPIHandler
 from biothings.web.handlers.query import BiothingHandler, QueryHandler
 from tornado.web import HTTPError
+
 from utils.mygene_lookup import MyGeneLookup
 
 
@@ -41,6 +43,7 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
     def prepare(self):
         super().prepare()
         # Enable XSRF protection for POST requests when user is not authenticated
+        # I disabled this since there are issues implementing this with the frontend.
         # if self.request.method == "POST" and not self.current_user:
         #    self.check_xsrf_cookie()
 
@@ -54,6 +57,15 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
                 return
             return func(self, *args, **kwargs)
         return _
+
+    def _generate_geneset_id(self):
+        """Generate short random geneset ids."""
+        # Generate six random integers between 0 and 61
+        random_ints = [random.randint(0, 61) for _ in range(6)]
+        # Convert to BASE62
+        alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        base62str = "".join([alphabet[i] for i in random_ints])
+        return f"mygst:{base62str}"
 
     async def _get_geneset(self, _id):
         """Fetch a geneset document from Elasticsearch"""
@@ -174,8 +186,16 @@ class UserGenesetHandler(BioThingsAuthnMixin, BaseAPIHandler):
             _now = str(datetime.now(timezone.utc).replace(microsecond=0).isoformat())
             geneset.update({"created": _now})
             geneset.update({"updated": _now})
-            response = await self.biothings.elasticsearch.async_client.index(
-                body=geneset, index=self.biothings.config.ES_USER_INDEX)
+            while True:
+                try:
+                    _id = self._generate_geneset_id()
+                    # The param op_type=create indexes the document only if _id doesn't exist
+                    response = await self.biothings.elasticsearch.async_client.index(
+                            id=_id, body=geneset, index=self.biothings.config.ES_USER_INDEX, op_type="create")
+                    break
+                except elasticsearch.exceptions.ConflictError:
+                    # Keep generating new ids until we get a unique one
+                    continue
             self.finish({
                 "success": True,
                 "result": response['result'],
