@@ -53,7 +53,7 @@ class MyGeneLookup:
     def __init__(self, species="all", cache_dict=None):
         """Species can be a single taxid, or a list of taxids, or comma separated string.
         e.g.: [9606, 10090] or '9606,10090'.
-        To search against all species, use 'all'.
+        To search against all species, use 'all' (default).
         """
         if not isinstance(species, list) and not isinstance(species, str) and not isinstance(species, int):
             raise ValueError("Species must be a string, integer, or list.")
@@ -61,9 +61,12 @@ class MyGeneLookup:
         self.clear_cache()
         if cache_dict:
             self._query_cache = cache_dict
-        self.fields_to_query = ["entrezgene", "ensembl.gene", "uniprot.Swiss-Prot", "symbol", "name"]
+        self.fields_to_query = ["entrezgene", "ensembl.gene", "uniprot.Swiss-Prot", "symbol", "name", "taxid"]
 
     def _normalize_species(self, species):
+        """Standarize the input for species search.
+        Species should always be a strig or list of strings.
+        """
         if isinstance(species, int):
             species = str(species)
         if isinstance(species, str):
@@ -101,13 +104,11 @@ class MyGeneLookup:
         if len(ids) == 0:
             return self
         if retry:
-            assert isinstance(ids[0], tuple), "To use retry, ids must be a list of tuples."
-            assert len(ids[0]) == len(id_types), "The size of each tuple must match the size of id_types"
+            assert all(isinstance(i, tuple) for i in ids), "To use retry, ids must be a list of tuples."
+            assert all(len(i) == len(id_types) for i in ids), "The size of each tuple must match the size of id_types."
             retry_times = len(id_types) - 1
-            for n in ids:
-                assert isinstance(n, tuple), "To use retry, all ids must be tuples."
-                assert len(n) == len(id_types), "All tuples must be the same size."
         else:
+            assert all(isinstance(i, str) for i in ids), "all ids must be strings."
             retry_times = 0
         failed_ids = []
         current_try = 0
@@ -136,9 +137,7 @@ class MyGeneLookup:
             if len(to_query) == 1:
                 to_query = to_query[0]
             # multispecies genesets support
-            # If there is more than one species, add taxid to every gene object
             if isinstance(self.species, list):
-                self.fields_to_query.append("taxid")
                 taxid_query = ",".join(self.species)
             else:
                 taxid_query = self.species
@@ -356,9 +355,7 @@ class MyGeneLookup:
         # Make sure each element has the same length
         if len(ids) > 0:
             first_len = len(ids[0])
-            for elem in ids:
-                assert len(elem) == first_len, \
-                    "All tuples must have the same length."
+            assert all(len(elem) == first_len for elem in ids), "All tuples must have the same length."
         # Check if any of the ids are in the cache, using the first element of the tuple as the key
         # If there are more than one element in the tuple, we use subsequent elements as retry attempts
         if len(ids) > 0:
@@ -382,6 +379,7 @@ class MyGeneLookup:
                 # as the first element is usually the preferred id
                 missing.append(q[0])
         # Check that the field mygene_id is unique in the geneset, and merge duplicates
+        # (duplicates can be caused by cases such as two synonyms in the input gene list)
         #  TODO: I feel like this could be more cleanly implemented
         # Perhaps it should be a separate function?
         if len(genes) > 0:

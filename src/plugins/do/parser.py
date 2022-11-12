@@ -637,7 +637,7 @@ def get_genesets(obo_filename, genemap_filename):
     )
 
     gene_lookup = MyGeneLookup(TAX_ID)
-    gene_lookup.query_mygene(list(entrez_set), 'entrezgene,retired')
+    gene_lookup.query_mygene(list(map(str, entrez_set)), 'entrezgene,retired')
 
     disease_ontology.populated = True
     disease_ontology.propagate()
