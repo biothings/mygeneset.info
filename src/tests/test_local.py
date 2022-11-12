@@ -1,3 +1,9 @@
+"""
+These are sort of like integration tests for user geneset operations.
+It requires a running elasticsearch instance with a collection called 'user_genesets'
+and also the tornado server running alongside the the web interface.
+"""
+
 
 import json
 import os
@@ -120,13 +126,13 @@ class TestUserGenesets(MyGenesetLocalTestBase):
             data=payload
         )
         assert res.status_code == 200, "Response status is not 200."
-        expected_respone = {
+        expected_response = {
             "new_document": {
                 "name": "Test geneset",
                 "author": self.ORCID_USERNAME,
                 "is_public": True,
                 "count": 1,
-                "genes": [
+                "genes":
                     {
                         "mygene_id": "1001",
                         "source_id": "1001",
@@ -134,13 +140,16 @@ class TestUserGenesets(MyGenesetLocalTestBase):
                         "name": "cadherin 3",
                         "ncbigene": "1001",
                         "ensemblgene": "ENSG00000062038",
-                        "uniprot": "P22223"
-                    }
-                ],
+                        "uniprot": "P22223",
+                        "taxid": 9606
+                    },
                 "taxid": 9606
             }
         }
-        assert res.json() == expected_respone, "The response document does not match the expected one."
+        doc = res.json()["new_document"]
+        for key, val in doc.items():
+            assert key in expected_response["new_document"], f"{key} not found in response."
+            assert val == expected_response["new_document"][key], f"{key} does not match the expected value"
 
     def test_create_public_geneset(self):
         payload = json.dumps(
@@ -178,13 +187,13 @@ class TestUserGenesets(MyGenesetLocalTestBase):
         assert res.json()["is_public"] is True
         assert res.json()["taxid"] == 9606
         assert res.json()["description"] == "Test public geneset description"
-        assert res.json()["genes"][0]["mygene_id"] == "1001"
-        assert res.json()["genes"][0]["source_id"] == "1001"
-        assert res.json()["genes"][0]["symbol"] == "CDH3"
-        assert res.json()["genes"][0]["name"] == "cadherin 3"
-        assert res.json()["genes"][0]["ncbigene"] == "1001"
-        assert res.json()["genes"][0]["ensemblgene"] == "ENSG00000062038"
-        assert res.json()["genes"][0]["uniprot"] == "P22223"
+        assert res.json()["genes"]["mygene_id"] == "1001"
+        assert res.json()["genes"]["source_id"] == "1001"
+        assert res.json()["genes"]["symbol"] == "CDH3"
+        assert res.json()["genes"]["name"] == "cadherin 3"
+        assert res.json()["genes"]["ncbigene"] == "1001"
+        assert res.json()["genes"]["ensemblgene"] == "ENSG00000062038"
+        assert res.json()["genes"]["uniprot"] == "P22223"
         assert res.json()["created"] is not None
         assert res.json()["updated"] is not None
 
@@ -231,13 +240,13 @@ class TestUserGenesets(MyGenesetLocalTestBase):
         assert res.json()["is_public"] is False
         assert res.json()["taxid"] == 9606
         assert res.json()["description"] == "Test private geneset description"
-        assert res.json()["genes"][0]["mygene_id"] == "1001"
-        assert res.json()["genes"][0]["source_id"] == "1001"
-        assert res.json()["genes"][0]["symbol"] == "CDH3"
-        assert res.json()["genes"][0]["name"] == "cadherin 3"
-        assert res.json()["genes"][0]["ncbigene"] == "1001"
-        assert res.json()["genes"][0]["ensemblgene"] == "ENSG00000062038"
-        assert res.json()["genes"][0]["uniprot"] == "P22223"
+        assert res.json()["genes"]["mygene_id"] == "1001"
+        assert res.json()["genes"]["source_id"] == "1001"
+        assert res.json()["genes"]["symbol"] == "CDH3"
+        assert res.json()["genes"]["name"] == "cadherin 3"
+        assert res.json()["genes"]["ncbigene"] == "1001"
+        assert res.json()["genes"]["ensemblgene"] == "ENSG00000062038"
+        assert res.json()["genes"]["uniprot"] == "P22223"
         assert res.json()["created"] is not None
         assert res.json()["updated"] is not None
 
@@ -514,6 +523,61 @@ class TestUserGenesets(MyGenesetLocalTestBase):
         assert res.json()["genes"][1]["mygene_id"] == "1004"
         assert res.json()["genes"][2]["mygene_id"] == "1005"
 
+    def test_update_geneset_replace_with_empty(self):
+        headers = {
+            'Cookie': 'user=%s' % open('user_cookie.txt').read(),
+        }
+        # Create a geneset
+        payload = json.dumps(
+            {
+                "name": "Test geneset to update",
+                "genes": ["1001", "1002"],
+                "is_public": "true"
+            }
+        )
+        res = self.request(
+            f'{self.HOST}/v1/user_geneset',
+            method='POST',
+            headers=headers,
+            data=payload
+        )
+        results = res.json()
+        _id = results["_id"]
+        time.sleep(2)
+        # Update the geneset
+        payload = json.dumps(
+            {
+                "description": "Replaced with empty gene list",
+                "is_public": False,
+                "genes": [],
+            }
+        )
+        res = self.request(
+            f'{self.HOST}/v1/user_geneset/{_id}?gene_operation=replace',
+            method='PUT',
+            headers=headers,
+            data=payload,
+        )
+        assert res.json()["success"]
+        assert res.json()["result"] == "updated"
+        assert res.json()["_id"] == _id
+        assert res.json()["name"] == "Test geneset to update"
+        assert res.json()["author"] == self.ORCID_USERNAME
+        assert res.json()["count"] == 0
+        time.sleep(2)
+        # Query to make sure it's updated
+        res = self.request(
+            f'{self.HOST}/v1/geneset/{_id}',
+            method='GET',
+            headers=headers
+        )
+        assert res.json()["name"] == "Test geneset to update"
+        assert res.json()["description"] == "Replaced with empty gene list"
+        assert res.json()["author"] == self.ORCID_USERNAME
+        assert res.json()["count"] == 0
+        assert res.json()["is_public"] is False
+        assert res.json()["genes"] == []
+
     def test_update_geneset_does_not_exist(self):
         headers = {
             'Cookie': 'user=%s' % open('user_cookie.txt').read(),
@@ -566,7 +630,7 @@ class TestUserGenesets(MyGenesetLocalTestBase):
         assert res.json()["author"] == self.ORCID_USERNAME
         assert res.json()["count"] == 0
         assert res.json()["is_public"] is True
-        assert res.json()["genes"] == []
+        assert res.json().get("genes") is None
 
     def test_create_geneset_invalid(self):
         headers = {
@@ -712,6 +776,7 @@ class TestUserGenesets(MyGenesetLocalTestBase):
         assert len(res.json()["taxid"]) == 3
 
     def test_update_multispecies_geneset_remove(self):
+        """Remove a gene from a multispecies geneset, and see if the species is removed from the taxid list"""
         headers = {
             'Cookie': 'user=%s' % open('user_cookie.txt').read(),
         }
@@ -753,7 +818,7 @@ class TestUserGenesets(MyGenesetLocalTestBase):
         assert res.json()["count"] == 1
         assert res.json()["genes"][0]["mygene_id"] == "147968"
         assert res.json()["taxid"] == 9606
-        assert res.json()["genes"][0].get("taxid") is None
+        assert res.json()["genes"][0].get("taxid") == 9606
 
     def test_update_multispecies_geneset_replace(self):
         headers = {

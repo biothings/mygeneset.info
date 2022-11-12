@@ -21,7 +21,7 @@ class TestMyGeneLookup:
         results = lookup.get_results(genes)
         assert results['count'] == 1
         default_fields = [
-            'mygene_id', 'source_id', 'symbol', 'name', 'ncbigene', 'ensemblgene', 'uniprot'
+            'mygene_id', 'source_id', 'symbol', 'name', 'ncbigene', 'ensemblgene', 'uniprot', 'taxid'
         ]
         for field in default_fields:
             assert field in results['genes'][0].keys(), "Field {} not found".format(field)
@@ -139,7 +139,7 @@ class TestMyGeneLookup:
         assert results['count'] == 1
 
     def test_022_geneset_with_integer_geneid(self):
-        with pytest.raises(ValueError) as e:
+        with pytest.raises(AssertionError) as e:
             genes = [3550]
             taxid = "9606"
             lookup = MyGeneLookup(taxid)
