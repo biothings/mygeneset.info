@@ -19,12 +19,12 @@ jobs:
         run: curl -X PUT localhost:9200/user_genesets
       - name: Clone frontend repo
         run: git clone https://github.com/biothings/mygeneset.info-website
-      - name: Build webapp
+      - name: Setup Node
         uses: actions/setup-node@v2
         with:
           node-version: '16.17'
-        run: npm install
-        run: npm run build
+      - name: Build frontend
+        run: npm install && npm run build
         working-directory: mygeneset.info-website
         env:
           NODE_ENV: production
