@@ -6,55 +6,28 @@ on:
   pull_request:
     branches:
       - test_github_actions
-
-jobs:
-  setup_elasticsearch:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Create ES Index
-        run: curl -X PUT localhost:9200/user_genesets
-
-  run_webapp:
-    runs-on: ubuntu-latest
-    needs: setup_elasticsearch
-    steps:
-      - name: Clone webapp
-        run: git clone https://github.com/biothings/mygeneset.info-website
-      - name: Build webapp
-        run: npm run build
-        working-directory: mygeneset.info-website
-        env:
-          NODE_ENV: production
-      - uses: actions/upload-artifact@master
-        with:
-          name: webapp
-          path: mygeneset.info-website
-
-  start_tornado:
-    runs-on: ubuntu-latest
-    needs: [setup_elasticsearch, run_webapp]
-    steps:
-      - name: Checkout source
-        uses: actions/checkout@v2
-      - uses: actions/download-artifact@master
-        with:
-          name: webapp
-          path: mygeneset.info-website
-      - name: Upgrade pip
-        run: pip install --upgrade pip
-      - name: Install dependencies
-        run: pip install -r requirements_web.txt
-      - name: Start server
-        run: python index.py
       
   run_app_tests:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ 3.6, 3.7, 3.8, 3.9, 3.10 ]
+        python-version: [ 3.7, 3.8, 3.9, 3.10 ]
     steps:
-      - name: Checkout source
+      - name: Create ES Index
+        run: curl -X PUT localhost:9200/user_genesets
+      - name: Clone frontend repo
+        run: git clone https://github.com/biothings/mygeneset.info-website
+      - name: Build webapp
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16.17'
+        run: npm install
+        run: npm run build
+        working-directory: mygeneset.info-website
+        env:
+          NODE_ENV: production
+      - name: Checkout MyGeneset source
         uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
@@ -64,11 +37,23 @@ jobs:
         run: pip install --upgrade pip
       - name: Install dependencies
         run: pip install -r requirements_web.txt
+      - name: Get web config file
+        run: wget https://gist.githubusercontent.com/ravila4/9f20d64f51fc23c10b1b70b679a7d3ab/raw/1199ab75b78cc71549fa73e6283810cf2c081682/config.py
+        working-directory: src
+      - name: Start tornado server
+        run: python index.py --webapp &
+        working-directory: src
+        env:
+          ORCID_CLIENT_ID: ${{ secrets.ORCID_CLIENT_ID }}
+          ORCID_CLIENT_SECRET: ${{ secrets.ORCID_CLIENT_SECRET }}
       - name: Install PyTest
         run: pip install pytest
       - name: Run App Tests
         run: pytest test_local.py
         working-directory: src/tests
+        env:
+          ORCID_USERNAME: ${{ secrets.ORCID_USERNAME }}
+          ORCID_PASSWORD: ${{ secrets.ORCID_PASSWORD }}
     services:
       Elasticsearch:
         image: docker.elastic.co/elasticsearch/elasticsearch:8.5.0
