@@ -51,20 +51,14 @@ def parse_msigdb(data_folder):
         "8": "cell type signature genesets"
     }
 
-    for f in ["human_genesets.xml", "mouse_genesets.xml"]:
+    for f in ["human_genesets.xml"]:
         data_file = os.path.join(data_folder, f)
+        # File contains newline-delimited XML documents. Each document is a single geneset.
+        # Documents have been sorted by their ORGANISM attribute using sort_genesets.xsl in post_dump() of dump.py
         with open(data_file, 'r') as f:
-            # File contains newline-delimited XML documents. Each document is a single gene set.
-            # Documents have been sorted by their ORGANISM attribute using sort_genesets.xsl in post_dump() of dump.py
             current_organism = ""
-            geneset_index = 0
+            geneset_index = 0  # Keep track of current line for logging/debugging purposes
             for line in f:
-                if line.lstrip().startswith("<MSIGDB NAME"):
-                    dataset_code = line.split(" ")[2][-3:-1]
-                    if dataset_code == "Hs":
-                        DATASET = "human"
-                    elif dataset_code == "Mm":
-                        DATASET = "mouse"
                 if line.lstrip().startswith("<GENESET"):
                     geneset_index += 1
                     doc = {}
@@ -147,7 +141,6 @@ def parse_msigdb(data_folder):
                     msigdb["id"] = data["STANDARD_NAME"]
                     msigdb["geneset_name"] = data["STANDARD_NAME"].replace("_", " ").lower()
                     msigdb["systematic_name"] = data["SYSTEMATIC_NAME"]
-                    msigdb["dataset"] = DATASET
                     msigdb["category"] = {}
                     msigdb["category"]["code"] = data["CATEGORY_CODE"]
                     msigdb["category"]["name"] = CATEGORY_CODES.get(data["CATEGORY_CODE"][-1])
