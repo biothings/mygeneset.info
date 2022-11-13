@@ -132,10 +132,6 @@ class msigdbUploader(uploader.BaseSourceUploader):
                         "normalizer": "keyword_lowercase_normalizer",
                         "type": "keyword"
                     },
-                    "dataset": {
-                        "normalizer": "keyword_lowercase_normalizer",
-                        "type": "keyword"
-                    },
                     "category": {
                         "properties": {
                             "code": {
