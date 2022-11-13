@@ -8,7 +8,7 @@ on:
       - test_github_actions
 
 jobs:    
-  run_app_tests:
+  run_user_geneset_tests:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -16,12 +16,12 @@ jobs:
         python-version: [ "3.7", "3.8", "3.9", "3.10" ]
     steps:
       - name: Create ES Index
-        run: curl -X PUT localhost:9200/user_genesets
+        run: curl -X PUT http://localhost:9200/user_genesets
       - name: Clone frontend repo
         run: git clone https://github.com/biothings/mygeneset.info-website
       - name: Setup Node
         uses: actions/setup-node@v2
-        with:
+        with: 
           node-version: '16.17'
       - name: Build frontend
         run: npm install && npm run build
