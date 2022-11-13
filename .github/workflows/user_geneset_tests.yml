@@ -50,7 +50,7 @@ jobs:
       - name: Install PyTest
         run: pip install pytest
       - name: Run App Tests
-        run: pytest test_local.py
+        run: pytest test_user_genesets.py
         working-directory: src/tests
         env:
           ORCID_USERNAME: ${{ secrets.ORCID_USERNAME }}
