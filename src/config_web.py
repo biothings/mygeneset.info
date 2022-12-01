@@ -10,7 +10,7 @@ from web.authn.authn_provider import UserCookieAuthProvider
 # *****************************************************************************
 ES_HOST = 'localhost:9200'
 # elasticsearch index name
-ES_INDEX = 'mygeneset_current,user_genesets'
+ES_INDEX = '*geneset*'
 ES_USER_INDEX = 'user_genesets'
 # elasticsearch document type
 ES_DOC_TYPE = 'geneset'
