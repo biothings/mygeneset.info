@@ -25,37 +25,35 @@ jobs:
     #     ports:
     #       - 9200:9200
     # container: node:10.18-jessie
+    services:
+      Elasticsearch:
+        image: docker.elastic.co/elasticsearch/elasticsearch:8.5.0
+        env:
+          discovery.type : single-node
+        options: >-
+          --health-cmd "curl http://localhost:9200/_cluster/health"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+        ports:
+          - 9200:9200
     steps:
-      - name: Configure sysctl limits
+      # - name: Configure sysctl limits
+      #   run: |
+      #     sudo swapoff -a
+      #     sudo sysctl -w vm.swappiness=1
+      #     sudo sysctl -w fs.file-max=262144
+      #     sudo sysctl -w vm.max_map_count=262144
+      # - name: Runs Elasticsearch
+      #   uses: elastic/elastic-github-actions/elasticsearch@master
+      #   with:
+      #     stack-version: 8.5.0
+      #     security-enabled: false
+
+      - name: Create ES Index
         run: |
-          sudo swapoff -a
-          sudo sysctl -w vm.swappiness=1
-          sudo sysctl -w fs.file-max=262144
-          sudo sysctl -w vm.max_map_count=262144
-      - name: Runs Elasticsearch
-        uses: elastic/elastic-github-actions/elasticsearch@master
-        with:
-          stack-version: 8.5.0
-          security-enabled: false
-      - name: Create ES Index
-        run: curl -X PUT http://localhost:9200/user_genesets
-
-      # - name: Clone frontend repo
-      #   run: git clone https://github.com/biothings/mygeneset.info-website
-      #   # run: git clone --single-branch --branch development https://github.com/biothings/mygeneset.info-website
-      # - name: Setup Node
-      #   uses: actions/setup-node@v2
-      #   with: 
-      #     node-version: '16.17'
-      # - name: Build frontend
-      #   # run: npm install && npm run build
-      #   run: npm i @vue/cli-service && npm install && npm build
-      #   working-directory: mygeneset.info-website
-      #   env:
-      #     NODE_ENV: production
-
-      - name: Create ES Index
-        run: curl -X PUT http://localhost:9200/user_genesets
+          sleep 60
+          curl -X PUT http://localhost:9200/user_genesets
       - name: Clone frontend repo
         uses: actions/checkout@v3
         with:
