@@ -47,7 +47,7 @@ jobs:
           node-version: '16.17'
       - name: Build frontend
         # run: npm install && npm run build
-        run: yarn install && yarn build
+        run: npm i @vue/cli-service && yarn install && yarn build
         working-directory: mygeneset.info-website
         env:
           NODE_ENV: production
