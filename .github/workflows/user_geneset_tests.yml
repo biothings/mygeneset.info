@@ -19,17 +19,17 @@ jobs:
         env:
           discovery.type : single-node
         options: >-
-          --health-cmd "curl http://localhost:9200/_cluster/health"
+          --health-cmd "curl http://127.0.0.1:9200/_cluster/health"
           --health-interval 10s
           --health-timeout 5s
-          --health-retries 20
+          --health-retries 10
         ports:
           - 9200:9200
     steps:
       - name: Create ES Index
         run: |
           sleep 60
-          curl -X PUT http://localhost:9200/user_genesets
+          curl -X PUT http://127.0.0.1:9200/user_genesets
       - name: Clone frontend repo
         uses: actions/checkout@v3
         with:
