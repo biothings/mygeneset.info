@@ -46,7 +46,8 @@ jobs:
         with: 
           node-version: '16.17'
       - name: Build frontend
-        run: npm install && npm run build
+        # run: npm install && npm run build
+        run: yarn install && yarn build
         working-directory: mygeneset.info-website
         env:
           NODE_ENV: production
