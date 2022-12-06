@@ -34,7 +34,7 @@ jobs:
       - name: Runs Elasticsearch
         uses: elastic/elastic-github-actions/elasticsearch@master
         with:
-          stack-version: 8.2.0
+          stack-version: 8.5.0
           security-enabled: false
       - name: Create ES Index
         run: curl -X PUT http://localhost:9200/user_genesets
