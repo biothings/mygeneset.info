@@ -39,18 +39,42 @@ jobs:
           security-enabled: false
       - name: Create ES Index
         run: curl -X PUT http://localhost:9200/user_genesets
+
+      # - name: Clone frontend repo
+      #   run: git clone https://github.com/biothings/mygeneset.info-website
+      #   # run: git clone --single-branch --branch development https://github.com/biothings/mygeneset.info-website
+      # - name: Setup Node
+      #   uses: actions/setup-node@v2
+      #   with: 
+      #     node-version: '16.17'
+      # - name: Build frontend
+      #   # run: npm install && npm run build
+      #   run: npm i @vue/cli-service && npm install && npm build
+      #   working-directory: mygeneset.info-website
+      #   env:
+      #     NODE_ENV: production
+
+      - name: Create ES Index
+        run: curl -X PUT http://localhost:9200/user_genesets
       - name: Clone frontend repo
-        run: git clone https://github.com/biothings/mygeneset.info-website
-      - name: Setup Node
+        uses: actions/checkout@v3
+        with:
+          repository: biothings/mygeneset.info-website
+          path: mygeneset.info-website
+      - name: Set up Node
         uses: actions/setup-node@v2
-        with: 
-          node-version: '16.17'
-      - name: Build frontend
-        # run: npm install && npm run build
-        run: npm i @vue/cli-service && yarn install && yarn build
         working-directory: mygeneset.info-website
-        env:
-          NODE_ENV: production
+        with:
+          node-version: "16"
+      - name: Install packages
+        run: yarn install
+        working-directory: mygeneset.info-website
+      - name: Build app
+        run: yarn build
+        working-directory: mygeneset.info-website
+      - name: Checkout MyGeneset source
+        uses: actions/checkout@v2
+
       - name: Checkout MyGeneset source
         uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
