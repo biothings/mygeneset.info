@@ -37,8 +37,8 @@ jobs:
           path: mygeneset.info-website
       - name: Set up Node
         uses: actions/setup-node@v2
-        working-directory: mygeneset.info-website
         with:
+          working-directory: mygeneset.info-website
           node-version: "16"
       - name: Install packages
         run: yarn install
