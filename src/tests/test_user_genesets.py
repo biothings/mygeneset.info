@@ -19,13 +19,12 @@ from .bot import Bot
 class MyGenesetLocalTestBase(BiothingsWebTest, Bot):
     if os.environ.get('HOST'):
         HOST = os.environ['HOST']
+        GITHUB_USERNAME = os.environ['GITHUB_USERNAME']
+        GITHUB_PASSWORD = os.environ['GITHUB_PASSWORD']
+        ORCID_USERNAME = os.environ['ORCID_USERNAME']
+        ORCID_PASSWORD = os.environ['ORCID_PASSWORD']
     else:
         HOST = 'http://localhost:8000'
-    GITHUB_USERNAME = os.environ['GITHUB_USERNAME']
-    GITHUB_PASSWORD = os.environ['GITHUB_PASSWORD']
-    ORCID_USERNAME = os.environ['ORCID_USERNAME']
-    ORCID_PASSWORD = os.environ['ORCID_PASSWORD']
-
 
 class TestUserLogin(MyGenesetLocalTestBase):
     @pytest.mark.skip(reason="May fail if GitHub requests a code")

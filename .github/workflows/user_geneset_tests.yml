@@ -82,3 +82,5 @@ jobs:
         env:
           ORCID_USERNAME: ${{ secrets.ORCID_USERNAME }}
           ORCID_PASSWORD: ${{ secrets.ORCID_PASSWORD }}
+          GITHUB_USERNAME: ${{ secrets.GIT_HUB_USERNAME }}
+          GITHUB_PASSWORD: ${{ secrets.GIT_HUB_PASSWORD }}
