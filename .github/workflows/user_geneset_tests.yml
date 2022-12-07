@@ -22,7 +22,7 @@ jobs:
           xpack.security.http.ssl.enabled: false
           xpack.security.transport.ssl.enabled: false
         options: >-
-          --health-cmd "curl http://127.0.0.1:9200/_cluster/health"
+          --health-cmd "curl http://localhost:9200/_cluster/health"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 10
@@ -32,7 +32,7 @@ jobs:
       - name: Create ES Index
         run: |
           sleep 60
-          curl -X PUT http://127.0.0.1:9200/user_genesets
+          curl -X PUT http://localhost:9200/user_genesets
       - name: Clone frontend repo
         uses: actions/checkout@v3
         with:
