@@ -55,6 +55,7 @@ class TestUserLogin(MyGenesetLocalTestBase):
             assert cookie['name'] != "user", "User cookie not removed."
         self.stop()
 
+    @pytest.mark.skip(reason="Has to configure credentials")
     def test_02_login_logout_orcid(self):
         self.start()
         # Test login
@@ -82,6 +83,7 @@ class TestUserLogin(MyGenesetLocalTestBase):
         self.stop()
 
 
+@pytest.mark.skip(reason="Has to configure credentials")
 class TestUserGenesets(MyGenesetLocalTestBase):
     """These tests use the ORCID login method because it is easier to automate.
     GitHub sometimes requires verifying the login with a code if it detects an unrecognized device."""
