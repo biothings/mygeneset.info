@@ -1,4 +1,5 @@
 import os
+import pytest
 
 from biothings.tests.web import BiothingsWebTest
 
@@ -55,10 +56,11 @@ class TestMyGenesetDataIntegrity(MyGenesetWebTestBase):
         assert 'msigdb' in msigdb['hits'][0].keys()
         assert msigdb['hits'][0]['source'] == 'msigdb'
 
-    # def test_query_by_source_kegg(self):
-    #     kegg = self.query(q='source:kegg', fields='all')
-    #     assert 'kegg' in kegg['hits'][0].keys()
-    #     assert kegg['hits'][0]['source'] == 'kegg'
+    @pytest.mark.skip(reason="We removed kegg data source for now")
+    def test_query_by_source_kegg(self):
+        kegg = self.query(q='source:kegg', fields='all')
+        assert 'kegg' in kegg['hits'][0].keys()
+        assert kegg['hits'][0]['source'] == 'kegg'
 
     def test_query_by_source_do(self):
         do = self.query(q='source:do', fields='all')
