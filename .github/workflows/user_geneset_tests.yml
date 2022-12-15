@@ -29,6 +29,9 @@ jobs:
         ports:
           - 9200:9200
     steps:
+      - name: Setup tmate debug session on failure
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3
       - name: Create ES Index
         run: |
           sleep 60
@@ -45,10 +48,10 @@ jobs:
           node-version: "16"
       - name: Install packages
         run: yarn install
-        # working-directory: mygeneset.info-website
+        working-directory: mygeneset.info-website
       - name: Build app
         run: yarn build
-        # working-directory: mygeneset.info-website
+        working-directory: mygeneset.info-website
       - name: Start Frontend
         run: |
           yarn serve &
