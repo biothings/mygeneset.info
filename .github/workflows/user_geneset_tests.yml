@@ -52,8 +52,7 @@ jobs:
       - name: Start Frontend
         run: yarn serve &
         working-directory: mygeneset.info-website
-        with:
-          wait-interval: 30
+        wait-interval: 30
       - name: Checkout MyGeneset source
         uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
