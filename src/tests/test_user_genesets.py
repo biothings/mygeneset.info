@@ -17,7 +17,7 @@ from .bot import Bot
 
 
 class MyGenesetLocalTestBase(BiothingsWebTest, Bot):
-    HOST = 'http://localhost:8000'
+    HOST = 'http://localhost:8080'
     GITHUB_USERNAME = os.environ['GITHUB_USERNAME']
     GITHUB_PASSWORD = os.environ['GITHUB_PASSWORD']
     ORCID_USERNAME = os.environ['ORCID_USERNAME']
