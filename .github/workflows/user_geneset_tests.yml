@@ -50,11 +50,10 @@ jobs:
         run: yarn build
         working-directory: mygeneset.info-website
       - name: Start Frontend
-        run: yarn serve&
+        run: yarn serve &
         working-directory: mygeneset.info-website
-      - name: Sleep for 30 seconds
-        run: sleep 30s
-        shell: bash
+        with:
+          wait-interval: 30
       - name: Checkout MyGeneset source
         uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
