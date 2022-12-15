@@ -50,7 +50,9 @@ jobs:
         run: yarn build
         working-directory: mygeneset.info-website
       - name: Start Frontend
-        run: yarn serve
+        run: |
+          yarn serve &
+          sleep 30
         working-directory: mygeneset.info-website
       - name: Checkout MyGeneset source
         uses: actions/checkout@v3
