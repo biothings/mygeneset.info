@@ -33,7 +33,7 @@ class TestUserLogin(MyGenesetLocalTestBase):
         print('#####')
         print(self.driver)
         print(self.driver.__dict__)
-        print(self.driver.find_element(By.CSS_SELECTOR,"//*[@id]"))
+        print(self.driver.find_element_by_xpath("/html/body").text)
         self.driver.find_element(By.ID, "login_field").send_keys(self.GITHUB_USERNAME)
         self.driver.find_element(By.ID, "password").send_keys(self.GITHUB_PASSWORD)
         self.driver.find_element("xpath", "//input[@value='Sign in']").click()
