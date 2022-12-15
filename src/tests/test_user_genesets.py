@@ -29,7 +29,7 @@ class TestUserLogin(MyGenesetLocalTestBase):
         self.start()
         # Test login
         self.go_to_url(f'{self.HOST}/login/github')
-        time.sleep(2)
+        time.sleep(5)
         print('#####')
         print(self.driver)
         print(self.driver.__dict__)
