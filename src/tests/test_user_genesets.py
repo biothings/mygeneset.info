@@ -27,7 +27,7 @@ class MyGenesetLocalTestBase(BiothingsWebTest, Bot):
         HOST = 'http://localhost:8000'
 
 class TestUserLogin(MyGenesetLocalTestBase):
-    @pytest.mark.skip(reason="May fail if GitHub requests a code")
+    # @pytest.mark.skip(reason="May fail if GitHub requests a code")
     def test_01_login_logout_github(self):
         self.start()
         # Test login

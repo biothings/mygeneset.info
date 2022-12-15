@@ -63,8 +63,9 @@ jobs:
         run: wget https://gist.githubusercontent.com/ravila4/9f20d64f51fc23c10b1b70b679a7d3ab/raw/1199ab75b78cc71549fa73e6283810cf2c081682/config.py
         working-directory: src
       - name: Start tornado server
-        run: python index.py --webapp &
-        working-directory: src
+        # run: python index.py --webapp &
+        run: yarn serve
+        # working-directory: src
         env:
           ORCID_CLIENT_ID: ${{ secrets.ORCID_CLIENT_ID }}
           ORCID_CLIENT_SECRET: ${{ secrets.ORCID_CLIENT_SECRET }}
