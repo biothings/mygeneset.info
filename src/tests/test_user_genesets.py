@@ -30,6 +30,9 @@ class TestUserLogin(MyGenesetLocalTestBase):
         # Test login
         self.go_to_url(f'{self.HOST}/login/github')
         time.sleep(2)
+        print('#####')
+        print(self.driver)
+        print(self.driver.__dict__)
         self.driver.find_element(By.ID, "login_field").send_keys(self.GITHUB_USERNAME)
         self.driver.find_element(By.ID, "password").send_keys(self.GITHUB_PASSWORD)
         self.driver.find_element("xpath", "//input[@value='Sign in']").click()
