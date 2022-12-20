@@ -8,7 +8,7 @@ on:
 
 jobs:
   run_user_geneset_tests:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
