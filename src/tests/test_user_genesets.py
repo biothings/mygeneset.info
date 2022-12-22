@@ -24,17 +24,12 @@ class MyGenesetLocalTestBase(BiothingsWebTest, Bot):
     ORCID_PASSWORD = os.environ['ORCID_PASSWORD']
 
 class TestUserLogin(MyGenesetLocalTestBase):
-    # @pytest.mark.skip(reason="May fail if GitHub requests a code")
+    @pytest.mark.skip(reason="May fail if GitHub requests a code")
     def test_01_login_logout_github(self):
         self.start()
         # Test login
         self.go_to_url(f'{self.HOST}/login/github')
         time.sleep(5)
-        print('#####')
-        print(self.driver)
-        print(self.driver.__dict__)
-        # print(self.driver.find_element("xpath", "/html/body").text)
-        print(self.driver.page_source.encode('utf-8'))
         self.driver.find_element(By.ID, "login_field").send_keys(self.GITHUB_USERNAME)
         self.driver.find_element(By.ID, "password").send_keys(self.GITHUB_PASSWORD)
         self.driver.find_element("xpath", "//input[@value='Sign in']").click()
