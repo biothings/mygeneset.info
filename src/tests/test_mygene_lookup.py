@@ -164,6 +164,7 @@ class TestMyGeneLookup:
         results = lookup.get_results(mousegenes)
         assert results['count'] == 3
         assert [(g['source_id'], g['mygene_id'])for g in results['genes']] == mouse_to_human
+        assert any(g['taxid'] == 9606 for g in results['genes'])
 
     def test_031_homolog_convert_mouse_to_human_with_retries(self):
         """Convert mouse genes to human genes"""
