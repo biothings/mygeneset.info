@@ -17,15 +17,11 @@ from .bot import Bot
 
 
 class MyGenesetLocalTestBase(BiothingsWebTest, Bot):
-    if os.environ.get('HOST'):
-        HOST = os.environ['HOST']
-    else:
-        HOST = 'http://localhost:8000'
+    HOST = 'http://localhost:8080'
     GITHUB_USERNAME = os.environ['GITHUB_USERNAME']
     GITHUB_PASSWORD = os.environ['GITHUB_PASSWORD']
     ORCID_USERNAME = os.environ['ORCID_USERNAME']
     ORCID_PASSWORD = os.environ['ORCID_PASSWORD']
-
 
 class TestUserLogin(MyGenesetLocalTestBase):
     @pytest.mark.skip(reason="May fail if GitHub requests a code")
@@ -33,7 +29,7 @@ class TestUserLogin(MyGenesetLocalTestBase):
         self.start()
         # Test login
         self.go_to_url(f'{self.HOST}/login/github')
-        time.sleep(2)
+        time.sleep(5)
         self.driver.find_element(By.ID, "login_field").send_keys(self.GITHUB_USERNAME)
         self.driver.find_element(By.ID, "password").send_keys(self.GITHUB_PASSWORD)
         self.driver.find_element("xpath", "//input[@value='Sign in']").click()
@@ -56,6 +52,7 @@ class TestUserLogin(MyGenesetLocalTestBase):
             assert cookie['name'] != "user", "User cookie not removed."
         self.stop()
 
+    @pytest.mark.skip(reason="Has to configure credentials")
     def test_02_login_logout_orcid(self):
         self.start()
         # Test login
@@ -83,6 +80,7 @@ class TestUserLogin(MyGenesetLocalTestBase):
         self.stop()
 
 
+@pytest.mark.skip(reason="Has to configure credentials")
 class TestUserGenesets(MyGenesetLocalTestBase):
     """These tests use the ORCID login method because it is easier to automate.
     GitHub sometimes requires verifying the login with a code if it detects an unrecognized device."""

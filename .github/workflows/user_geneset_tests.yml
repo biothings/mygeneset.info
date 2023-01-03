@@ -1,4 +1,3 @@
-
 name: User Geneset Tests
 
 on:
@@ -8,32 +7,88 @@ on:
       - master
 
 jobs:
-  run_app_tests:
+  run_user_geneset_tests:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ 3.6, 3.7, 3.8, 3.9, 3.10 ]
+        python-version: [ "3.7", "3.8", "3.9", "3.10", "3.11" ]
+    services:
+      elasticsearch:
+        image: docker.elastic.co/elasticsearch/elasticsearch:8.5.2
+        env:
+          discovery.type : single-node
+          xpack.security.enabled: false
+          xpack.security.http.ssl.enabled: false
+          xpack.security.transport.ssl.enabled: false
+        options: >-
+          --health-cmd "curl http://localhost:9200/_cluster/health"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+        ports:
+          - 9200:9200
     steps:
-      - name: Checkout source
-        uses: actions/checkout@v2
+      - name: Create ES Index
+        run: |
+          sleep 60
+          curl -X PUT http://localhost:9200/user_genesets
+      - name: Clone frontend repo
+        uses: actions/checkout@v3
+        with:
+          repository: biothings/mygeneset.info-website
+          path: mygeneset.info-website
+      - name: Set up Node
+        uses: actions/setup-node@v2
+        with:
+          working-directory: mygeneset.info-website
+          node-version: "16"
+      - name: Install packages
+        run: yarn install
+        working-directory: mygeneset.info-website
+      - name: Build app
+        run: yarn build
+        working-directory: mygeneset.info-website
+      - name: Start Frontend
+        run: |
+          yarn serve &
+          sleep 30
+        working-directory: mygeneset.info-website
+      - name: Checkout MyGeneset source
+        uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
       - name: Upgrade pip
         run: pip install --upgrade pip
       - name: Install dependencies
         run: pip install -r requirements_web.txt
+      - name: Get web config file
+        run: wget https://gist.githubusercontent.com/ravila4/9f20d64f51fc23c10b1b70b679a7d3ab/raw/1199ab75b78cc71549fa73e6283810cf2c081682/config.py
+        working-directory: src
+      - name: Start API
+        run: python index.py --webapp &
+        working-directory: src
+        env:
+          ORCID_CLIENT_ID: ${{ secrets.ORCID_CLIENT_ID }}
+          ORCID_CLIENT_SECRET: ${{ secrets.ORCID_CLIENT_SECRET }}
       - name: Install PyTest
         run: pip install pytest
+      - name: Install Selenium
+        run: pip install selenium
+      - name: Install Selenium Wire
+        run: pip install selenium-wire
+      - name: Install Webdriver Manager
+        run: pip install webdriver-manager
       - name: Run App Tests
-        run: pytest test_local.py
-        working-directory: src/tests 
-    services:
-      Elasticsearch:
-        image: docker.elastic.co/elasticsearch/elasticsearch:8.4
+        run: pytest test_user_genesets.py
+        working-directory: src/tests
         env:
-          "discovery.type" : single-node
-        ports:
-          - 9200:9200
+          ORCID_USERNAME: ${{ secrets.ORCID_USERNAME }}
+          ORCID_PASSWORD: ${{ secrets.ORCID_PASSWORD }}
+          GITHUB_USERNAME: ${{ secrets.GIT_HUB_USERNAME }}
+          GITHUB_PASSWORD: ${{ secrets.GIT_HUB_PASSWORD }}
+      - name: Setup tmate debug session on failure
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3

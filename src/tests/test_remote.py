@@ -1,13 +1,11 @@
 import os
+import pytest
 
 from biothings.tests.web import BiothingsWebTest
 
 
 class MyGenesetWebTestBase(BiothingsWebTest):
-    if os.environ.get('HOST'):
-        HOST = os.environ['HOST']
-    else:
-        HOST = 'mygeneset.info'
+    host = 'mygeneset.info'
 
 class TestMyGenesetDataIntegrity(MyGenesetWebTestBase):
 
@@ -23,12 +21,10 @@ class TestMyGenesetDataIntegrity(MyGenesetWebTestBase):
 
     def test_species_filter_blank_query(self):
         dog = self.query(species='9615')
-        print(3, dog['hits'][0])
         assert dog['hits'][0]['taxid'] == "9615"
 
     def test_species_filter_plus_query(self):
         dog = self.query(q='glucose', species='9615')
-        print(dog['hits'][0])
         assert dog['hits'][0]['taxid'] == "9615"
 
     def test_query_by_id(self):
@@ -60,6 +56,7 @@ class TestMyGenesetDataIntegrity(MyGenesetWebTestBase):
         assert 'msigdb' in msigdb['hits'][0].keys()
         assert msigdb['hits'][0]['source'] == 'msigdb'
 
+    @pytest.mark.skip(reason="We removed kegg data source for now")
     def test_query_by_source_kegg(self):
         kegg = self.query(q='source:kegg', fields='all')
         assert 'kegg' in kegg['hits'][0].keys()
