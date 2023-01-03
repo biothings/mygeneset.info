@@ -267,7 +267,7 @@ class MyGeneLookup:
         # We clear the cache because we have a new taxid and set of returned fields
         self.clear_cache()
         self.species = new_species
-        self.fields_to_query = ["entrezgene", "ensembl.gene", "uniprot.Swiss-Prot", "symbol", "name"]
+        self.fields_to_query = ["entrezgene", "ensembl.gene", "uniprot.Swiss-Prot", "symbol", "name", "taxid"]
         new_ids = list(set([conversion.homolog_gene_id for conversion in mappings]))
         if len(new_ids) == 0:
             logging.info("No ids to query.")
