@@ -5,7 +5,7 @@
         "license": "CC BY 4.0",
         "license_url": "http://geneontology.org/docs/go-citation-policy/",
         "url": "http://geneontology.org",
-        "description": "The Gene Ontology Resource"
+        "description": "Gene Ontology"
     },
     "dumper": {
         "data_url": ["http://current.geneontology.org/annotations/goa_human.gaf.gz",

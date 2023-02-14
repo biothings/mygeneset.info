@@ -16,7 +16,7 @@ class msigdbUploader(uploader.BaseSourceUploader):
         "src_meta": {
             'license_url': 'https://www.gsea-msigdb.org/gsea/msigdb_license_terms.jsp',
             'licence': 'CC BY 4.0',
-            'url': 'https://www.gsea-msigdb.org/gsea/index.jsp',
+            'url': 'https://www.gsea-msigdb.org/gsea/msigdb/',
             'description': 'Molecular Signatures Database'
         }
     }

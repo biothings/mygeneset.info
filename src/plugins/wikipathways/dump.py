@@ -14,13 +14,6 @@ class WikiPathwaysDumper(HTTPDumper):
     SRC_ROOT_FOLDER = os.path.join(DATA_ARCHIVE_ROOT, SRC_NAME)
     BASE_URL = "http://data.wikipathways.org/current/gmt/"
     SCHEDULE = "0 5 15 * *"
-    __metadata__ = {
-        "src_meta": {
-            'license_url': 'https://www.wikipathways.org/index.php/WikiPathways:License_Terms',
-            'licence': 'CC0 1.0 Universal',
-            'url': 'https://www.wikipathways.org/'
-            }
-        }
 
     def get_remote_version(self):
         home = self.client.get(self.__class__.BASE_URL)

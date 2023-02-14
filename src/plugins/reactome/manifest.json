@@ -3,7 +3,7 @@
     "requires" : ["mygene", "requests"],
     "__metadata__": {
         "license_url": "https://reactome.org/license",
-        "license": "Creative Commons Public Domain (CC0)",
+        "license": "CC0",
         "url": "http://reactome.org",
         "description": "Reactome"
     },

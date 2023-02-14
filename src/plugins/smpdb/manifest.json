@@ -3,7 +3,6 @@
     "requires" : ["mygene", "biothings_client", "pandas"],
     "__metadata__": {
         "license_url": "https://www.smpdb.ca/about",
-        "license": "",
         "url": "https://www.smpdb.ca",
         "description": "The Small Molecule Pathway Database"
     },
