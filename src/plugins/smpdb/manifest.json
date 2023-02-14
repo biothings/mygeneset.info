@@ -4,8 +4,9 @@
     "__metadata__": {
         "license_url": "https://www.smpdb.ca/about",
         "license": "",
-        "url": "https://www.smpdb.ca"},
-        "description": "The Small Molecule Pathway Database",
+        "url": "https://www.smpdb.ca",
+        "description": "The Small Molecule Pathway Database"
+    },
     "dumper": {
         "data_url": ["https://smpdb.ca/downloads/smpdb_pathways.csv.zip",
                      "https://smpdb.ca/downloads/smpdb_metabolites.csv.zip",

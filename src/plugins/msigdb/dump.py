@@ -24,7 +24,8 @@ class msigdbDumper(HTTPDumper):
         "src_meta": {
             'license_url': 'https://www.gsea-msigdb.org/gsea/msigdb_license_terms.jsp',
             'licence': 'CC Attribution 4.0 International',
-            'url': 'https://www.gsea-msigdb.org/gsea/index.jsp'
+            'url': 'https://www.gsea-msigdb.org/gsea/index.jsp',
+            'description': 'Gene Set Enrichment Analysis'
             }
         }
 

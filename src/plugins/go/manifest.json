@@ -4,7 +4,9 @@
     "__metadata__": {
         "license": "Creative Commons Attribution 4.0 Unported License",
         "license_url": "http://geneontology.org/docs/go-citation-policy/",
-        "url": "http://geneontology.org"},
+        "url": "http://geneontology.org",
+        "description": "The Gene Ontology Resource"
+    },
     "dumper": {
         "data_url": ["http://current.geneontology.org/annotations/goa_human.gaf.gz",
                      "http://current.geneontology.org/annotations/goa_dog.gaf.gz",
