@@ -23,9 +23,9 @@ class msigdbDumper(HTTPDumper):
     __metadata__ = {
         "src_meta": {
             'license_url': 'https://www.gsea-msigdb.org/gsea/msigdb_license_terms.jsp',
-            'licence': 'CC Attribution 4.0 International',
+            'licence': 'CC BY 4.0',
             'url': 'https://www.gsea-msigdb.org/gsea/index.jsp',
-            'description': 'Gene Set Enrichment Analysis'
+            'description': 'Molecular Signatures Database'
             }
         }
 

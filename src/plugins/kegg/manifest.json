@@ -2,7 +2,6 @@
   "version": "0.1",
   "requires" : ["mygene", "requests"],
   "__metadata__": {
-    "license": "Academic service provider license",
     "license_url": "https://www.kegg.jp/kegg/legal.html",
     "url": "https://www.kegg.jp",
     "description": "Kyoto Encyclopedia of Genes and Genomes"

@@ -2,7 +2,7 @@
     "version": "0.1",
     "requires" : ["mygene", "requests"],
     "__metadata__": {
-        "license": "Creative Commons Attribution 4.0 Unported License",
+        "license": "CC BY 4.0",
         "license_url": "http://geneontology.org/docs/go-citation-policy/",
         "url": "http://geneontology.org",
         "description": "The Gene Ontology Resource"

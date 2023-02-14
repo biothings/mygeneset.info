@@ -5,7 +5,7 @@
         "license_url": "https://reactome.org/license",
         "license": "Creative Commons Public Domain (CC0)",
         "url": "http://reactome.org",
-        "description": "Find Reactions, Proteins and Pathways"
+        "description": "Reactome"
     },
     "dumper": {
         "data_url": ["https://reactome.org/download/current/ReactomePathways.gmt.zip"],
