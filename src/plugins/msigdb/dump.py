@@ -20,13 +20,6 @@ class msigdbDumper(HTTPDumper):
     BASE_URL = "https://data.broadinstitute.org/gsea-msigdb/msigdb/release/"
     VERSION_HOME = "https://software.broadinstitute.org/cancer/software/gsea/wiki/index.php/MSigDB_Latest_Release_Notes"
     SCHEDULE = "0 8 20 * *"
-    __metadata__ = {
-        "src_meta": {
-            'license_url': 'https://www.gsea-msigdb.org/gsea/msigdb_license_terms.jsp',
-            'licence': 'CC Attribution 4.0 International',
-            'url': 'https://www.gsea-msigdb.org/gsea/index.jsp'
-            }
-        }
 
     def get_remote_version(self):
         """Scrape version number from MSIGDB homepage.

@@ -3,8 +3,10 @@
     "requires" : ["mygene", "requests"],
     "__metadata__": {
         "license_url": "https://reactome.org/license",
-        "license": "Creative Commons Public Domain (CC0)",
-        "url": "http://reactome.org"},
+        "license": "CC0",
+        "url": "http://reactome.org",
+        "description": "Reactome"
+    },
     "dumper": {
         "data_url": ["https://reactome.org/download/current/ReactomePathways.gmt.zip"],
         "uncompress": true,

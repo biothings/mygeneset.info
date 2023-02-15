@@ -3,7 +3,8 @@
   "requires" : ["lxml", "mygene", "requests"],
   "__metadata__": {
     "license_url": "https://ctdbase.org/about/legal.jsp",
-    "url": "https://ctdbase.org/"
+    "url": "https://ctdbase.org/",
+    "description": "Comparative Toxicogenomics Database"
   },
   "dumper": {
     "data_url": "https://ctdbase.org/reports/CTD_chem_gene_ixns.tsv.gz",

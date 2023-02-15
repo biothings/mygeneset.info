@@ -2,9 +2,10 @@
   "version": "0.1",
   "requires" : ["mygene"],
   "__metadata__": {
-    "license": "Creative Commons Public Domain Dedication CC0 1.0 Universal license",
+    "license": "CC0",
     "license_url": "https://raw.githubusercontent.com/DiseaseOntology/HumanDiseaseOntology/main/LICENSE",
-    "url": "https://disease-ontology.org/"
+    "url": "https://disease-ontology.org/",
+    "description": "Disease Ontology"
   },
   "dumper": {
     "data_url": [
