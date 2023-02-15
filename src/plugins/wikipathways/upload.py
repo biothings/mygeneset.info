@@ -9,7 +9,8 @@ class WikiPathwaysUploader(uploader.BaseSourceUploader):
         "src_meta": {
             'license_url': 'https://www.wikipathways.org/terms.html',
             'licence': 'CC0',
-            'url': 'https://www.wikipathways.org/'
+            'url': 'https://www.wikipathways.org/',
+            'description': 'WikiPathways'
             }
         }
 
