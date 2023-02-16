@@ -45,7 +45,9 @@ APP_LIST += [
         (r"/xsrf_token", "xsrf.XSRFToken"),
         (r"/logout", "web.handlers.login.LogoutHandler"),
         (r"/login/github", "web.handlers.auth.GitHubLoginHandler"),
-        (r"/login/orcid", "web.handlers.auth.ORCIDLoginHandler")
+        (r"/login/orcid", "web.handlers.auth.ORCIDLoginHandler"),
+        (r"/{ver}/metadata/?", "web.handlers.api.MyGenesetMetadataSourceHandler"),
+        (r"/metadata/?", "web.handlers.api.MyGenesetMetadataSourceHandler"),
         ]
 
 TAXONOMY = {
