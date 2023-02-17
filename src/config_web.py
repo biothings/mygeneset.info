@@ -8,7 +8,7 @@ from web.authn.authn_provider import UserCookieAuthProvider
 # *****************************************************************************
 # Elasticsearch variables
 # *****************************************************************************
-ES_HOST = 'localhost:9200'
+ES_HOST = '127.0.0.1:9200'
 # elasticsearch index name
 ES_INDEX = 'mygeneset_current*'
 ES_USER_INDEX = 'mygeneset_current_user_genesets'
@@ -46,8 +46,8 @@ APP_LIST += [
         (r"/logout", "web.handlers.login.LogoutHandler"),
         (r"/login/github", "web.handlers.auth.GitHubLoginHandler"),
         (r"/login/orcid", "web.handlers.auth.ORCIDLoginHandler"),
-        (r"/{ver}/metadata/?", "web.handlers.api.MyGenesetMetadataSourceHandler"),
-        (r"/metadata/?", "web.handlers.api.MyGenesetMetadataSourceHandler"),
+        (r"/{ver}/metadata/?", "web.handlers.metadata.MyGenesetMetadataSourceHandler"),
+        (r"/metadata/?", "web.handlers.metadata.MyGenesetMetadataSourceHandler"),
         ]
 
 TAXONOMY = {
