@@ -4,6 +4,7 @@ API handler for MyGeneset submit/ endpoint
 
 
 import elasticsearch
+from elasticsearch import Elasticsearch
 from biothings.web.handlers import MetadataSourceHandler
 from tornado.web import HTTPError
 
@@ -52,8 +53,22 @@ class MyGenesetMetadataSourceHandler(MetadataSourceHandler):
 
     def extras(self, _meta):
 
-        _meta['stats']['curated'] = 180809
-        _meta['stats']['user'] = 16
-        _meta['stats']['anonymous'] = 2
+        ES_HOST = 'es8.biothings.io'
+        ES_PORT = '9200'
+        ES_INDEX = 'mygeneset_current'
+        ES_USER_INDEX = 'mygeneset_current_user_genesets'
+        ES_DOC_TYPE = 'geneset'
+
+        # http://es8.biothings.io:9200/_cat/count/geneset_20230215_txbg0fnz_202302151151?format=JSON
+
+        es = Elasticsearch('http://es8.biothings.io:9200')
+        curated = es.count(index=ES_INDEX, body={ "query": {"match_all" : { }}})['count']
+        #user = es.count(index=ES_USER_INDEX, body={ "query": {"match_all" : { }}})['count']
+        user = es.count(index=ES_USER_INDEX, body={"query" : {"term" : { "is_public" : "false" }}})['count']
+        anonymous = es.count(index=ES_USER_INDEX, body={ "query": {"match_all" : { }}})['count']
+
+        _meta['stats']['curated'] = curated
+        _meta['stats']['user'] = user
+        _meta['stats']['anonymous'] = anonymous
 
         return _meta
