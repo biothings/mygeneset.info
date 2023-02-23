@@ -16,10 +16,10 @@ class MyGenesetMetadataSourceHandler(MetadataSourceHandler):
     {
         ...
         "stats": {
-        "total": 180825,
-        "curated": 180809,
-        "user": 16,
-        "anonymous": 2
+            "total": 10,
+            "curated": 6,
+            "user": 4,
+            "anonymous": 2
         }
         ...
     }
