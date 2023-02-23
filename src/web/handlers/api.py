@@ -9,7 +9,7 @@ import elasticsearch
 from biothings.utils.dataload import dict_sweep, unlist
 from biothings.web.auth.authn import BioThingsAuthnMixin
 from biothings.web.handlers import BaseAPIHandler
-from biothings.web.handlers.query import BiothingHandler, QueryHandler, BaseQueryHandler
+from biothings.web.handlers.query import BiothingHandler, QueryHandler
 from tornado.web import HTTPError
 
 from utils.geneset_creation import (generate_geneset_id, get_gene_list,
