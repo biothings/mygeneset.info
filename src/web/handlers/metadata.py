@@ -48,7 +48,7 @@ class MyGenesetMetadataSourceHandler(MetadataSourceHandler):
         """Fetch a geneset document from Elasticsearch"""
         try:
             document = await self.biothings.elasticsearch.async_client.count(
-                    '{"query": {"bool": {"must_not": {"exists": {"field": "user.id"}}}}}',
+                    '{"query": {"bool": {"must_not": {"exists": {"field": "author"}}}}}',
                     index=self.biothings.config.ES_USER_INDEX)
         except elasticsearch.exceptions.NotFoundError:
             raise HTTPError(404, None, "_count_anonymous", reason="Document does not exist.")
