@@ -4,8 +4,6 @@ API handler for MyGeneset submit/ endpoint
 
 
 import elasticsearch
-import asyncio
-from elasticsearch import Elasticsearch
 from biothings.web.handlers import MetadataSourceHandler
 from tornado.web import HTTPError
 
