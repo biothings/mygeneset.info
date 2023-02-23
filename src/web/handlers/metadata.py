@@ -29,7 +29,7 @@ class MyGenesetMetadataSourceHandler(MetadataSourceHandler):
         """Fetch a geneset document from Elasticsearch"""
         try:
             document = await self.biothings.elasticsearch.async_client.count(
-                    index=self.biothings.config.ES_INDEX)
+                    index=self.biothings.config.ES_CURATED_INDEX)
         except elasticsearch.exceptions.NotFoundError:
             raise HTTPError(404, None, "_count_curated", reason="Document does not exist.")
         return document['count']
