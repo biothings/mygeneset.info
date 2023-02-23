@@ -8,7 +8,7 @@ from web.authn.authn_provider import UserCookieAuthProvider
 # *****************************************************************************
 # Elasticsearch variables
 # *****************************************************************************
-ES_HOST = '127.0.0.1:9200'
+ES_HOST = 'localhost:9200'
 # elasticsearch index name
 ES_INDEX = 'mygeneset_current*'
 ES_CURATED_INDEX = 'mygeneset_current'
