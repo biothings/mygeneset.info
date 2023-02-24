@@ -90,3 +90,16 @@ class TestMyGenesetDataIntegrity(MyGenesetWebTestBase):
         expected_fields = ['genes', 'name', 'source', 'taxid', 'is_public', 'wikipathways']
         for field in expected_fields:
             assert field in res.keys()
+
+    # -------------------
+    # Metadata endpoint
+    # -------------------
+
+    def test_metadata(self):
+        root_res = self.request('/metadata').json()
+        api_res = self.request('metadata').json()
+        assert root_res == api_res
+        available_fields = {'build_version', 'build_date', 'stats', 'src', 'biothing_type'}
+        assert root_res.keys() == available_fields
+        stats_fields = {'total', 'curated', 'user', 'anonymous'}
+        assert root_res['stats'].keys() == stats_fields
