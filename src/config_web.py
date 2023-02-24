@@ -36,6 +36,12 @@ STATUS_CHECK = {
 # Query Customizations
 # *****************************************************************************
 
+for idx, handler in enumerate(APP_LIST):
+    if handler[0].endswith("metadata/?"):
+        handler_list = list(handler)
+        handler_list[1] = "web.handlers.metadata.MyGenesetMetadataSourceHandler"
+        handler = tuple(handler_list)
+        APP_LIST[idx] = tuple(handler_list)
 
 APP_LIST += [
         (r"/{ver}/query/?", "web.handlers.api.MyGenesetQueryHandler"),
@@ -47,8 +53,6 @@ APP_LIST += [
         (r"/logout", "web.handlers.login.LogoutHandler"),
         (r"/login/github", "web.handlers.auth.GitHubLoginHandler"),
         (r"/login/orcid", "web.handlers.auth.ORCIDLoginHandler"),
-        (r"/{ver}/metadata/?", "web.handlers.metadata.MyGenesetMetadataSourceHandler"),
-        (r"/metadata/?", "web.handlers.metadata.MyGenesetMetadataSourceHandler"),
         ]
 
 TAXONOMY = {
