@@ -10,8 +10,9 @@ from web.authn.authn_provider import UserCookieAuthProvider
 # *****************************************************************************
 ES_HOST = 'localhost:9200'
 # elasticsearch index name
-ES_INDEX = 'mygeneset_current*'
+ES_CURATED_INDEX = 'mygeneset_current'
 ES_USER_INDEX = 'mygeneset_current_user_genesets'
+ES_INDEX = [ES_CURATED_INDEX, ES_USER_INDEX]
 # elasticsearch document type
 ES_DOC_TYPE = 'geneset'
 
@@ -35,6 +36,10 @@ STATUS_CHECK = {
 # Query Customizations
 # *****************************************************************************
 
+# Update the default metadata handlers to use MyGenesetMetadataSourceHandler
+for idx, handler in enumerate(APP_LIST):
+    if handler[0].endswith("metadata/?"):
+        APP_LIST[idx] = (handler[0],  "web.handlers.metadata.MyGenesetMetadataSourceHandler")
 
 APP_LIST += [
         (r"/{ver}/query/?", "web.handlers.api.MyGenesetQueryHandler"),
