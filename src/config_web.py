@@ -36,12 +36,10 @@ STATUS_CHECK = {
 # Query Customizations
 # *****************************************************************************
 
+# Update the default metadata handlers to use MyGenesetMetadataSourceHandler
 for idx, handler in enumerate(APP_LIST):
     if handler[0].endswith("metadata/?"):
-        handler_list = list(handler)
-        handler_list[1] = "web.handlers.metadata.MyGenesetMetadataSourceHandler"
-        handler = tuple(handler_list)
-        APP_LIST[idx] = tuple(handler_list)
+        APP_LIST[idx] = (handler[0],  "web.handlers.metadata.MyGenesetMetadataSourceHandler")
 
 APP_LIST += [
         (r"/{ver}/query/?", "web.handlers.api.MyGenesetQueryHandler"),
