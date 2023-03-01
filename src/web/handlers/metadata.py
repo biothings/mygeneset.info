@@ -35,7 +35,6 @@ class MyGenesetMetadataSourceHandler(MetadataSourceHandler):
         """Fetch a geneset document from Elasticsearch"""
         try:
             result = await self.biothings.elasticsearch.async_client.count(
-                    '{"query": {"exists": {"field": "author"}}}',
                     index=self.biothings.config.ES_USER_INDEX)
             return result['count']
         except NotFoundError:
