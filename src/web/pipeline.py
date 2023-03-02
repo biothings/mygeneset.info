@@ -2,6 +2,7 @@ from biothings.web.query import ESQueryBuilder
 from elasticsearch_dsl import Q, Search
 from tornado.web import HTTPError
 
+import config
 
 class MyGenesetQueryBuilder(ESQueryBuilder):
 
@@ -47,10 +48,10 @@ class MyGenesetQueryBuilder(ESQueryBuilder):
             if 'public' == options.include:
                 search = search.filter('match', is_public=True)
             elif 'curated' == options.include:
-                search = search.filter('match', _index=self.biothings.config.ES_CURATED_INDEX)
+                search = search.filter('match', _index=config.ES_CURATED_INDEX)
             elif 'user' == options.include:
-                search = search.filter('match', _index=self.biothings.config.ES_USER_INDEX)
+                search = search.filter('match', _index=config.ES_USER_INDEX)
             elif 'anonymous' == options.include:
-                search = search.filter('match', _index=self.biothings.config.ES_USER_INDEX).exclude('exists', field="author")
+                search = search.filter('match', _index=config.ES_USER_INDEX).exclude('exists', field="author")
 
         return super().apply_extras(search, options)
