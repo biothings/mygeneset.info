@@ -77,6 +77,43 @@ class TestMyGenesetDataIntegrity(MyGenesetWebTestBase):
         assert 'smpdb' in smpdb['hits'][0].keys()
         assert smpdb['hits'][0]['source'] == 'smpdb'
 
+    def test_include_filter_check(self):
+        query_all = self.query(include='all')
+        query_curated = self.query(include='curated')
+        query_public = self.query(include='public')
+        query_user = self.query(include='user')
+        query_anonymous = self.query(include='anonymous')
+        assert query_all['total'] == query_curated['total'] + query_user['total']
+        assert query_all['total'] >= query_public['total']
+        assert query_user['total'] >= query_anonymous['total']
+
+    def test_include_all_filter_plus_query(self):
+        query = self.query(q='glucose', species='9615', include='all')
+        assert query['hits'][0]['taxid'] == "9615"
+
+    def test_include_curated_filter_plus_query(self):
+        query = self.query(q='glucose', species='9615', include='curated')
+        assert query['hits'][0]['taxid'] == "9615"
+
+    def test_include_public_filter_plus_query(self):
+        query = self.query(q='glucose', species='9615', include='public')
+        assert query['hits'][0]['taxid'] == "9615"
+
+    def test_include_user_filter_plus_query(self):
+        query = self.query(q='glucose', species='9615', include='user')
+        assert query['hits'][0]['taxid'] == "9615"
+
+    def test_include_anonymous_filter_plus_query(self):
+        query = self.query(q='glucose', species='9615', include='anonymous')
+        assert query['hits'][0]['taxid'] == "9615"
+
+    def test_include_filter_error(self):
+        with pytest.raises(AssertionError) as e:
+            self.request("query?include=a_wrong_include").json()
+        expected_error = '{"code":400,"success":false,"error":"Bad Request","keyword":"include","allowed":["all","curated","public","user","anonymous"]}'
+        assert expected_error in str(e)
+
+
     # TODO: Add POST endpoint tests
 
     # -------------------
