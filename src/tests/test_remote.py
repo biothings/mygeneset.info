@@ -6,7 +6,6 @@ from biothings.tests.web import BiothingsWebTest
 
 class MyGenesetWebTestBase(BiothingsWebTest):
     host = 'mygeneset.info'
-    host = '54.202.139.153'
 
 class TestMyGenesetDataIntegrity(MyGenesetWebTestBase):
 
