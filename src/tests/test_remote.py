@@ -100,16 +100,18 @@ class TestMyGenesetDataIntegrity(MyGenesetWebTestBase):
         assert query['hits'][0]['taxid'] == "9615"
 
     def test_include_user_filter_plus_query(self):
-        query = self.query(q='glucose', species='9615', include='user')
-        assert query['hits'][0]['taxid'] == "9615"
+        res = self.request("query?q=glucose&species=9615&include=user").json()
+        assert res['total'] == 0
+        assert len(res['hits']) == 0
 
     def test_include_anonymous_filter_plus_query(self):
-        query = self.query(q='glucose', species='9615', include='anonymous')
-        assert query['hits'][0]['taxid'] == "9615"
+        res = self.request("query?q=glucose&species=9615&include=anonymous").json()
+        assert res['total'] == 0
+        assert len(res['hits']) == 0
 
     def test_include_filter_error(self):
         with pytest.raises(AssertionError) as e:
-            self.request("query?include=a_wrong_include").json()
+            self.request("query?include=a_wrong_include")
         e_str = str(e)
         error_code = '"code":400'
         error_status = '"success":false'
