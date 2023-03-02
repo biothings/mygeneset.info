@@ -6,6 +6,7 @@ from biothings.tests.web import BiothingsWebTest
 
 class MyGenesetWebTestBase(BiothingsWebTest):
     host = 'mygeneset.info'
+    host = '54.202.139.153'
 
 class TestMyGenesetDataIntegrity(MyGenesetWebTestBase):
 
@@ -110,8 +111,17 @@ class TestMyGenesetDataIntegrity(MyGenesetWebTestBase):
     def test_include_filter_error(self):
         with pytest.raises(AssertionError) as e:
             self.request("query?include=a_wrong_include").json()
-        expected_error = '{"code":400,"success":false,"error":"Bad Request","keyword":"include","allowed":["all","curated","public","user","anonymous"]}'
-        assert expected_error in str(e)
+        e_str = str(e)
+        error_code = '"code":400'
+        error_status = '"success":false'
+        error_msg = '"error":"Bad Request"'
+        error_keyword = '"keyword":"include"'
+        error_allowed = '"allowed":["all","curated","public","user","anonymous"]'
+        assert error_code in e_str
+        assert error_status in e_str
+        assert error_msg in e_str
+        assert error_keyword in e_str
+        assert error_allowed in e_str
 
 
     # TODO: Add POST endpoint tests
