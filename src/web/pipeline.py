@@ -45,13 +45,13 @@ class MyGenesetQueryBuilder(ESQueryBuilder):
                 search = search.post_filter('terms', source=options.source_facet_filter)
 
         if options.include:
-            if 'public' == options.include:
+            if options.include == 'public':
                 search = search.filter('match', is_public=True)
-            elif 'curated' == options.include:
+            elif options.include == 'curated':
                 search = search.filter('match', _index=config.ES_CURATED_INDEX)
-            elif 'user' == options.include:
+            elif options.include == 'user':
                 search = search.filter('match', _index=config.ES_USER_INDEX)
-            elif 'anonymous' == options.include:
+            elif options.include == 'anonymous':
                 search = search.filter('match', _index=config.ES_USER_INDEX).exclude('exists', field="author")
 
         return super().apply_extras(search, options)
