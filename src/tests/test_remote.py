@@ -110,20 +110,14 @@ class TestMyGenesetDataIntegrity(MyGenesetWebTestBase):
         assert len(res['hits']) == 0
 
     def test_include_filter_error(self):
-        with pytest.raises(AssertionError) as e:
-            self.request("query?include=a_wrong_include")
-        e_str = str(e)
-        error_code = '"code":400'
-        error_status = '"success":false'
-        error_msg = '"error":"Bad Request"'
-        error_keyword = '"keyword":"include"'
-        error_allowed = '"allowed":["all","curated","public","user","anonymous"]'
-        assert error_code in e_str
-        assert error_status in e_str
-        assert error_msg in e_str
-        assert error_keyword in e_str
-        assert error_allowed in e_str
-
+        res = self.request("query?include=a_wrong_include", expect=400).json()
+        assert res == {
+                        "code": 400,
+                        "success": False,
+                        "error": "Bad Request",
+                        "keyword": "include",
+                        "allowed": ["all","curated","public","user","anonymous"]
+                    }
 
     # TODO: Add POST endpoint tests
 
