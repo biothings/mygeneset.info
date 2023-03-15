@@ -13,7 +13,6 @@
                      "http://current.geneontology.org/annotations/goa_pig.gaf.gz",
                      "http://current.geneontology.org/annotations/goa_cow.gaf.gz",
                      "http://current.geneontology.org/annotations/goa_chicken.gaf.gz",
-                     "http://current.geneontology.org/ontology/go.json",
                      "http://current.geneontology.org/annotations/dictybase.gaf.gz",
                      "http://current.geneontology.org/annotations/mgi.gaf.gz",
                      "http://current.geneontology.org/annotations/rgd.gaf.gz",
@@ -27,7 +26,8 @@
                      "http://current.geneontology.org/annotations/tair.gaf.gz",
                      "http://current.geneontology.org/annotations/wb.gaf.gz",
                      "http://current.geneontology.org/annotations/xenbase.gaf.gz",
-                     "http://current.geneontology.org/annotations/zfin.gaf.gz"],
+                     "http://current.geneontology.org/annotations/zfin.gaf.gz",
+                     "http://current.geneontology.org/ontology/go.json"],
         "uncompress": false,
         "release": "version:get_release",
         "schedule": "0 2 30,14 * *"
