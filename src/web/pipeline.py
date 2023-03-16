@@ -47,9 +47,9 @@ class MyGenesetQueryBuilder(ESQueryBuilder):
         if options.include:
             if options.include == "public":
                 search = search.filter("match", is_public=True)
-            elif options.include in ["curated", 'user']:
+            elif options.include in ["curated", "user"]:
                 search = search.query()
             elif options.include == "anonymous":
-                search = search.query().exclude('exists', field="author")
+                search = search.query().exclude("exists", field="author")
 
         return super().apply_extras(search, options)
