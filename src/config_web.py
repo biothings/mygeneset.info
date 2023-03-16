@@ -132,6 +132,7 @@ QUERY_KWARGS['POST']['scopes']['default'] = [
     '_id', 'name']
 
 ES_QUERY_BUILDER = "web.pipeline.MyGenesetQueryBuilder"
+ES_QUERY_BACKEND = "web.engine.MyGenesetQueryBackend"
 
 # Authentication providers for BiothingsAuthnMixin
 AUTHN_PROVIDERS = [
