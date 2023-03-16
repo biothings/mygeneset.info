@@ -9,10 +9,10 @@ class MyGenesetQueryBackend(AsyncESQueryBackend):
         index = original_index # keep original if include is public
         include = options.get("include")
 
-        if options.get("include"):
-            if options.get("include") == "curated":
+        if include:
+            if include == "curated":
                 index = config.ES_CURATED_INDEX
-            elif options.get("include") in ["user", "anonymous"]:
+            elif include in ["user", "anonymous"]:
                 index = config.ES_USER_INDEX
 
         return index
