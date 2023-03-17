@@ -45,10 +45,9 @@ class MyGenesetQueryBuilder(ESQueryBuilder):
                 search = search.post_filter("terms", source=options.source_facet_filter)
 
         if options.include:
+            # The index was already adjusted based on include value
             if options.include == "public":
                 search = search.filter("match", is_public=True)
-            elif options.include in ["curated", "user"]:
-                search = search.query()
             elif options.include == "anonymous":
                 search = search.query().exclude("exists", field="author")
 
