@@ -1,1 +1,1 @@
--e git+https://github.com/biothings/biothings.api.git@fix-dict-default-vals#egg=biothings[hub]
+-e git+https://github.com/biothings/biothings.api.git@520935a38d6ac8d12fe22699942ed9394da9fe32#egg=biothings[hub]
