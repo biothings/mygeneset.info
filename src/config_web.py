@@ -107,14 +107,24 @@ SOURCE_TYPEDEF = {
     }
 }
 
+INCLUDE_TYPEDEF = {
+    'include': {
+        'type': str,
+        'default': 'all',
+        'enum': ('all','curated','public','user','anonymous')
+    }
+}
+
 ANNOTATION_DEFAULT_SCOPES = ['_id']
 ANNOTATION_KWARGS = copy.deepcopy(ANNOTATION_KWARGS)
 ANNOTATION_KWARGS['*'].update(SPECIES_TYPEDEF)
 ANNOTATION_KWARGS['*'].update(SOURCE_TYPEDEF)
+ANNOTATION_KWARGS['*'].update(INCLUDE_TYPEDEF)
 
 QUERY_KWARGS = copy.deepcopy(QUERY_KWARGS)
 QUERY_KWARGS['*'].update(SPECIES_TYPEDEF)
 QUERY_KWARGS['*'].update(SOURCE_TYPEDEF)
+QUERY_KWARGS['*'].update(INCLUDE_TYPEDEF)
 QUERY_KWARGS['*']['_source']['default'] = [
     '_id', 'genes', 'name', 'description',
     'source', 'author', 'date', 'taxid']
@@ -122,6 +132,7 @@ QUERY_KWARGS['POST']['scopes']['default'] = [
     '_id', 'name']
 
 ES_QUERY_BUILDER = "web.pipeline.MyGenesetQueryBuilder"
+ES_QUERY_BACKEND = "web.engine.MyGenesetQueryBackend"
 
 # Authentication providers for BiothingsAuthnMixin
 AUTHN_PROVIDERS = [
