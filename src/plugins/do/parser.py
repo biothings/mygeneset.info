@@ -15,7 +15,7 @@ if __name__ == "__main__":
     import config
 
     LOG_LEVEL = logging.WARNING
-    logging.basicConfig(level=LOG_LEVEL, format='%(asctime)s: %(message)s')
+    logging.basicConfig(level=LOG_LEVEL, format="%(asctime)s: %(message)s")
 
 else:
     # Run as a data plugin module of Biothings SDK
@@ -25,13 +25,12 @@ else:
 
 from utils.mygene_lookup import MyGeneLookup
 
-
 TAX_ID = "9606"  # Taxonomy ID of human being
 
 # Varibles when searching MIM Disease ID from "Phenotypes" column
 # in "genemap2.txt"
-FIND_MIMID = re.compile('\, [0-9]* \([1-4]\)')  # Regex pattern
-PHENOTYPE_FILTER = '(3)'
+FIND_MIMID = re.compile("\, [0-9]* \([1-4]\)")  # Regex pattern
+PHENOTYPE_FILTER = "(3)"
 
 
 # Based on `go` class in "annotation-refinery/go.py".
@@ -56,15 +55,15 @@ class GO:
         self.s_orgs = []
 
     def load_obo(self, path):
-        """Load obo from the defined location. """
+        """Load obo from the defined location."""
         obo_fh = None
         try:
             obo_fh = open(path)
         except IOError:
-            logging.error('Could not open %s on the local filesystem.', path)
+            logging.error("Could not open %s on the local filesystem.", path)
 
         if obo_fh is None:
-            logging.error('Could not open %s.', path)
+            logging.error("Could not open %s.", path)
             return False
 
         self.parse(obo_fh)
@@ -82,18 +81,18 @@ class GO:
 
             if len(fields) < 1:
                 continue
-            elif fields[0] == '[Term]':
+            elif fields[0] == "[Term]":
                 if gterm:
                     if gterm.head:
                         self.heads.append(gterm)
                 inside = True
-            elif fields[0] == '[Typedef]':
+            elif fields[0] == "[Typedef]":
                 if gterm:
                     if gterm.head:
                         self.heads.append(gterm)
                 inside = False
 
-            elif inside and fields[0] == 'id:':
+            elif inside and fields[0] == "id:":
                 if fields[1] in self.go_terms:
                     # logging.debug("Term %s exists in GO()", fields[1])
                     gterm = self.go_terms[fields[1]]
@@ -101,25 +100,25 @@ class GO:
                     # logging.debug("Adding term %s to GO()", fields[1])
                     gterm = GOTerm(fields[1])
                     self.go_terms[gterm.get_id()] = gterm
-            elif inside and fields[0] == 'def:':
-                desc = ' '.join(fields[1:])
+            elif inside and fields[0] == "def:":
+                desc = " ".join(fields[1:])
                 desc = desc.split('"')[1]
                 gterm.description = desc
-            elif inside and fields[0] == 'name:':
+            elif inside and fields[0] == "name:":
                 fields.pop(0)
-                name = '_'.join(fields)
-                name = re.sub('[^\w\s_-]', '_', name).strip().lower()
-                name = re.sub('[-\s_]+', '_', name)
+                name = "_".join(fields)
+                name = re.sub("[^\w\s_-]", "_", name).strip().lower()
+                name = re.sub("[-\s_]+", "_", name)
                 gterm.name = name
-                gterm.full_name = ' '.join(fields)
-            elif inside and fields[0] == 'namespace:':
+                gterm.full_name = " ".join(fields)
+            elif inside and fields[0] == "namespace:":
                 gterm.namespace = fields[1]
-            elif inside and fields[0] == 'def:':
-                gterm.desc = ' '.join(fields[1:]).split('\"')[1]
-            elif inside and fields[0] == 'alt_id:':
+            elif inside and fields[0] == "def:":
+                gterm.desc = " ".join(fields[1:]).split('"')[1]
+            elif inside and fields[0] == "alt_id:":
                 gterm.alt_id.append(fields[1])
                 self.alt_id2std_id[fields[1]] = gterm.get_id()
-            elif inside and fields[0] == 'is_a:':
+            elif inside and fields[0] == "is_a:":
                 # logging.debug("Making term.head for term %s = False", gterm)
                 gterm.head = False
                 fields.pop(0)
@@ -130,8 +129,8 @@ class GO:
                 gterm.is_a.append(self.go_terms[pgo_id])
                 self.go_terms[pgo_id].parent_of.add(gterm)
                 gterm.child_of.add(self.go_terms[pgo_id])
-            elif inside and fields[0] == 'relationship:':
-                if fields[1].find('has_part') != -1:
+            elif inside and fields[0] == "relationship:":
+                if fields[1].find("has_part") != -1:
                     # Has part is not a parental relationship --
                     # it is actually for children.
                     continue
@@ -141,19 +140,20 @@ class GO:
                 if pgo_id not in self.go_terms:
                     self.go_terms[pgo_id] = GOTerm(pgo_id)
                 # Check which relationship you are with this parent go term
-                if (fields[1] == 'regulates' or
-                        fields[1] == 'positively_regulates' or
-                        fields[1] == 'negatively_regulates'):
+                if (
+                    fields[1] == "regulates"
+                    or fields[1] == "positively_regulates"
+                    or fields[1] == "negatively_regulates"
+                ):
                     gterm.relationship_regulates.append(self.go_terms[pgo_id])
-                elif fields[1] == 'part_of':
+                elif fields[1] == "part_of":
                     gterm.relationship_part_of.append(self.go_terms[pgo_id])
                 else:
-                    logging.info("Unkown relationship %s",
-                                 self.go_terms[pgo_id].name)
+                    logging.info("Unkown relationship %s", self.go_terms[pgo_id].name)
 
                 self.go_terms[pgo_id].parent_of.add(gterm)
                 gterm.child_of.add(self.go_terms[pgo_id])
-            elif inside and fields[0] == 'is_obsolete:':
+            elif inside and fields[0] == "is_obsolete:":
                 # logging.debug("Making term.head for term %s = False", gterm)
                 gterm.head = False
                 del self.go_terms[gterm.get_id()]
@@ -187,8 +187,8 @@ class GO:
             self.propagate_recurse(child_term)
             new_annotations = set()
 
-            regulates_relation = (gterm in child_term.relationship_regulates)
-            part_of_relation = (gterm in child_term.relationship_part_of)
+            regulates_relation = gterm in child_term.relationship_regulates
+            part_of_relation = gterm in child_term.relationship_part_of
 
             for annotation in child_term.annotations:
                 copied_annotation = None
@@ -200,11 +200,9 @@ class GO:
                     if annotation.ready_regulates_cutoff:
                         continue
                     else:
-                        copied_annotation = annotation.prop_copy(
-                            ready_regulates_cutoff=True)
+                        copied_annotation = annotation.prop_copy(ready_regulates_cutoff=True)
                 elif part_of_relation:
-                    copied_annotation = annotation.prop_copy(
-                        ready_regulates_cutoff=True)
+                    copied_annotation = annotation.prop_copy(ready_regulates_cutoff=True)
                 else:
                     copied_annotation = annotation.prop_copy()
 
@@ -220,68 +218,113 @@ class GO:
             try:
                 term = self.go_terms[self.alt_id2std_id[tid]]
             except KeyError:
-                logging.error('Term name does not exist: %s', tid)
+                logging.error("Term name does not exist: %s", tid)
         return term
 
 
 # Copied from "annotation-refinery/go.py".
 # See https://github.com/greenelab/annotation-refinery
 class Annotation(object):
-    def __init__(self, xdb=None, gid=None, ref=None, evidence=None, date=None,
-                 direct=False, cross_annotated=False, origin=None,
-                 ortho_evidence=None, ready_regulates_cutoff=False):
-        super(Annotation, self).__setattr__('xdb', xdb)
-        super(Annotation, self).__setattr__('gid', gid)
-        super(Annotation, self).__setattr__('ref', ref)
-        super(Annotation, self).__setattr__('evidence', evidence)
-        super(Annotation, self).__setattr__('date', date)
-        super(Annotation, self).__setattr__('direct', direct)
-        super(Annotation, self).__setattr__('cross_annotated', cross_annotated)
-        super(Annotation, self).__setattr__('origin', origin)
-        super(Annotation, self).__setattr__('ortho_evidence', ortho_evidence)
-        super(Annotation, self).__setattr__('ready_regulates_cutoff',
-                                            ready_regulates_cutoff)
+    def __init__(
+        self,
+        xdb=None,
+        gid=None,
+        ref=None,
+        evidence=None,
+        date=None,
+        direct=False,
+        cross_annotated=False,
+        origin=None,
+        ortho_evidence=None,
+        ready_regulates_cutoff=False,
+    ):
+        super(Annotation, self).__setattr__("xdb", xdb)
+        super(Annotation, self).__setattr__("gid", gid)
+        super(Annotation, self).__setattr__("ref", ref)
+        super(Annotation, self).__setattr__("evidence", evidence)
+        super(Annotation, self).__setattr__("date", date)
+        super(Annotation, self).__setattr__("direct", direct)
+        super(Annotation, self).__setattr__("cross_annotated", cross_annotated)
+        super(Annotation, self).__setattr__("origin", origin)
+        super(Annotation, self).__setattr__("ortho_evidence", ortho_evidence)
+        super(Annotation, self).__setattr__("ready_regulates_cutoff", ready_regulates_cutoff)
 
     def prop_copy(self, ready_regulates_cutoff=None):
         if ready_regulates_cutoff is None:
             ready_regulates_cutoff = self.ready_regulates_cutoff
 
-        return Annotation(xdb=self.xdb, gid=self.gid, ref=self.ref,
-                          evidence=self.evidence, date=self.date, direct=False,
-                          cross_annotated=False,
-                          ortho_evidence=self.ortho_evidence,
-                          ready_regulates_cutoff=ready_regulates_cutoff)
+        return Annotation(
+            xdb=self.xdb,
+            gid=self.gid,
+            ref=self.ref,
+            evidence=self.evidence,
+            date=self.date,
+            direct=False,
+            cross_annotated=False,
+            ortho_evidence=self.ortho_evidence,
+            ready_regulates_cutoff=ready_regulates_cutoff,
+        )
 
     def __hash__(self):
-        return hash((self.xdb, self.gid, self.ref, self.evidence, self.date,
-                     self.direct, self.cross_annotated, self.ortho_evidence,
-                     self.ready_regulates_cutoff, self.origin))
+        return hash(
+            (
+                self.xdb,
+                self.gid,
+                self.ref,
+                self.evidence,
+                self.date,
+                self.direct,
+                self.cross_annotated,
+                self.ortho_evidence,
+                self.ready_regulates_cutoff,
+                self.origin,
+            )
+        )
 
     def __eq__(self, other):
-        return (self.xdb, self.gid, self.ref, self.evidence, self.date,
-                self.direct, self.cross_annotated, self.ortho_evidence,
-                self.ready_regulates_cutoff, self.origin).__eq__((
-                    other.xdb, other.gid, other.ref, other.evidence,
-                    other.date, other.direct, other.cross_annotated,
-                    other.ortho_evidence, other.ready_regulates_cutoff,
-                    other.origin))
+        return (
+            self.xdb,
+            self.gid,
+            self.ref,
+            self.evidence,
+            self.date,
+            self.direct,
+            self.cross_annotated,
+            self.ortho_evidence,
+            self.ready_regulates_cutoff,
+            self.origin,
+        ).__eq__(
+            (
+                other.xdb,
+                other.gid,
+                other.ref,
+                other.evidence,
+                other.date,
+                other.direct,
+                other.cross_annotated,
+                other.ortho_evidence,
+                other.ready_regulates_cutoff,
+                other.origin,
+            )
+        )
 
     def __setattr__(self, *args):
         raise TypeError("Attempt to modify immutable object.")
+
     __delattr__ = __setattr__
 
 
 # Copied from "annotation-refinery/go.py".
 # See https://github.com/greenelab/annotation-refinery
 class GOTerm:
-    go_id = ''
+    go_id = ""
     is_a = None
     relationship = None
     parent_of = None
     child_of = None
     annotations = None
     alt_id = None
-    namespace = ''
+    namespace = ""
     included_in_all = None
     valid_go_term = None
     cross_annotated_genes = None
@@ -317,10 +360,10 @@ class GOTerm:
         self.votes = set([])
 
     def __hash__(self):
-        return(self.go_id.__hash__())
+        return self.go_id.__hash__()
 
     def __repr__(self):
-        return(self.go_id + ': ' + self.name)
+        return self.go_id + ": " + self.name
 
     def get_id(self):
         return self.go_id
@@ -330,7 +373,7 @@ class GOTerm:
         for annotation in self.annotations:
             mapped_genes = id_name.get(annotation.gid)
             if mapped_genes is None:
-                logging.warning('No matching gene id: %s', annotation.gid)
+                logging.warning("No matching gene id: %s", annotation.gid)
                 continue
             for mgene in mapped_genes:
                 mapped_annotations_set.add(
@@ -341,7 +384,7 @@ class GOTerm:
                         ref=annotation.ref,
                         evidence=annotation.evidence,
                         date=annotation.date,
-                        cross_annotated=annotation.cross_annotated
+                        cross_annotated=annotation.cross_annotated,
                     )
                 )
         self.annotations = mapped_annotations_set
@@ -355,13 +398,13 @@ class GOTerm:
         return genes
 
     def add_annotation(
-            self,
-            gid,
-            ref=None,
-            cross_annotated=False,
-            allow_duplicate_gid=True,
-            origin=None,
-            ortho_evidence=None
+        self,
+        gid,
+        ref=None,
+        cross_annotated=False,
+        allow_duplicate_gid=True,
+        origin=None,
+        ortho_evidence=None,
     ):
         if not allow_duplicate_gid:
             for annotated in self.annotations:
@@ -373,7 +416,7 @@ class GOTerm:
                 ref=ref,
                 cross_annotated=cross_annotated,
                 origin=origin,
-                ortho_evidence=ortho_evidence
+                ortho_evidence=ortho_evidence,
             )
         )
 
@@ -399,7 +442,7 @@ def build_doid_omim_dict(obo_filename):
     that have OMIM xrefs. The keys in the dictionary are DOIDs, and the
     values are sets of OMIM xref IDs.
     """
-    obo_fh = open(obo_filename, 'r')
+    obo_fh = open(obo_filename, "r")
     doid_omim_dict = {}
 
     # This statement builds a list of the lines in the file and reverses
@@ -411,19 +454,19 @@ def build_doid_omim_dict(obo_filename):
     while obo_reversed_str_array:  # Loop adapted from Dima @ Princeton
         line = obo_reversed_str_array.pop()
         line = line.strip()
-        if line == '[Term]':
-            while line != '' and obo_reversed_str_array:
+        if line == "[Term]":
+            while line != "" and obo_reversed_str_array:
                 line = obo_reversed_str_array.pop()
 
-                if line.startswith('id:'):
-                    doid = re.search('DOID:[0-9]+', line)
+                if line.startswith("id:"):
+                    doid = re.search("DOID:[0-9]+", line)
                     if doid:
                         doid = doid.group(0)
 
-                if line.startswith('xref: OMIM:'):
+                if line.startswith("xref: OMIM:"):
                     # If term has OMIM xref, get it and add it to the
                     # doid_omim_dict. Otherwise, ignore.
-                    omim = re.search('[0-9]+', line).group(0)
+                    omim = re.search("[0-9]+", line).group(0)
 
                     if doid not in doid_omim_dict:
                         doid_omim_dict[doid] = set()
@@ -438,9 +481,9 @@ def build_doid_omim_dict(obo_filename):
 # See https://github.com/greenelab/annotation-refinery
 class MIMdisease:
     def __init__(self):
-        self.id = ''
-        self.phenotype = ''  # Phenotype mapping method
-        self.genes = []      # list of gene IDs
+        self.id = ""
+        self.phenotype = ""  # Phenotype mapping method
+        self.genes = []  # list of gene IDs
 
 
 # Based on `build_mim_diseases_dict()` in "annotation-refinery/process_do.py".
@@ -463,9 +506,9 @@ def build_mim_diseases_dict(genemap_filename):
 
     mim_diseases = {}
 
-    genemap_fh = open(genemap_filename, 'r')
+    genemap_fh = open(genemap_filename, "r")
     for line in genemap_fh:  # Loop based on Dima's @ Princeton
-        tokens = line.strip('\n').split('\t')
+        tokens = line.strip("\n").split("\t")
 
         try:
             # mim_geneid = tokens[5].strip()
@@ -475,18 +518,18 @@ def build_mim_diseases_dict(genemap_filename):
             continue
 
         # Skip line if disorders field is empty
-        if disorders == '':
+        if disorders == "":
             continue
 
         # Log message for empty "Entrez Gene ID" column
-        if entrez_id == '':
+        if entrez_id == "":
             # logging.info(f"Empty Entrez Gene ID for MIM Number {mim_geneid}")
             continue
 
         # Split disorders and handle them one by one
-        disorders_list = disorders.split(';')
+        disorders_list = disorders.split(";")
         for disorder in disorders_list:
-            if '[' in disorder or '?' in disorder:
+            if "[" in disorder or "?" in disorder:
                 continue
 
             # This next line returns a re Match object:
@@ -494,7 +537,7 @@ def build_mim_diseases_dict(genemap_filename):
             mim_info = re.search(FIND_MIMID, disorder)
 
             if mim_info:
-                split_mim_info = mim_info.group(0).split(' ')
+                split_mim_info = mim_info.group(0).split(" ")
                 mim_disease_id = split_mim_info[1].strip()
                 mim_phenotype = split_mim_info[2].strip()
 
@@ -578,7 +621,7 @@ def create_gs_abstract(do_term, doid_omim_dict):
     Returns:
     abstract -- A string of the DO term's abstract in the desired format.
     """
-    omim_clause = ''
+    omim_clause = ""
 
     doid = do_term.go_id
     if doid in doid_omim_dict:
@@ -588,17 +631,17 @@ def create_gs_abstract(do_term, doid_omim_dict):
         omim_list = []
 
     if len(omim_list):
-        omim_clause = ' Annotations directly to this term are provided ' + \
-                        'by the OMIM disease ID'  # Is that sentence right?
+        omim_clause = (
+            " Annotations directly to this term are provided " + "by the OMIM disease ID"
+        )  # Is that sentence right?
 
         if len(omim_list) == 1:
-            omim_clause = omim_clause + ' ' + omim_list[0]
+            omim_clause = omim_clause + " " + omim_list[0]
         else:
-            omim_clause = omim_clause + 's ' + ', '.join(omim_list[:-1]) + \
-                ' and ' + omim_list[-1]
-        omim_clause = omim_clause + '.'
+            omim_clause = omim_clause + "s " + ", ".join(omim_list[:-1]) + " and " + omim_list[-1]
+        omim_clause = omim_clause + "."
 
-    abstract = ''
+    abstract = ""
 
     if do_term.description:
         abstract += do_term.description
@@ -607,8 +650,8 @@ def create_gs_abstract(do_term, doid_omim_dict):
         logging.info("No OBO description for term %s", do_term)
 
     abstract += (
-        ' Annotations from child terms in the disease ontology are'
-        + ' propagated through transitive closure.'
+        " Annotations from child terms in the disease ontology are"
+        + " propagated through transitive closure."
         + omim_clause
     )
 
@@ -624,20 +667,16 @@ def get_genesets(obo_filename, genemap_filename):
     obo_is_loaded = disease_ontology.load_obo(obo_filename)
 
     if obo_is_loaded is False:
-        logging.error('Failed to load OBO file.')
+        logging.error("Failed to load OBO file.")
 
     doid_omim_dict = build_doid_omim_dict(obo_filename)
 
     mim_diseases = build_mim_diseases_dict(genemap_filename)
 
-    entrez_set = add_term_annotations(
-        doid_omim_dict,
-        disease_ontology,
-        mim_diseases
-    )
+    entrez_set = add_term_annotations(doid_omim_dict, disease_ontology, mim_diseases)
 
     gene_lookup = MyGeneLookup(TAX_ID)
-    gene_lookup.query_mygene(list(map(str, entrez_set)), 'entrezgene,retired')
+    gene_lookup.query_mygene(list(map(str, entrez_set)), "entrezgene,retired")
 
     disease_ontology.populated = True
     disease_ontology.propagate()
@@ -651,25 +690,21 @@ def get_genesets(obo_filename, genemap_filename):
 
         if gid_set:
             my_geneset = {}
-            my_geneset['_id'] = term_id.replace(":", "_")
-            my_geneset['is_public'] = True
-            my_geneset['taxid'] = TAX_ID
-            my_geneset['source'] = 'do'
-            my_geneset['name'] = term.full_name
+            my_geneset["_id"] = term_id.replace(":", "_")
+            my_geneset["is_public"] = True
+            my_geneset["taxid"] = TAX_ID
+            my_geneset["source"] = "do"
+            my_geneset["name"] = term.full_name
             do_abstract = create_gs_abstract(term, doid_omim_dict)
-            my_geneset['description'] = do_abstract
-            my_geneset['do'] = {
-                'id': term_id,
-                'abstract': do_abstract
-            }
+            my_geneset["description"] = do_abstract
+            my_geneset["do"] = {"id": term_id, "abstract": do_abstract}
 
             # Add the gene lookup info to the geneset.
             genes = [str(gid) for gid in gid_set]
             lookup_results = gene_lookup.get_results(genes)
             my_geneset.update(lookup_results)
 
-            my_geneset = dict_sweep(my_geneset, vals=[None],
-                                    remove_invalid_list=True)
+            my_geneset = dict_sweep(my_geneset, vals=[None], remove_invalid_list=True)
             my_geneset = unlist(my_geneset)
             genesets.append(my_geneset)
 
@@ -683,10 +718,8 @@ def load_data(data_dir):
     genemap_filename = os.path.join(data_dir, "genemap2.txt")
     print(obo_filename)
     print(genemap_filename)
-    assert os.path.exists(obo_filename), \
-        f"Could not find file: {obo_filename}"
-    assert os.path.exists(genemap_filename), \
-        f"Could not find file: {genemap_filename}"
+    assert os.path.exists(obo_filename), f"Could not find file: {obo_filename}"
+    assert os.path.exists(genemap_filename), f"Could not find file: {genemap_filename}"
 
     genesets = get_genesets(obo_filename, genemap_filename)
     for gs in genesets:
@@ -697,11 +730,12 @@ def load_data(data_dir):
 if __name__ == "__main__":
 
     import json
+
     from version import get_release
 
     # Get data dir
     version = get_release(None)
-    data_dir = os.path.join(config.DATA_ARCHIVE_ROOT, 'do', version)
+    data_dir = os.path.join(config.DATA_ARCHIVE_ROOT, "do", version)
 
     genesets = list(load_data(data_dir))
     for gs in genesets:

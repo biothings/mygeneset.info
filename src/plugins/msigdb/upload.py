@@ -11,13 +11,13 @@ class msigdbUploader(uploader.BaseSourceUploader):
     name = "msigdb"
     # Ignore documents with duplicate _id
     storage_class = storage.IgnoreDuplicatedStorage
-    
+
     __metadata__ = {
         "src_meta": {
-            'license_url': 'https://www.gsea-msigdb.org/gsea/msigdb_license_terms.jsp',
-            'licence': 'CC BY 4.0',
-            'url': 'https://www.gsea-msigdb.org/gsea/msigdb/',
-            'description': 'Molecular Signatures Database'
+            "license_url": "https://www.gsea-msigdb.org/gsea/msigdb_license_terms.jsp",
+            "licence": "CC BY 4.0",
+            "url": "https://www.gsea-msigdb.org/gsea/msigdb/",
+            "description": "Molecular Signatures Database",
         }
     }
 
@@ -33,59 +33,24 @@ class msigdbUploader(uploader.BaseSourceUploader):
     @classmethod
     def get_mapping(cls):
         mapping = {
-            "is_public": {
-                "type": "boolean"
-            },
-            "taxid": {
-                "type": "integer"
-            },
-            "name": {
-                "type": "text",
-                "copy_to": [
-                    "all"
-                ]
-            },
-            "description": {
-                "type": "text",
-                "copy_to": [
-                    "all"
-                ]
-            },
-            "count": {
-                "type": "integer"
-            },
+            "is_public": {"type": "boolean"},
+            "taxid": {"type": "integer"},
+            "name": {"type": "text", "copy_to": ["all"]},
+            "description": {"type": "text", "copy_to": ["all"]},
+            "count": {"type": "integer"},
             "genes": {
                 "properties": {
-                    "mygene_id": {
-                        "normalizer": "keyword_lowercase_normalizer",
-                        "type": "keyword"
-                    },
-                    "source_id": {
-                        "normalizer": "keyword_lowercase_normalizer",
-                        "type": "keyword"
-                    },
-                    "symbol": {
-                        "normalizer": "keyword_lowercase_normalizer",
-                        "type": "keyword"
-                    },
-                    "ncbigene": {
-                        "normalizer": "keyword_lowercase_normalizer",
-                        "type": "keyword"
-                    },
+                    "mygene_id": {"normalizer": "keyword_lowercase_normalizer", "type": "keyword"},
+                    "source_id": {"normalizer": "keyword_lowercase_normalizer", "type": "keyword"},
+                    "symbol": {"normalizer": "keyword_lowercase_normalizer", "type": "keyword"},
+                    "ncbigene": {"normalizer": "keyword_lowercase_normalizer", "type": "keyword"},
                     "ensemblgene": {
                         "normalizer": "keyword_lowercase_normalizer",
-                        "type": "keyword"
+                        "type": "keyword",
                     },
-                    "uniprot": {
-                        "normalizer": "keyword_lowercase_normalizer",
-                        "type": "keyword"
-                    },
-                    "name": {
-                        "type": "text"
-                    },
-                    "taxid": {
-                        "type": "integer"
-                    }
+                    "uniprot": {"normalizer": "keyword_lowercase_normalizer", "type": "keyword"},
+                    "name": {"type": "text"},
+                    "taxid": {"type": "integer"},
                 }
             },
             "duplicates": {
@@ -94,27 +59,18 @@ class msigdbUploader(uploader.BaseSourceUploader):
                         "properties": {
                             "id": {
                                 "normalizer": "keyword_lowercase_normalizer",
-                                "type": "keyword"
+                                "type": "keyword",
                             },
-                            "count": {
-                                "type": "integer"
-                            }
+                            "count": {"type": "integer"},
                         }
                     },
-                    "count": {
-                        "type": "integer"
-                    }
+                    "count": {"type": "integer"},
                 }
             },
             "not_found": {
                 "properties": {
-                    "ids": {
-                        "normalizer": "keyword_lowercase_normalizer",
-                        "type": "keyword"
-                    },
-                    "count": {
-                        "type": "integer"
-                    }
+                    "ids": {"normalizer": "keyword_lowercase_normalizer", "type": "keyword"},
+                    "count": {"type": "integer"},
                 }
             },
             "msigdb": {
@@ -122,81 +78,59 @@ class msigdbUploader(uploader.BaseSourceUploader):
                     "id": {
                         "normalizer": "keyword_lowercase_normalizer",
                         "type": "keyword",
-                        "copy_to": [
-                            "all"
-                        ]
+                        "copy_to": ["all"],
                     },
                     "geneset_name": {
                         "type": "text",
                     },
                     "systematic_name": {
                         "normalizer": "keyword_lowercase_normalizer",
-                        "type": "keyword"
+                        "type": "keyword",
                     },
                     "category": {
                         "properties": {
                             "code": {
                                 "normalizer": "keyword_lowercase_normalizer",
-                                "type": "keyword"
+                                "type": "keyword",
                             },
                             "name": {
                                 "normalizer": "keyword_lowercase_normalizer",
-                                "type": "keyword"
-                            }
+                                "type": "keyword",
+                            },
                         }
                     },
                     "subcategory": {
-                       "properties": {
+                        "properties": {
                             "code": {
                                 "normalizer": "keyword_lowercase_normalizer",
-                                "type": "keyword"
+                                "type": "keyword",
                             }
                         }
                     },
-                    "authors": {
-                        "type": "text"
-                    },
-                    "contributor": {
-                        "type": "text"
-                    },
-                    "contributor_org": {
-                        "type": "text"
-                    },
-                    "source": {
-                        "normalizer": "keyword_lowercase_normalizer",
-                        "type": "keyword"
-                    },
+                    "authors": {"type": "text"},
+                    "contributor": {"type": "text"},
+                    "contributor_org": {"type": "text"},
+                    "source": {"normalizer": "keyword_lowercase_normalizer", "type": "keyword"},
                     "source_identifier": {
                         "normalizer": "keyword_lowercase_normalizer",
-                        "type": "keyword"
+                        "type": "keyword",
                     },
-                    "abstract": {
-                        "type": "text",
-                        "copy_to": [
-                            "all"
-                        ]
-                    },
-                    "pmid": {
-                        "normalizer": "keyword_lowercase_normalizer",
-                        "type": "keyword"
-                    },
-                    "geo_id": {
-                        "normalizer": "keyword_lowercase_normalizer",
-                        "type": "keyword"
-                    },
+                    "abstract": {"type": "text", "copy_to": ["all"]},
+                    "pmid": {"normalizer": "keyword_lowercase_normalizer", "type": "keyword"},
+                    "geo_id": {"normalizer": "keyword_lowercase_normalizer", "type": "keyword"},
                     "url": {
                         "properties": {
                             "geneset_listing": {
                                 "normalizer": "keyword_lowercase_normalizer",
-                                "type": "keyword"
+                                "type": "keyword",
                             },
                             "external_details": {
                                 "normalizer": "keyword_lowercase_normalizer",
-                                "type": "keyword"
-                            }
+                                "type": "keyword",
+                            },
                         }
-                    }
+                    },
                 }
-            }
+            },
         }
         return mapping

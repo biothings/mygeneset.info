@@ -1,5 +1,6 @@
 import logging
 import os
+
 import lxml.etree as ET
 
 # Some imports for running parser from file
@@ -15,7 +16,6 @@ if __name__ == "__main__":
 
 from biothings.utils.dataload import dict_sweep, unlist
 from utils.mygene_lookup import MyGeneLookup
-
 
 
 def parse_msigdb(data_folder):
@@ -36,7 +36,7 @@ def parse_msigdb(data_folder):
         "Mus musculus": 10090,
         "Rattus norvegicus": 10116,
         "Macaca mulatta": 9544,
-        "Danio rerio": 7955
+        "Danio rerio": 7955,
     }
     # Basic category codes from msigdb, human codes prepend "C" and mouse codes prepend "M" to the given number
     CATEGORY_CODES = {
@@ -48,14 +48,14 @@ def parse_msigdb(data_folder):
         "5": "ontology genesets",
         "6": "oncogenic signature genesets",
         "7": "immunologic signature genesets",
-        "8": "cell type signature genesets"
+        "8": "cell type signature genesets",
     }
 
     for f in ["human_genesets.xml"]:
         data_file = os.path.join(data_folder, f)
         # File contains newline-delimited XML documents. Each document is a single geneset.
         # Documents have been sorted by their ORGANISM attribute using sort_genesets.xsl in post_dump() of dump.py
-        with open(data_file, 'r') as f:
+        with open(data_file, "r") as f:
             current_organism = ""
             geneset_index = 0  # Keep track of current line for logging/debugging purposes
             for line in f:
@@ -72,12 +72,18 @@ def parse_msigdb(data_folder):
                     doc["taxid"] = TAXIDS[data.get("ORGANISM")]
                     doc["source"] = "msigdb"
                     doc["is_public"] = True
-                    assert doc["taxid"] is not None, "Taxid not found. ORGANISM missing in source data: {}".format(data)
-                    assert doc["taxid"] != "", "Taxid not found. ORGANISM missing in source data: {}".format(data)
+                    assert (
+                        doc["taxid"] is not None
+                    ), "Taxid not found. ORGANISM missing in source data: {}".format(data)
+                    assert (
+                        doc["taxid"] != ""
+                    ), "Taxid not found. ORGANISM missing in source data: {}".format(data)
                     # Start a gene query
                     if doc["taxid"] != current_organism:
                         current_organism = doc["taxid"]
-                        logging.info("Parsing msigdb data for organism {}".format(current_organism))
+                        logging.info(
+                            "Parsing msigdb data for organism {}".format(current_organism)
+                        )
                         gene_lookup = MyGeneLookup(doc["taxid"])
                     # MEMBERS contains a "," delimited list of genes with their original identifier.
                     # MEMBERS_SYMBOLIZED contains a "," delimited list of genes converted to symbols (but sometimes contains other types of ids).
@@ -87,29 +93,37 @@ def parse_msigdb(data_folder):
                     original_type = data.get("CHIP")
                     if original_type:
                         if original_type.endswith("GENE_SYMBOL") or original_type == "HGNC_ID":
-                            members_scopes = 'symbol,alias'
+                            members_scopes = "symbol,alias"
                         elif original_type.endswith("UniProt_ID"):
-                            members_scopes = 'uniprot'
+                            members_scopes = "uniprot"
                         elif original_type.endswith("Ensembl_Gene_ID"):
-                            members_scopes = 'ensembl.gene'
+                            members_scopes = "ensembl.gene"
                         elif original_type.endswith("RefSeq"):
-                            members_scopes = 'refseq'
+                            members_scopes = "refseq"
                         elif original_type.endswith("NCBI_Gene_ID"):
-                            members_scopes = 'entrezgene,retired'
+                            members_scopes = "entrezgene,retired"
                         elif original_type == "UniGene_ID":
-                            members_scopes = 'unigene'
+                            members_scopes = "unigene"
                         else:
                             # default to all
                             members_scopes = "symbol,ensembl.gene,entrezgene,uniprot,reporter,refseq,alias,unigene"
                     else:
-                        members_scopes = "symbol,ensembl.gene,entrezgene,uniprot,reporter,refseq,alias,unigene"
-                    if "|" in data['MEMBERS']:
+                        members_scopes = (
+                            "symbol,ensembl.gene,entrezgene,uniprot,reporter,refseq,alias,unigene"
+                        )
+                    if "|" in data["MEMBERS"]:
                         # Sometimes ids contain a "|" with a prefix like 'ens', or 'linc'
                         # to indicate the id type is different from the rest.
                         # We can't use this to determine the scope, so we'll just use the default.
-                        members_scopes = "symbol,ensembl.gene,entrezgene,uniprot,reporter,refseq,alias,unigene"
+                        members_scopes = (
+                            "symbol,ensembl.gene,entrezgene,uniprot,reporter,refseq,alias,unigene"
+                        )
                     # Prepare list of genes to query. We will query gene symbols and original ids.
-                    members_mapping = [s.split(",") for s in data["MEMBERS_MAPPING"].split("|") if len(s.split(",")) == 3]
+                    members_mapping = [
+                        s.split(",")
+                        for s in data["MEMBERS_MAPPING"].split("|")
+                        if len(s.split(",")) == 3
+                    ]
                     symbols = []
                     for id_tuple in members_mapping:
                         if id_tuple[1] == "":
@@ -126,14 +140,21 @@ def parse_msigdb(data_folder):
                             members.append(m)
                     if len(members) != len(symbols):
                         # This edge case shouldn't happen, but we can use another altnative
-                        members = [s.split(",")[0] for s in data["MEMBERS_MAPPING"].split("|") if len(s.split(",")) == 3]
-                    assert len(members) == len(symbols), "ID lists are not the same length: {} {}".format(
-                        len(members), len(symbols))
+                        members = [
+                            s.split(",")[0]
+                            for s in data["MEMBERS_MAPPING"].split("|")
+                            if len(s.split(",")) == 3
+                        ]
+                    assert len(members) == len(
+                        symbols
+                    ), "ID lists are not the same length: {} {}".format(len(members), len(symbols))
                     # Using symbols as the preferred id, because it consistently gives the most hits across datasets
                     id_list = list(zip(symbols, members))
                     # Run query
-                    logging.info("Querying genes for geneset #{}: {}".format(geneset_index, doc["_id"]))
-                    gene_lookup.query_mygene(id_list, ['symbol,alias', members_scopes])
+                    logging.info(
+                        "Querying genes for geneset #{}: {}".format(geneset_index, doc["_id"])
+                    )
+                    gene_lookup.query_mygene(id_list, ["symbol,alias", members_scopes])
                     query_results = gene_lookup.get_results(id_list)
                     doc.update(query_results)  # Merge doc with query results
                     # Additional msigdb data
@@ -157,7 +178,7 @@ def parse_msigdb(data_folder):
                     msigdb["tags"] = data.get("TAGS")
                     msigdb["url"] = {
                         "external_details": data.get("EXTERNAL_DETAILS_URL"),
-                        "geneset_listing": data.get("GENESET_LISTING_URL")
+                        "geneset_listing": data.get("GENESET_LISTING_URL"),
                     }
                     doc["msigdb"] = msigdb
                     # Remove lists with only one item

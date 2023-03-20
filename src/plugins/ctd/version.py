@@ -14,7 +14,7 @@ def get_release(self):
     status_text = tree.xpath('//div[@id="sitelegal"]/a/text()')
     if len(status_text) >= 2:
         # Split release date into three parts
-        release_tokens = status_text[-2].strip().replace(',', '').split()
+        release_tokens = status_text[-2].strip().replace(",", "").split()
         # Add revision number
         release_tokens.append(status_text[-1].strip())
         # Combine date and revision number together
