@@ -1,5 +1,3 @@
-import os
-
 import pytest
 from biothings.tests.web import BiothingsWebTest
 
