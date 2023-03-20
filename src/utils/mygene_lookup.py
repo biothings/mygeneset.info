@@ -37,6 +37,7 @@ class MyGeneLookup:
         >>> lookup_results = gene_lookup.get_results(ids)
         >>> geneset = geneset.update(lookup_results)
     """
+
     # Taxid mappings for commonly used species
     SPECIES_MAP = {
         "human": "9606",
@@ -55,13 +56,24 @@ class MyGeneLookup:
         e.g.: [9606, 10090] or '9606,10090'.
         To search against all species, use 'all' (default).
         """
-        if not isinstance(species, list) and not isinstance(species, str) and not isinstance(species, int):
+        if (
+            not isinstance(species, list)
+            and not isinstance(species, str)
+            and not isinstance(species, int)
+        ):
             raise ValueError("Species must be a string, integer, or list.")
         self.species = self._normalize_species(species)
         self.clear_cache()
         if cache_dict:
             self._query_cache = cache_dict
-        self.fields_to_query = ["entrezgene", "ensembl.gene", "uniprot.Swiss-Prot", "symbol", "name", "taxid"]
+        self.fields_to_query = [
+            "entrezgene",
+            "ensembl.gene",
+            "uniprot.Swiss-Prot",
+            "symbol",
+            "name",
+            "taxid",
+        ]
 
     def _normalize_species(self, species):
         """Standarize the input for species search.
@@ -70,7 +82,7 @@ class MyGeneLookup:
         if isinstance(species, int):
             species = str(species)
         if isinstance(species, str):
-            species = species.split(',')
+            species = species.split(",")
         species = [self.SPECIES_MAP[s] if s in self.SPECIES_MAP else str(s) for s in species]
         if len(species) == 1:
             species = species[0]
@@ -104,8 +116,12 @@ class MyGeneLookup:
         if len(ids) == 0:
             return self
         if retry:
-            assert all(isinstance(i, tuple) for i in ids), "To use retry, ids must be a list of tuples."
-            assert all(len(i) == len(id_types) for i in ids), "The size of each tuple must match the size of id_types."
+            assert all(
+                isinstance(i, tuple) for i in ids
+            ), "To use retry, ids must be a list of tuples."
+            assert all(
+                len(i) == len(id_types) for i in ids
+            ), "The size of each tuple must match the size of id_types."
             retry_times = len(id_types) - 1
         else:
             assert all(isinstance(i, str) for i in ids), "all ids must be strings."
@@ -144,11 +160,13 @@ class MyGeneLookup:
             # Query mygene.info
             mg = mygene.MyGeneInfo()
             try:
-                response = mg.querymany(to_query,
-                                        scopes=scopes,
-                                        fields=self.fields_to_query,
-                                        species=taxid_query,
-                                        returnall=True)
+                response = mg.querymany(
+                    to_query,
+                    scopes=scopes,
+                    fields=self.fields_to_query,
+                    species=taxid_query,
+                    returnall=True,
+                )
             except HTTPError as e:
                 if e.response.status_code == 400:
                     current_try += 1
@@ -156,28 +174,34 @@ class MyGeneLookup:
                 else:
                     raise
             # Format successful queries
-            for out in response['out']:
-                query = out['query']
-                if out.get('notfound'):
+            for out in response["out"]:
+                query = out["query"]
+                if out.get("notfound"):
                     continue
-                gene = {'mygene_id': out['_id'], 'source_id': query}
-                if out.get('symbol') is not None:
-                    gene['symbol'] = out['symbol']
-                if out.get('name') is not None:
-                    gene['name'] = out['name']
-                if out.get('entrezgene') is not None:
-                    gene['ncbigene'] = out['entrezgene']
-                if out.get('ensembl') is not None:
-                    if len(out['ensembl']) > 1:
-                        for i in out['ensembl']:
-                            gene.setdefault('ensemblgene', []).append(i['gene'])
+                gene = {"mygene_id": out["_id"], "source_id": query}
+                if out.get("symbol") is not None:
+                    gene["symbol"] = out["symbol"]
+                if out.get("name") is not None:
+                    gene["name"] = out["name"]
+                if out.get("entrezgene") is not None:
+                    gene["ncbigene"] = out["entrezgene"]
+                if out.get("ensembl") is not None:
+                    if len(out["ensembl"]) > 1:
+                        for i in out["ensembl"]:
+                            gene.setdefault("ensemblgene", []).append(i["gene"])
                     else:
-                        gene['ensemblgene'] = out['ensembl']['gene']
-                if out.get('uniprot') is not None:
-                    gene['uniprot'] = out['uniprot']['Swiss-Prot']
+                        gene["ensemblgene"] = out["ensembl"]["gene"]
+                if out.get("uniprot") is not None:
+                    gene["uniprot"] = out["uniprot"]["Swiss-Prot"]
                 # Add extra fields to document
                 for field in self.fields_to_query:
-                    if field not in ["entrezgene", "ensembl.gene", "uniprot.Swiss-Prot", "symbol", "name"]:
+                    if field not in [
+                        "entrezgene",
+                        "ensembl.gene",
+                        "uniprot.Swiss-Prot",
+                        "symbol",
+                        "name",
+                    ]:
                         if out.get(field) is not None:
                             gene[field] = out[field]
                 gene = unlist(gene)
@@ -192,7 +216,7 @@ class MyGeneLookup:
                 else:
                     self._query_cache[query] = gene
             # Save failed queries
-            failed_ids = response['missing']
+            failed_ids = response["missing"]
             if len(failed_ids) == 0:
                 logging.info("No ids to retry.")
                 return
@@ -228,27 +252,29 @@ class MyGeneLookup:
             raise ValueError("Cannot convert to all species.")
         # Start a mygene search with fields_to_query set to ['taxid', 'homologene']
         self.species = orig_species
-        self.fields_to_query = ['taxid', 'homologene']
+        self.fields_to_query = ["taxid", "homologene"]
         self.query_mygene(ids, id_types)
         # Get results and create a conversion mapping between original and homolog ids
-        Mapping = namedtuple('Mapping', 'original_gene_id homolog_gene_id')
+        Mapping = namedtuple("Mapping", "original_gene_id homolog_gene_id")
         mappings = []
         results = self.get_results(ids)
-        for result in results.get('genes', []):
-            original_id = result['source_id']
-            if str(result['taxid']) == new_species:
+        for result in results.get("genes", []):
+            original_id = result["source_id"]
+            if str(result["taxid"]) == new_species:
                 # No conversion needed
-                mappings.append(Mapping(original_id, result['mygene_id']))
-                logging.info(f"{original_id} already belongs to {new_species}, no conversion needed.")
+                mappings.append(Mapping(original_id, result["mygene_id"]))
+                logging.info(
+                    f"{original_id} already belongs to {new_species}, no conversion needed."
+                )
                 continue
-            if result.get('homologene') is not None:
-                if not isinstance(result['homologene']['genes'][0], list):
+            if result.get("homologene") is not None:
+                if not isinstance(result["homologene"]["genes"][0], list):
                     # If there is only one homolog, make it into a list, so we can iterate over it
                     # We may not need this case, because when a gene has a single homolog entry,
                     # it is usually a reference to itself (i.e. no conversion needed).
-                    result['homologene']['genes'] = [result['homologene']['genes']]
+                    result["homologene"]["genes"] = [result["homologene"]["genes"]]
                 found = False
-                for homolog_taxid, homolog_gene in result['homologene']['genes']:
+                for homolog_taxid, homolog_gene in result["homologene"]["genes"]:
                     # Find the right homolog gene id and add it to the mapping
                     if str(homolog_taxid) == new_species:
                         mappings.append(Mapping(original_id, str(homolog_gene)))
@@ -267,7 +293,14 @@ class MyGeneLookup:
         # We clear the cache because we have a new taxid and set of returned fields
         self.clear_cache()
         self.species = new_species
-        self.fields_to_query = ["entrezgene", "ensembl.gene", "uniprot.Swiss-Prot", "symbol", "name", "taxid"]
+        self.fields_to_query = [
+            "entrezgene",
+            "ensembl.gene",
+            "uniprot.Swiss-Prot",
+            "symbol",
+            "name",
+            "taxid",
+        ]
         new_ids = list(set([conversion.homolog_gene_id for conversion in mappings]))
         if len(new_ids) == 0:
             logging.info("No ids to query.")
@@ -284,27 +317,35 @@ class MyGeneLookup:
                         # This is necessary because you cannot use a list as a dictionary key.
                         # However, the duplicates should be eventually merged by get_results().
                         for source_id in Mapping.original_gene_id:
-                            self._query_cache[source_id] = self._query_cache[Mapping.homolog_gene_id].copy()
+                            self._query_cache[source_id] = self._query_cache[
+                                Mapping.homolog_gene_id
+                            ].copy()
                             # Set each gene's 'source_id' field to the original gene id
                             if isinstance(self._query_cache[source_id], list):
                                 # In the case of multiple homologs for the same species.
                                 # e.g. one human gene correspongs to two mouse genes.
                                 # I haven't found a case where this happens, but it is possible.
                                 for i in self._query_cache[source_id]:
-                                    i['source_id'] = source_id  # Merging during get_results() should recreate the list.
+                                    i[
+                                        "source_id"
+                                    ] = source_id  # Merging during get_results() should recreate the list.
                             else:
-                                self._query_cache[source_id]['source_id'] = source_id
+                                self._query_cache[source_id]["source_id"] = source_id
                     else:
-                        self._query_cache[Mapping.original_gene_id] = self._query_cache[Mapping.homolog_gene_id].copy()
+                        self._query_cache[Mapping.original_gene_id] = self._query_cache[
+                            Mapping.homolog_gene_id
+                        ].copy()
                         # Set each gene's 'source_id' field to the original gene id
                         if isinstance(self._query_cache[Mapping.original_gene_id], list):
                             # In the case of multiple homologs for the same species.
                             # e.g. one human gene correspongs to two mouse genes.
                             # I haven't found a case where this happens, but it is possible.
                             for i in self._query_cache[Mapping.original_gene_id]:
-                                i['source_id'] = Mapping.original_gene_id
+                                i["source_id"] = Mapping.original_gene_id
                         else:
-                            self._query_cache[Mapping.original_gene_id]['source_id'] = Mapping.original_gene_id
+                            self._query_cache[Mapping.original_gene_id][
+                                "source_id"
+                            ] = Mapping.original_gene_id
         return self
 
     def get_results(self, ids):
@@ -355,7 +396,9 @@ class MyGeneLookup:
         # Make sure each element has the same length
         if len(ids) > 0:
             first_len = len(ids[0])
-            assert all(len(elem) == first_len for elem in ids), "All tuples must have the same length."
+            assert all(
+                len(elem) == first_len for elem in ids
+            ), "All tuples must have the same length."
         # Check if any of the ids are in the cache, using the first element of the tuple as the key
         # If there are more than one element in the tuple, we use subsequent elements as retry attempts
         if len(ids) > 0:
@@ -367,8 +410,7 @@ class MyGeneLookup:
                 if self._query_cache.get(q[i]):
                     if isinstance(self._query_cache[q[i]], list):
                         genes += self._query_cache[q[i]]
-                        dups.append({'id': q[i],
-                                     'count': len(self._query_cache[q[i]])})
+                        dups.append({"id": q[i], "count": len(self._query_cache[q[i]])})
                     else:
                         genes.append(self._query_cache[q[i]])
                     found = True
@@ -385,12 +427,12 @@ class MyGeneLookup:
         if len(genes) > 0:
             unique_documents = {}
             for doc in genes:
-                if doc['mygene_id'] not in unique_documents:
-                    unique_documents[doc['mygene_id']] = doc
+                if doc["mygene_id"] not in unique_documents:
+                    unique_documents[doc["mygene_id"]] = doc
                 else:
                     # Merge duplicate entries
-                    new_source = doc['source_id']
-                    unique_sources = unique_documents[doc['mygene_id']]['source_id']
+                    new_source = doc["source_id"]
+                    unique_sources = unique_documents[doc["mygene_id"]]["source_id"]
                     if isinstance(unique_sources, list):
                         if isinstance(new_source, list):
                             # Both are lists
@@ -410,13 +452,16 @@ class MyGeneLookup:
                                         unique_sources.append(s)
                             else:
                                 # Neither is a list
-                                unique_documents[doc['mygene_id']]['source_id'] = [unique_sources, new_source]
+                                unique_documents[doc["mygene_id"]]["source_id"] = [
+                                    unique_sources,
+                                    new_source,
+                                ]
             genes = list(unique_documents.values())
         results = {}
-        results['genes'] = genes
+        results["genes"] = genes
         results["count"] = len(genes)
         if len(dups) > 0:
-            results['duplicates'] = {'ids': dups, 'count': len(dups)}
+            results["duplicates"] = {"ids": dups, "count": len(dups)}
         if len(missing) > 0:
-            results['not_found'] = {'ids': missing, 'count': len(missing)}
+            results["not_found"] = {"ids": missing, "count": len(missing)}
         return results

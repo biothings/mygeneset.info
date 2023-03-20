@@ -16,14 +16,14 @@ def generate_geneset_id():
 def get_gene_list(geneset):
     """Get the genes from a geneset, always return a list."""
     # No genes
-    if geneset.get('genes') is None:
+    if geneset.get("genes") is None:
         genes = []
     # Single gene
-    elif not isinstance(geneset['genes'], list):
-        genes = [geneset['genes']]
+    elif not isinstance(geneset["genes"], list):
+        genes = [geneset["genes"]]
     # Multiple genes
     else:
-        genes = geneset['genes']
+        genes = geneset["genes"]
     return genes
 
 
@@ -32,9 +32,9 @@ def update_taxid(geneset):
     This field should be a list of all unique taxids in the geneset,
     When we add/remove genes from a geneset, we need to update this field.
     """
-    unique_species = set([gene['taxid'] for gene in geneset['genes']])
+    unique_species = set([gene["taxid"] for gene in geneset["genes"]])
     if len(unique_species) == 1:
-        geneset['taxid'] = list(unique_species)[0]
+        geneset["taxid"] = list(unique_species)[0]
     else:
-        geneset['taxid'] = list(unique_species)
+        geneset["taxid"] = list(unique_species)
     return geneset
