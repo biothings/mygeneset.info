@@ -6,8 +6,9 @@ API handler for MyGeneset submit/ endpoint
 from biothings.web.handlers import MetadataSourceHandler
 from elasticsearch.exceptions import NotFoundError
 
+
 class MyGenesetMetadataSourceHandler(MetadataSourceHandler):
-    """"
+    """ "
     Handler for GET /metadata
 
     {
@@ -26,8 +27,9 @@ class MyGenesetMetadataSourceHandler(MetadataSourceHandler):
         """Fetch a geneset document from Elasticsearch"""
         try:
             result = await self.biothings.elasticsearch.async_client.count(
-                    index=self.biothings.config.ES_CURATED_INDEX)
-            return result['count']
+                index=self.biothings.config.ES_CURATED_INDEX
+            )
+            return result["count"]
         except NotFoundError:
             return 0
 
@@ -35,8 +37,9 @@ class MyGenesetMetadataSourceHandler(MetadataSourceHandler):
         """Fetch a geneset document from Elasticsearch"""
         try:
             result = await self.biothings.elasticsearch.async_client.count(
-                    index=self.biothings.config.ES_USER_INDEX)
-            return result['count']
+                index=self.biothings.config.ES_USER_INDEX
+            )
+            return result["count"]
         except NotFoundError:
             return 0
 
@@ -44,9 +47,10 @@ class MyGenesetMetadataSourceHandler(MetadataSourceHandler):
         """Fetch a geneset document from Elasticsearch"""
         try:
             result = await self.biothings.elasticsearch.async_client.count(
-                    '{"query": {"bool": {"must_not": {"exists": {"field": "author"}}}}}',
-                    index=self.biothings.config.ES_USER_INDEX)
-            return result['count']
+                '{"query": {"bool": {"must_not": {"exists": {"field": "author"}}}}}',
+                index=self.biothings.config.ES_USER_INDEX,
+            )
+            return result["count"]
         except NotFoundError:
             return 0
 
@@ -58,19 +62,19 @@ class MyGenesetMetadataSourceHandler(MetadataSourceHandler):
             raise Finish(info)
 
         elif self.args.dev:
-            meta['software'] = self.biothings.devinfo.get()
+            meta["software"] = self.biothings.devinfo.get()
 
         else:  # remove debug info
             for field in list(meta):
-                if field.startswith('_'):
+                if field.startswith("_"):
                     meta.pop(field, None)
 
         meta = await self.extras(meta)  # override here
         self.finish(dict(sorted(meta.items())))
 
     async def extras(self, _meta):
-        _meta['stats']['curated'] = await self._count_curated()
-        _meta['stats']['user'] = await self._count_user()
-        _meta['stats']['anonymous'] = await self._count_anonymous()
+        _meta["stats"]["curated"] = await self._count_curated()
+        _meta["stats"]["user"] = await self._count_user()
+        _meta["stats"]["anonymous"] = await self._count_anonymous()
 
         return _meta

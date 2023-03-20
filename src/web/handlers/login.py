@@ -10,7 +10,8 @@ class BaseLoginHandler(BaseAPIHandler):
 
 
 class UserInfoHandler(BioThingsAuthnMixin, BaseLoginHandler):
-    """"Handler for /user_info endpoint."""
+    """ "Handler for /user_info endpoint."""
+
     def get(self):
         # Check for user cookie
         if self.current_user:
@@ -20,7 +21,7 @@ class UserInfoHandler(BioThingsAuthnMixin, BaseLoginHandler):
             header = self.get_www_authenticate_header()
             if header:
                 self.clear()
-                self.set_header('WWW-Authenticate', header)
+                self.set_header("WWW-Authenticate", header)
                 self.set_status(401, "Unauthorized")
                 # raising HTTPError will cause headers to be emptied
                 self.finish()
@@ -29,7 +30,8 @@ class UserInfoHandler(BioThingsAuthnMixin, BaseLoginHandler):
 
 
 class LogoutHandler(BaseLoginHandler):
-    """"Handler for /logout endpoint."""
+    """ "Handler for /logout endpoint."""
+
     def get(self):
         self.clear_cookie("user")
         self.redirect(self.get_argument("next", "/"))

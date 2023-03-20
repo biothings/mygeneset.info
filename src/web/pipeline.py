@@ -1,23 +1,28 @@
+import config
 from biothings.web.query import ESQueryBuilder
 from elasticsearch_dsl import Q, Search
 from tornado.web import HTTPError
 
-import config
 
 class MyGenesetQueryBuilder(ESQueryBuilder):
-
     def apply_extras(self, search, options):
 
         search = Search().query(
-            "function_score", query=search.query, score_mode="first", functions=[
+            "function_score",
+            query=search.query,
+            score_mode="first",
+            functions=[
                 {"filter": {"term": {"taxid": 9606}}, "weight": "1.55"},  # human
                 {"filter": {"term": {"taxid": 10090}}, "weight": "1.3"},  # mouse
                 {"filter": {"term": {"taxid": 10116}}, "weight": "1.1"},  # rat
-            ])
+            ],
+        )
 
         # Filter results according to authenticated user permissions
         if options.current_user is not None:
-            search = search.filter(Q("match", is_public=True) | Q("match", author=options.current_user))
+            search = search.filter(
+                Q("match", is_public=True) | Q("match", author=options.current_user)
+            )
         else:
             search = search.filter(Q("match", is_public=True))
 
