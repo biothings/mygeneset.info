@@ -4,9 +4,9 @@ from biothings.web.auth.authn import BioThingsAuthenticationProviderInterface
 
 
 class UserCookieAuthProvider(BioThingsAuthenticationProviderInterface):
-    WWW_AUTHENTICATE_HEADER = 'None'
+    WWW_AUTHENTICATE_HEADER = "None"
 
-    def __init__(self, handler, cookie_name='user'):
+    def __init__(self, handler, cookie_name="user"):
         super(UserCookieAuthProvider, self).__init__(handler)
         self.cookie_name = cookie_name
 

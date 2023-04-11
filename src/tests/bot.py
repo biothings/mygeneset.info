@@ -8,8 +8,9 @@ class Bot:
         """Start a selenium web driver"""
         firefox_options = webdriver.FirefoxOptions()
         firefox_options.headless = True
-        self.driver = webdriver.Firefox(executable_path=GeckoDriverManager().install(),
-                                        options=firefox_options)
+        self.driver = webdriver.Firefox(
+            executable_path=GeckoDriverManager().install(), options=firefox_options
+        )
         self.driver.implicitly_wait(20)
 
     def stop(self):

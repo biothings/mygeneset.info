@@ -1,81 +1,36 @@
 def get_customized_mapping(cls):
     mapping = {
-        "name": {
-            "type": "text",
-            "copy_to": [
-                "all"
-            ]
-        },
-        "is_public": {
-            "type": "boolean"
-        },
-        "taxid": {
-            "type": "integer"
-        },
-        "count": {
-            "type": "integer"
-        },
+        "name": {"type": "text", "copy_to": ["all"]},
+        "is_public": {"type": "boolean"},
+        "taxid": {"type": "integer"},
+        "count": {"type": "integer"},
         "genes": {
             "properties": {
-                "mygene_id": {
-                    "normalizer": "keyword_lowercase_normalizer",
-                    "type": "keyword"
-                },
-                "source_id": {
-                    "normalizer": "keyword_lowercase_normalizer",
-                    "type": "keyword"
-                },
-                "symbol": {
-                    "normalizer": "keyword_lowercase_normalizer",
-                    "type": "keyword"
-                },
-                "ncbigene": {
-                    "normalizer": "keyword_lowercase_normalizer",
-                    "type": "keyword"
-                },
-                "ensemblgene": {
-                    "normalizer": "keyword_lowercase_normalizer",
-                    "type": "keyword"
-                },
-                "uniprot": {
-                    "normalizer": "keyword_lowercase_normalizer",
-                    "type": "keyword"
-                },
-                "name": {
-                    "type": "text"
-                },
-                "taxid": {
-                    "type": "integer"
-                }
+                "mygene_id": {"normalizer": "keyword_lowercase_normalizer", "type": "keyword"},
+                "source_id": {"normalizer": "keyword_lowercase_normalizer", "type": "keyword"},
+                "symbol": {"normalizer": "keyword_lowercase_normalizer", "type": "keyword"},
+                "ncbigene": {"normalizer": "keyword_lowercase_normalizer", "type": "keyword"},
+                "ensemblgene": {"normalizer": "keyword_lowercase_normalizer", "type": "keyword"},
+                "uniprot": {"normalizer": "keyword_lowercase_normalizer", "type": "keyword"},
+                "name": {"type": "text"},
+                "taxid": {"type": "integer"},
             }
         },
         "duplicates": {
             "properties": {
                 "ids": {
                     "properties": {
-                        "id": {
-                            "normalizer": "keyword_lowercase_normalizer",
-                            "type": "keyword"
-                        },
-                        "count": {
-                            "type": "integer"
-                        }
+                        "id": {"normalizer": "keyword_lowercase_normalizer", "type": "keyword"},
+                        "count": {"type": "integer"},
                     }
                 },
-                "count": {
-                    "type": "integer"
-                }
+                "count": {"type": "integer"},
             }
         },
         "not_found": {
             "properties": {
-                "ids": {
-                    "normalizer": "keyword_lowercase_normalizer",
-                    "type": "keyword"
-                },
-                "count": {
-                    "type": "integer"
-                }
+                "ids": {"normalizer": "keyword_lowercase_normalizer", "type": "keyword"},
+                "count": {"type": "integer"},
             }
         },
         "reactome": {
@@ -83,15 +38,11 @@ def get_customized_mapping(cls):
                 "id": {
                     "normalizer": "keyword_lowercase_normalizer",
                     "type": "keyword",
-                    "copy_to": [
-                        "all"
-                    ]
+                    "copy_to": ["all"],
                 },
-                "geneset_name": {
-                    "type": "text"
-                }
+                "geneset_name": {"type": "text"},
             }
-        }
+        },
     }
 
     return mapping

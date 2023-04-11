@@ -1,4 +1,5 @@
 import biothings.hub.dataload.uploader as uploader
+
 from .parser import load_data
 
 
@@ -7,12 +8,12 @@ class WikiPathwaysUploader(uploader.BaseSourceUploader):
     name = "wikipathways"
     __metadata__ = {
         "src_meta": {
-            'license_url': 'https://www.wikipathways.org/terms.html',
-            'licence': 'CC0',
-            'url': 'https://www.wikipathways.org/',
-            'description': 'WikiPathways'
-            }
+            "license_url": "https://www.wikipathways.org/terms.html",
+            "licence": "CC0",
+            "url": "https://www.wikipathways.org/",
+            "description": "WikiPathways",
         }
+    }
 
     def load_data(self, data_folder):
         self.logger.info("Load data from folder '%s'" % data_folder)
@@ -22,56 +23,24 @@ class WikiPathwaysUploader(uploader.BaseSourceUploader):
     @classmethod
     def get_mapping(cls):
         mapping = {
-            "name": {
-                "type": "text",
-                "copy_to": [
-                    "all"
-                ]
-            },
-            "is_public": {
-                "type": "boolean"
-            },
-            "taxid": {
-                "type": "integer"
-            },
-            "count": {
-                "type": "integer"
-            },
+            "name": {"type": "text", "copy_to": ["all"]},
+            "is_public": {"type": "boolean"},
+            "taxid": {"type": "integer"},
+            "count": {"type": "integer"},
             "genes": {
                 "properties": {
-                    "mygene_id": {
-                        "normalizer": "keyword_lowercase_normalizer",
-                        "type": "keyword"
-                    },
-                    "source_id": {
-                        "normalizer": "keyword_lowercase_normalizer",
-                        "type": "keyword"
-                    },
-                    "symbol": {
-                        "type": "keyword"
-                    },
-                    "ncbigene": {
-                        "normalizer": "keyword_lowercase_normalizer",
-                        "type": "keyword"
-                    },
+                    "mygene_id": {"normalizer": "keyword_lowercase_normalizer", "type": "keyword"},
+                    "source_id": {"normalizer": "keyword_lowercase_normalizer", "type": "keyword"},
+                    "symbol": {"type": "keyword"},
+                    "ncbigene": {"normalizer": "keyword_lowercase_normalizer", "type": "keyword"},
                     "ensemblgene": {
                         "normalizer": "keyword_lowercase_normalizer",
-                        "type": "keyword"
+                        "type": "keyword",
                     },
-                    "uniprot": {
-                        "normalizer": "keyword_lowercase_normalizer",
-                        "type": "keyword"
-                    },
-                    "locus_tag": {
-                        "normalizer": "keyword_lowercase_normalizer",
-                        "type": "keyword"
-                    },
-                    "name": {
-                        "type": "text"
-                    },
-                    "taxid": {
-                        "type": "integer"
-                    }
+                    "uniprot": {"normalizer": "keyword_lowercase_normalizer", "type": "keyword"},
+                    "locus_tag": {"normalizer": "keyword_lowercase_normalizer", "type": "keyword"},
+                    "name": {"type": "text"},
+                    "taxid": {"type": "integer"},
                 }
             },
             "duplicates": {
@@ -80,27 +49,18 @@ class WikiPathwaysUploader(uploader.BaseSourceUploader):
                         "properties": {
                             "id": {
                                 "normalizer": "keyword_lowercase_normalizer",
-                                "type": "keyword"
+                                "type": "keyword",
                             },
-                            "count": {
-                                "type": "integer"
-                            }
+                            "count": {"type": "integer"},
                         }
                     },
-                    "count": {
-                        "type": "integer"
-                    }
+                    "count": {"type": "integer"},
                 }
             },
             "not_found": {
                 "properties": {
-                    "ids": {
-                        "normalizer": "keyword_lowercase_normalizer",
-                        "type": "keyword"
-                    },
-                    "count": {
-                        "type": "integer"
-                    }
+                    "ids": {"normalizer": "keyword_lowercase_normalizer", "type": "keyword"},
+                    "count": {"type": "integer"},
                 }
             },
             "wikipathways": {
@@ -108,18 +68,11 @@ class WikiPathwaysUploader(uploader.BaseSourceUploader):
                     "id": {
                         "normalizer": "keyword_lowercase_normalizer",
                         "type": "keyword",
-                        "copy_to": [
-                            "all"
-                        ]
+                        "copy_to": ["all"],
                     },
-                    "pathway_name": {
-                        "type": "text"
-                    },
-                    "url": {
-                        "normalizer": "keyword_lowercase_normalizer",
-                        "type": "keyword"
-                    }
+                    "pathway_name": {"type": "text"},
+                    "url": {"normalizer": "keyword_lowercase_normalizer", "type": "keyword"},
                 }
-            }
+            },
         }
         return mapping

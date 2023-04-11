@@ -9,7 +9,7 @@ def get_release(self):
     KEGG_INFO_URL = "http://rest.kegg.jp/info/kegg"
     release = ""
     resp = requests.get(KEGG_INFO_URL)
-    text_lines = resp.text.strip('\n').split('\n')
+    text_lines = resp.text.strip("\n").split("\n")
 
     for line in text_lines:
         tokens = line.strip().split()

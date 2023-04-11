@@ -44,11 +44,11 @@ class msigdbDumper(HTTPDumper):
         if force or not self.current_release or float(self.release) > float(self.current_release):
             home = self.__class__.BASE_URL
             long_version_str = "msigdb_v" + self.release  # Should have the format "msigdb_v2022.1"
-            human_file_name = long_version_str + '.Hs_files_to_download_locally.zip'
+            human_file_name = long_version_str + ".Hs_files_to_download_locally.zip"
             # mouse_file_name = long_version_str + '.Mm_files_to_download_locally.zip'
             # The url for human file should look like this:
             # https://data.broadinstitute.org/gsea-msigdb/msigdb/release/2022.1.Hs/msigdb_v2022.1.Hs_files_to_download_locally.zip
-            human_url = home + self.release + '.Hs/' + human_file_name
+            human_url = home + self.release + ".Hs/" + human_file_name
             # The url for the mouse file should look like this:
             # https://data.broadinstitute.org/gsea-msigdb/msigdb/release/2022.1.Mm/msigdb_v2022.1.Mm_files_to_download_locally.zip
             # mouse_url = home + self.release + '.Mm/' + mouse_file_name
@@ -69,11 +69,11 @@ class msigdbDumper(HTTPDumper):
         xslt = ET.parse(os.path.join(os.path.dirname(__file__), "sort_genesets.xsl"))
         transform = ET.XSLT(xslt)
         new_xml = transform(original_xml)
-        with open(output_file, 'wb') as f:
-            new_xml.write(f, pretty_print=True, encoding='utf-8')
+        with open(output_file, "wb") as f:
+            new_xml.write(f, pretty_print=True, encoding="utf-8")
 
     def post_dump(self, *args, **kwargs):
-        """"Create a new XML file with genesets sorted by organism"""
+        """ "Create a new XML file with genesets sorted by organism"""
         self.logger.info("Sorting documents in XML file")
         unzipall(self.new_data_folder)
         human_file_path = glob.glob(self.human_data_file.replace(".zip", "") + "/msigdb_v*.Hs.xml")

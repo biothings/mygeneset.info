@@ -1,2 +1,2 @@
-from .upload import msigdbUploader
 from .dump import msigdbDumper
+from .upload import msigdbUploader

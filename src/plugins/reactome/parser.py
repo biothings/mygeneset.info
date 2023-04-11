@@ -19,8 +19,8 @@ def load_data(data_folder):
         genes = set(rec[2:])
         all_genes = all_genes | genes
     # Query gene info
-    gene_lookup = MyGeneLookup('9606')  # Human genes
-    gene_lookup.query_mygene(list(all_genes), 'symbol,alias')
+    gene_lookup = MyGeneLookup("9606")  # Human genes
+    gene_lookup.query_mygene(list(all_genes), "symbol,alias")
 
     data = tabfile_feeder(f, header=0)
     for rec in data:
@@ -29,16 +29,17 @@ def load_data(data_folder):
         ncbigenes = rec[2:]
         lookup_results = gene_lookup.get_results(ncbigenes)
         # Format schema
-        doc = {'_id': _id,
-               'name': name,
-               'is_public': True,
-               'taxid': '9606',
-               'source': 'reactome',
-               'reactome': {
-                   'id': _id,
-                   'geneset_name': name,
-                   }
-               }
+        doc = {
+            "_id": _id,
+            "name": name,
+            "is_public": True,
+            "taxid": "9606",
+            "source": "reactome",
+            "reactome": {
+                "id": _id,
+                "geneset_name": name,
+            },
+        }
         doc.update(lookup_results)
         yield doc
 

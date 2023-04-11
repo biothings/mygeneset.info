@@ -5,9 +5,9 @@ MyGeneset.info is a web API for storing, searching, and accessing geneset data.
 
 ## Setting Up and Running BioThings Hub
 
-#### 1. Pre-requisites:
+### 1. BioThings Hub: Pre-requisites
 
-- Python>=3.6  (Python versions lower than 3.8 also require PyPI package `singledispatchmethod`)
+- Python>=3.6 (Python versions lower than 3.8 also require PyPI package `singledispatchmethod`)
 - Git
 - MongoDB
 - Elasticsearch>=6.0.0
@@ -22,26 +22,22 @@ Elasticsearch:
 
     docker run -d -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" --name elasticsearch docker.elastic.co/elasticsearch/elasticsearch:7.17.1
 
-#### 2. Clone this repo:
-
+### 2. Clone this repo
 
     git clone https://github.com/biothings/mygeneset.info.git
 
-
-#### 3. Setup a Python virtual environment (optional, but highly recommended):
+### 3. Setup a Python virtual environment (optional, but highly recommended)
 
     mkdir -p ~/venvs
     virtualenv ~/venvs/mygeneset
     source ~/venvs/mygeneset/bin/activate
 
-#### 4. Install required Python modules:
-
+### 4. Install required Python modules
 
     cd mygeneset.info
     pip install -r ./requirements_hub.txt
 
-#### 5. Make your own "config.py" file
-
+### 5. Make your own "config.py" file
 
     cd src
     vim config.py
@@ -49,24 +45,24 @@ Elasticsearch:
    >from config_hub import *
    >\# Add additional customizations
 
-#### 6. Generate SSH keys
+### 6. Generate SSH keys
 
     # from src folder:
     ssh-keygen -f bin/ssh_host_key
 
-#### 7. Start BioThings Hub
+### 7. Start BioThings Hub
 
     # from src folder:
     python -m bin.hub
 
-#### 8. Connect to the Hub from web interface (BioThings Studio)
+### 8. Connect to the Hub from web interface (BioThings Studio)
 
-Navigate to https://studio.biothings.io/ and create a connection to `http://localhost:HUB_API_PORT`,
+Navigate to "https://studio.biothings.io/" and create a connection to `http://localhost:HUB_API_PORT`,
 in which `HUB_API_PORT` is the port number specified in your configuration (default is 19480).
 
 ## Setting up the Web Server
 
-#### 1. Pre-requisites:
+### 1. Web Server: Pre-requisites
 
 MongoDB is not required for running the web server
 
@@ -74,11 +70,9 @@ MongoDB is not required for running the web server
 - Git
 - Elasticsearch>=6.0.0 (See installation steps above)
 
-
 ### 2. Install requirements
 
     pip install -r ./requirements_web.txt
-
 
 ### 3. Configure the Web Component
 
@@ -97,28 +91,27 @@ You can override any settings from `config_web.py` in `config.py`:
    >from config_web import *
    >\# Add additional customizations
 
-
 Some required configurations:
 
-```python
-# A random string
-COOKIE_SECRET =
+    ```python
+    # A random string
+    COOKIE_SECRET =
 
-# GitHub keys
-GITHUB_CLIENT_ID =
-GITHUB_CLIENT_SECRET =
+    # GitHub keys
+    GITHUB_CLIENT_ID =
+    GITHUB_CLIENT_SECRET =
 
-# ORCID keys
-ORCID_CLIENT_ID =
-ORCID_CLIENT_SECRET =
+    # ORCID keys
+    ORCID_CLIENT_ID =
+    ORCID_CLIENT_SECRET =
 
-WEB_HOST = "http://localhost:8000"
+    WEB_HOST = "http://localhost:8000"
 
-# Path to local webapp folder
-FRONTEND_PATH =
-```
+    # Path to local webapp folder
+    FRONTEND_PATH =
+    ```
 
-`FRONTEND_PATH` is only required for running the API with the user interface. You need to first clone and build the web app project: https://github.com/biothings/mygeneset.info-website
+`FRONTEND_PATH` is only required for running the API with the user interface. You need to first clone and build the web app project: "https://github.com/biothings/mygeneset.info-website"
 
 ### 4. Create Elasticsearch Indices
 
@@ -126,10 +119,11 @@ The ES indices defined in the `ES_INDEX` setting must exist.
 
 For example:
 
-```bash
-# Creating an empty user_genesets index
-curl -X PUT "localhost:9200/user_genesets"
-```
+    ```bash
+    # Creating an empty user_genesets index
+    curl -X PUT "localhost:9200/user_genesets"
+    ```
+
 ### 5. Run API
 
 `python index.py`
@@ -139,6 +133,5 @@ For launching alongside the web app:
 `python index.py --webapp`
 
 To see debugging messages:
-
 
 `python index.py --debug`

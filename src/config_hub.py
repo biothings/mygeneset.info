@@ -9,12 +9,12 @@ HUB_ICON = "https://raw.githubusercontent.com/biothings/mygeneset.info/master/my
 
 # Pre-prod/test ES definitions
 INDEX_CONFIG = {
-    #"build_config_key" : None, # used to select proper idxr/syncer
+    # "build_config_key" : None, # used to select proper idxr/syncer
     "indexer_select": {
         # default
-        #None : "path.to.special.Indexer",
+        # None : "path.to.special.Indexer",
     },
-    "env" : {
+    "env": {
         "local": {
             "host": "localhost:9200",
             "indexer": {
@@ -22,14 +22,9 @@ INDEX_CONFIG = {
                     "timeout": 300,
                     "retry_on_timeout": True,
                     "max_retries": 10,
-                    },
                 },
-            "index": [
-                        {
-                    "doc_type": "geneset",
-                    "index": "mygeneset_current"
-                    }
-                ],
+            },
+            "index": [{"doc_type": "geneset", "index": "mygeneset_current"}],
         }
     },
 }
@@ -52,4 +47,3 @@ RELEASE_CONFIG = {}
 # any other variables in this file as required. Variables defined as ValueError() exceptions
 # *must* be defined
 #
-

@@ -1,11 +1,13 @@
 import os
-import bs4
 
-import biothings, config
+import biothings
+import bs4
+import config
+
 biothings.config_for_app(config)
 
-from config import DATA_ARCHIVE_ROOT
 from biothings.hub.dataload.dumper import HTTPDumper
+from config import DATA_ARCHIVE_ROOT
 
 
 class WikiPathwaysDumper(HTTPDumper):
@@ -19,17 +21,17 @@ class WikiPathwaysDumper(HTTPDumper):
         home = self.client.get(self.__class__.BASE_URL)
         html = bs4.BeautifulSoup(home.text, "html.parser")
         # Grab the date string from the text of the first link element
-        table = html.find('table')
-        link = table.find('a')
+        table = html.find("table")
+        link = table.find("a")
         if link is None:
             self.logger.error("No links found in source.")
         else:
             release_str = link.contents[0].split("-")
-            assert release_str[0] == "wikipathways", \
+            assert release_str[0] == "wikipathways", (
                 "Source link should start with 'wikipathways': %s" % release_str
+            )
             version = release_str[1]
-            assert len(version) == 8, \
-                "Version number should be 8 characters long: %s" % version
+            assert len(version) == 8, "Version number should be 8 characters long: %s" % version
             return version
 
     def create_todump_list(self, force=False):
@@ -37,8 +39,8 @@ class WikiPathwaysDumper(HTTPDumper):
         if force or not self.current_release or int(self.release) > int(self.current_release):
             home = self.client.get(self.__class__.BASE_URL)
             html = bs4.BeautifulSoup(home.text, "html.parser")
-            for tr_tag in html.find_all('tr'):
-                a_tag = tr_tag.find('a')
+            for tr_tag in html.find_all("tr"):
+                a_tag = tr_tag.find("a")
                 if a_tag is not None:
                     name = a_tag.contents[0]
                     url = self.__class__.BASE_URL + name

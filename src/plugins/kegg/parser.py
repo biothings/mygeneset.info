@@ -22,7 +22,7 @@ except ImportError:
     from utils.mygene_lookup import MyGeneLookup
 
     LOG_LEVEL = logging.DEBUG
-    logging.basicConfig(level=LOG_LEVEL, format='%(asctime)s: %(message)s')
+    logging.basicConfig(level=LOG_LEVEL, format="%(asctime)s: %(message)s")
 
 BASE_URL = "http://rest.kegg.jp/"
 
@@ -34,7 +34,7 @@ def get_url_text_lines(url):
     """
     resp = requests.get(url)
     resp.raise_for_status()
-    text_lines = resp.text.strip('\n').split('\n')
+    text_lines = resp.text.strip("\n").split("\n")
     return text_lines
 
 
@@ -50,14 +50,10 @@ def get_shared_genesets(geneset_type):
 
     shared_genesets = dict()
     for line in text_lines:
-        tokens = line.strip('\n').split("\t")
+        tokens = line.strip("\n").split("\t")
         entry = tokens[0].split(":")[1]
         name = tokens[1]
-        shared_genesets[entry] = {
-            'id': tokens[0],
-            'type': geneset_type,
-            'name': name
-        }
+        shared_genesets[entry] = {"id": tokens[0], "type": geneset_type, "name": name}
     return shared_genesets
 
 
@@ -78,9 +74,9 @@ def get_pathway_genesets(organism_code):
         if entry in pathway_genesets:
             raise Exception(f"Duplicate entry in {url}: {entry}")
         pathway_genesets[entry] = {
-            'id': tokens[0],
-            'type': 'pathway',
-            'name': name,
+            "id": tokens[0],
+            "type": "pathway",
+            "name": name,
         }
     return pathway_genesets
 
@@ -111,14 +107,13 @@ def load_data(data_dir):
     shared_genesets = {**diseases, **modules}
 
     for conf in organisms:
-        organism_name = conf['name']
-        tax_id = str(conf['tax_id'])
+        organism_name = conf["name"]
+        tax_id = str(conf["tax_id"])
 
         logging.info("=" * 60)
-        logging.info(
-            f"Building '{organism_name}' genesets (taxid = {tax_id}) ...")
+        logging.info(f"Building '{organism_name}' genesets (taxid = {tax_id}) ...")
 
-        organism_code = conf['organism_code']
+        organism_code = conf["organism_code"]
 
         pathway_genesets = get_pathway_genesets(organism_code)
         # all_genesets is a dictionary containing geneset id, type, and name
@@ -126,15 +121,15 @@ def load_data(data_dir):
 
         uniq_genes = set()
         genes_in_gs = dict()
-        for gs_type in conf['geneset_types']:
+        for gs_type in conf["geneset_types"]:
             # Fetch file with genes/genesets for each type
             # Each row contains one geneset id and a single gene id
             url = BASE_URL + f"link/{organism_code}/{gs_type}"
             text_lines = get_url_text_lines(url)
             for line in text_lines:
-                tokens = line.split('\t')
+                tokens = line.split("\t")
                 # Get the geneset name
-                if gs_type == 'module':
+                if gs_type == "module":
                     gs_entry = tokens[0].split(":")[1].split("_")[1]
                 else:
                     gs_entry = tokens[0].split(":")[1]
@@ -142,49 +137,48 @@ def load_data(data_dir):
                 if gs_entry not in genes_in_gs:
                     genes_in_gs[gs_entry] = list()
                 # Append the gene id to the geneset dictionary
-                gene = tokens[1].split(':')[1]
+                gene = tokens[1].split(":")[1]
                 genes_in_gs[gs_entry].append(gene)
                 uniq_genes.add(gene)
 
         # Query mygene for all genes for this species
-        gene_id_types = ','.join(conf['gene_id_types'])
+        gene_id_types = ",".join(conf["gene_id_types"])
         gene_lookup = MyGeneLookup(tax_id)
         gene_lookup.query_mygene(list(uniq_genes), gene_id_types)
 
         for gs_entry, genes in genes_in_gs.items():
-            gs_type = all_genesets[gs_entry]['type']
-            gs_name = all_genesets[gs_entry]['name']
+            gs_type = all_genesets[gs_entry]["type"]
+            gs_name = all_genesets[gs_entry]["name"]
 
             lookup_results = gene_lookup.get_results(genes)
 
             # Build geneset document
             my_geneset = {
-                '_id': f"KEGG_{gs_type}_{gs_entry}_{tax_id}",
-                'is_public': True,
-                'taxid': tax_id,
-                'source': 'kegg',
-                'name': get_unique_tokens(gs_name),
-                'kegg': {
-                    'id': gs_entry,
-                    'database': gs_type,
-                    'name': gs_name,
-                    'organism_code': organism_code
-                }
+                "_id": f"KEGG_{gs_type}_{gs_entry}_{tax_id}",
+                "is_public": True,
+                "taxid": tax_id,
+                "source": "kegg",
+                "name": get_unique_tokens(gs_name),
+                "kegg": {
+                    "id": gs_entry,
+                    "database": gs_type,
+                    "name": gs_name,
+                    "organism_code": organism_code,
+                },
             }
 
             # Add gene lookup results to geneset document
             my_geneset.update(lookup_results)
 
             # Clean up the dict
-            my_geneset = dict_sweep(my_geneset,
-                                    vals=[None], remove_invalid_list=True)
+            my_geneset = dict_sweep(my_geneset, vals=[None], remove_invalid_list=True)
             my_geneset = unlist(my_geneset)
 
             yield my_geneset
 
 
 # Test harness
-if __name__ == '__main__':
+if __name__ == "__main__":
     import json
 
     # Time to create 9 organisms: 5-6 minutes (~5,300 genesets)
