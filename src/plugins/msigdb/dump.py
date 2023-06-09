@@ -45,6 +45,7 @@ class msigdbDumper(HTTPDumper):
             home = self.__class__.BASE_URL
             long_version_str = "msigdb_v" + self.release  # Should have the format "msigdb_v2022.1"
             human_file_name = long_version_str + ".Hs_files_to_download_locally.zip"
+            # Why keeping mouse geneset commented: https://github.com/biothings/mygeneset.info/commit/08d0aa80f606c27e5c383077a5e629d373b85a14
             # mouse_file_name = long_version_str + '.Mm_files_to_download_locally.zip'
             # The url for human file should look like this:
             # https://data.broadinstitute.org/gsea-msigdb/msigdb/release/2022.1.Hs/msigdb_v2022.1.Hs_files_to_download_locally.zip
