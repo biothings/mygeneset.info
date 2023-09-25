@@ -1,0 +1,47 @@
+name: Utilities Tests
+
+# on:
+#   push: {}
+#   pull_request:
+#     branches:
+#       - master
+on: workflow_dispatch
+
+jobs:
+  run_app_tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ "3.7", "3.8", "3.9", "3.10", "3.11" ]
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Upgrade pip
+        run: pip install --upgrade pip
+
+      - name: Install dependencies
+        run: pip install -r requirements_web.txt
+
+      - name: Install PyTest
+        run: pip install pytest
+
+      - name: Run Pytest and Capture Report
+        id: pytest
+        run: |
+          pytest src/tests/test_remote.py --html=pytest_report.html
+          pytest_report_content=$(cat pytest_report.html)
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Send Report to Slack
+        run: |
+          curl -X POST -H 'Content-type: application/json' --data '{
+            "text": "Pytest Report:\n```'${{ steps.pytest.outputs.pytest_report_content }}'```"
+          }' $SLACK_WEBHOOK_URL
