@@ -1,10 +1,10 @@
 name: Scheduled Tests
 
-# on:
-#   push: {}
-#   pull_request:
-#     branches:
-#       - master
+on:
+  push: {}
+  pull_request:
+    branches:
+      - add-scheduled-tests
 on: workflow_dispatch
 
 jobs:
