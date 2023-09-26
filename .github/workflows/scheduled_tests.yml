@@ -36,7 +36,7 @@ jobs:
         id: pytest
         run: |
           pytest src/tests/test_remote.py --junitxml=pytest_report.xml
-          pytest_report_content=$(cat pytest_report.html)
+          pytest_report_content=$(cat pytest_report.xml)
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
