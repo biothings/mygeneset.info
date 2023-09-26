@@ -5,7 +5,7 @@ on:
   pull_request:
     branches:
       - add-scheduled-tests
-on: workflow_dispatch
+# on: workflow_dispatch
 
 jobs:
   run_app_tests:
