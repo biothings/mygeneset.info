@@ -18,16 +18,19 @@ jobs:
     steps:
       - name: Get Metadata Version
         id: metadataVersion
-        uses: fjogeleit/http-request-action@v1
+        uses: satak/webrequest-action@master
         with:
-          url: "https://mygeneset.info/metadata"
-          method: "GET"
+          url: https://mygeneset.info/metadata
+          method: GET
 
       - name: Show Response
+        # run: |
+        #   echo ${{ steps.metadataVersion.outputs.response }}
+        #   echo ${{ steps.metadataVersion.outputs.headers }}
+        #   echo ${{ fromJson(steps.metadataVersion.outputs.response).build_date }}
         run: |
-          echo ${{ steps.metadataVersion.outputs.response }}
-          echo ${{ steps.metadataVersion.outputs.headers }}
-          echo ${{ fromJson(steps.metadataVersion.outputs.response).build_date }}
+          $output = '${{ steps.metadataVersion.outputs.output }}' | ConvertFrom-Json
+          Write-Host "Time from output $($output.time) statusCode $($output.statusCode) data $($output.data)"
 
       - name: Checkout source
         uses: actions/checkout@v3
