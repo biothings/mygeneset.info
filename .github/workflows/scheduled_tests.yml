@@ -13,8 +13,21 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ "3.7", "3.8", "3.9", "3.10", "3.11" ]
+        # python-version: [ "3.7", "3.8", "3.9", "3.10", "3.11" ]
+        python-version: [ "3.11" ]
     steps:
+      - name: Get Metadata Version
+        id: metadataVersion
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: "https://mygeneset.info/metadata"
+
+      - name: Show Response
+        run: |
+          echo ${{ steps.metadataVersion.outputs.response }}
+          echo ${{ steps.metadataVersion.outputs.headers }}
+          echo ${{ fromJson(steps.metadataVersion.outputs.response).build_date }}
+
       - name: Checkout source
         uses: actions/checkout@v3
 
@@ -36,12 +49,30 @@ jobs:
         id: pytest
         run: |
           pytest src/tests/test_remote.py --junitxml=pytest_report.xml
-          pytest_report_content=$(cat pytest_report.xml)
+
+      - name: Read Pytest Report File Content
+        id: read-pytest-report
+        run: |
+          # Use the cat command to read the file and store its content in a variable
+            pytest_report_content=$(cat pytest_report.xml)
+          echo "::set-output name=content::$pytest_report_content"
 
       - name: Send Report to Slack
         run: |
           curl -X POST -H 'Content-type: application/json' --data '{
-            "text": "Pytest Report:\n```'${{ steps.pytest.outputs.pytest_report_content }}'```"
+            "text": "Pytest Report:\n```'${{ steps.read-pytest-report.outputs.pytest_report_content }}'```"
           }' $SLACK_WEBHOOK_URL
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Send Report to Slack
+        uses: rtCamp/action-slack@v4
+        with:
+          status: 'File Content'
+          text: ${{ steps.read-pytest-report.outputs.content }}
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Setup tmate debug session on failure
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3
