@@ -24,10 +24,6 @@ jobs:
           method: GET
 
       - name: Show Response
-        # run: |
-        #   echo ${{ steps.metadataVersion.outputs.response }}
-        #   echo ${{ steps.metadataVersion.outputs.headers }}
-        #   echo ${{ fromJson(steps.metadataVersion.outputs.response).build_date }}
         run: |
           $output = '${{ steps.metadataVersion.outputs.output }}'
           Write-Host "Time from output $($output.time) statusCode $($output.statusCode) data $($output.data)"
