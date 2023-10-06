@@ -25,8 +25,7 @@ jobs:
 
       - name: Show Response
         run: |
-          $output = '${{ steps.metadataVersion.outputs.output }}'
-          Write-Host "Time from output $($output.time) statusCode $($output.statusCode) data $($output.data)"
+          echo ${{ steps.metadataVersion.outputs.output }}
 
       - name: Checkout source
         uses: actions/checkout@v3
