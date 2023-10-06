@@ -25,7 +25,7 @@ jobs:
 
       - name: Show Response
         run: |
-          echo ${{ steps.metadataVersion.outputs.output }}
+          echo ${{ steps.metadataVersion.outputs.output.data.build_date }}
 
       - name: Checkout source
         uses: actions/checkout@v3
