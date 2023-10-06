@@ -65,14 +65,6 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-      - name: Send Report to Slack
-        uses: rtCamp/action-slack@v4
-        with:
-          status: 'File Content'
-          text: ${{ steps.read-pytest-report.outputs.content }}
-        env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
-
       - name: Setup tmate debug session on failure
         if: ${{ failure() }}
         uses: mxschmitt/action-tmate@v3
