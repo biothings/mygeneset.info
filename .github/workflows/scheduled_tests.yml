@@ -74,13 +74,44 @@ jobs:
           name: pytest-report
           path: pytest-report.xml
 
+      - name: Extract test counts
+        run: |
+          failed=$(xmlstarlet sel -t -v "count(//testcase[failure])" pytest-report.xml)
+          succeeded=$(xmlstarlet sel -t -v "count(//testcase[not(failure)])" pytest-report.xml)
+          errored=$(xmlstarlet sel -t -v "count(//testcase[error])" pytest-report.xml)
+          skipped=$(xmlstarlet sel -t -v "count(//testcase[skipped])" pytest-report.xml)
+          unknown=$(xmlstarlet sel -t -v "count(//testcase[not(failure) and not(error) and not(skipped)])" pytest-report.xml)
+          echo "FAILED=${failed}" >> $GITHUB_ENV
+          echo "SUCCEEDED=${succeeded}" >> $GITHUB_ENV
+          echo "ERRORED=${errored}" >> $GITHUB_ENV
+          echo "SKIPPED=${skipped}" >> $GITHUB_ENV
+          echo "UNKNOWN=${unknown}" >> $GITHUB_ENV
+        continue-on-error: true  # Continue even if the pytest report does not exist
+
+      # - name: Send report to Slack
+      #   uses: 8398a7/action-slack@v3
+      #   with:
+      #     status: ${{ job.status }}
+      #     author_name: GitHub Actions
+      #     title: Pytest Report
+      #     fields: name,status
+      #   env:
+      #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
       - name: Send report to Slack
         uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
           author_name: GitHub Actions
           title: Pytest Report
-          fields: name,status
+          fields: |
+            Name: ${{ github.workflow }}
+            Status: ${{ job.status }}
+            Failed: ${{ env.FAILED }}
+            Succeeded: ${{ env.SUCCEEDED }}
+            Errored: ${{ env.ERRORED }}
+            Skipped: ${{ env.SKIPPED }}
+            Unknown: ${{ env.UNKNOWN }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
