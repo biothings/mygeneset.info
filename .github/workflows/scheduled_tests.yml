@@ -44,23 +44,43 @@ jobs:
       - name: Install PyTest
         run: pip install pytest
 
-      - name: Run Pytest and Capture Report
-        id: pytest
-        run: |
-          pytest src/tests/test_remote.py --junitxml=pytest_report.xml
+      # - name: Run Pytest and Capture Report
+      #   id: pytest
+      #   run: |
+      #     pytest src/tests/test_remote.py --junitxml=pytest_report.xml
 
-      - name: Read Pytest Report File Content
-        id: read-pytest-report
-        run: |
-          # Use the cat command to read the file and store its content in a variable
-          pytest_report_content=$(cat pytest_report.xml)
-          echo "::set-output name=content::$pytest_report_content"
+      # - name: Read Pytest Report File Content
+      #   id: read-pytest-report
+      #   run: |
+      #     # Use the cat command to read the file and store its content in a variable
+      #     pytest_report_content=$(cat pytest_report.xml)
+      #     echo "::set-output name=content::$pytest_report_content"
 
-      - name: Send Report to Slack
-        run: |
-          curl -X POST -H 'Content-type: application/json' --data '{
-            "text": "Pytest Report:\n```'${{ steps.read-pytest-report.outputs }}'```"
-          }' $SLACK_WEBHOOK_URL
+      # - name: Send Report to Slack
+      #   run: |
+      #     curl -X POST -H 'Content-type: application/json' --data '{
+      #       "text": "Pytest Report:\n```'${{ steps.read-pytest-report.outputs.pytest_report_content }}'```"
+      #     }' $SLACK_WEBHOOK_URL
+      #   env:
+      #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+
+      - name: Run pytest and generate report
+        run: pytest src/tests/test_remote.py --junitxml=pytest-report.xml
+
+      - name: Upload report to GitHub Artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: pytest-report
+          path: pytest-report.xml
+
+      - name: Send report to Slack
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          author_name: GitHub Actions
+          title: Pytest Report
+          fields: name,status
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
