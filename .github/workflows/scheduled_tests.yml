@@ -74,6 +74,8 @@ jobs:
           name: pytest-report
           path: pytest-report.xml
 
+      - name: Install xmlstarlet
+        run: sudo apt-get update && sudo apt-get install -y xmlstarlet
       - name: Extract test counts
         run: |
           failed=$(xmlstarlet sel -t -v "count(//testcase[failure])" pytest-report.xml)
