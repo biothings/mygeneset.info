@@ -81,6 +81,7 @@ jobs:
 
       - name: Create metadata version file in Cache folder
         run: |
+          mkdir ${{ github.workspace }}/.cache/
           echo "${{fromJson(steps.metadataVersion.outputs.output).data.build_date}}" >> ${{ github.workspace }}/.cache/mygeneset-metadata-version.cache
 
       - name: Store metadata version variable in Cache
