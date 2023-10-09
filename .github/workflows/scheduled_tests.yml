@@ -16,16 +16,42 @@ jobs:
         # python-version: [ "3.7", "3.8", "3.9", "3.10", "3.11" ]
         python-version: [ "3.11" ]
     steps:
-      - name: Get Metadata Version
+      - name: Get metadata version
         id: metadataVersion
         uses: satak/webrequest-action@master
         with:
           url: https://mygeneset.info/metadata
           method: GET
 
-      - name: Show Response
+      - name: Show metadata response
         run: |
           echo "${{fromJson(steps.metadataVersion.outputs.output).data.build_date}}"
+
+      ########
+
+      - name: Create metadata artifact
+        run: |
+          echo "mygeneset_metadata_version" > mygeneset_metadata_version.txt
+          echo "::set-output name=artifact_path::mygeneset_metadata_version.txt"
+        id: create-artifact
+
+      - name: Upload metadata artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: mygeneset-metadata-version
+          path: ${{ steps.create-artifact.outputs.artifact_path }}
+
+      - name: Download Artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: mygeneset-metadata-version
+
+      - name: Read Artifact
+        run: |
+          cat mygeneset-metadata-version/mygeneset_metadata_version.txt
+        # The value 'my_value' will be printed
+
+      #########
 
       - name: Checkout source
         uses: actions/checkout@v3
