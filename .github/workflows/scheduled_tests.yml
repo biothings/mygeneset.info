@@ -32,7 +32,6 @@ jobs:
       - name: Create metadata artifact
         run: |
           echo "${{fromJson(steps.metadataVersion.outputs.output).data.build_date}}" > mygeneset_metadata_version.txt
-        id: create-artifact
 
       - name: Upload metadata artifact
         uses: actions/upload-artifact@v3
