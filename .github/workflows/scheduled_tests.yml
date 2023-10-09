@@ -5,7 +5,12 @@ on:
   pull_request:
     branches:
       - add-scheduled-tests
+
 # on: workflow_dispatch
+
+# on:
+#   schedule:
+#     - cron: '58 */3 * * *'
 
 jobs:
   run_app_tests:
@@ -16,7 +21,7 @@ jobs:
         # python-version: [ "3.7", "3.8", "3.9", "3.10", "3.11" ]
         python-version: [ "3.11" ]
     steps:
-      - name: Get metadata version
+      - name: Get metadata version from API
         id: metadataVersion
         uses: satak/webrequest-action@master
         with:
@@ -29,45 +34,28 @@ jobs:
 
       ########
 
-      # - name: Create metadata artifact
-      #   run: |
-      #     echo "${{fromJson(steps.metadataVersion.outputs.output).data.build_date}}" > mygeneset_metadata_version.txt
-
-      # - name: Upload metadata artifact
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: mygeneset-metadata-version
-      #     path: mygeneset_metadata_version.txt
-
-      # - name: Remove local metadata artifact
-      #   run: |
-      #     rm -r mygeneset_metadata_version.txt
-
-
-      ### --- ###
-
-      - name: Download Artifact
-        uses: actions/download-artifact@v3
+      - name: Restore metadata version variable from Cache
+        uses: actions/cache@v3
         with:
-          name: mygeneset-metadata-version
-          # path: mygeneset_metadata_version.txt
+          path: ${{ github.workspace }}/.cache/mygeneset-metadata-version
+          key: ${{ runner.os }}-mygeneset-metadata-version
 
-      - name: Read Artifact
+      - name: Print metadata version variable Value
         run: |
-          cat mygeneset_metadata_version.txt
+          echo "${{ env.MYGENESET_METADATA_VERSION }}"
 
       - name: Compare metadata versions
         id: compare
         run: |
-          version_new=${{fromJson(steps.metadataVersion.outputs.output).data.build_date}}
-          version_old=$(cat mygeneset_metadata_version.txt)
+          version_from_api=${{ fromJson(steps.metadataVersion.outputs.output).data.build_date }}
+          version_from_cache=${{ env.MYGENESET_METADATA_VERSION }}
 
-          echo "version_new"
-          echo $version_new
-          echo "version_old"
-          echo $version_old
+          echo "version_from_api"
+          echo $version_from_api
+          echo "version_from_cache"
+          echo $version_from_cache
 
-          if [ "$version_new" = "$version_old" ]; then
+          if [ "$version_from_api" = "$version_from_cache" ]; then
             echo "No new version identified. Stopping workflow."
             echo "::error::Values are the same."
             exit 0
@@ -75,18 +63,19 @@ jobs:
             echo "New version identified. Proceeding with the workflow."
           fi
 
-      - name: Create metadata artifact
+      - name: Set metadata version variable
         run: |
-          echo "${{fromJson(steps.metadataVersion.outputs.output).data.build_date}}" > mygeneset_metadata_version.txt
-        id: create-artifact
+          echo "MYGENESET_METADATA_VERSION=${{fromJson(steps.metadataVersion.outputs.output).data.build_date}}" >> $GITHUB_ENV
 
-      - name: Upload metadata artifact
-        uses: actions/upload-artifact@v3
+      - name: Store metadata version variable in Cache
+        uses: actions/cache@v3
         with:
-          name: mygeneset-metadata-version
-          path: mygeneset_metadata_version.txt
+          path: ${{ github.workspace }}/.cache/mygeneset-metadata-version
+          key: ${{ runner.os }}-mygeneset-metadata-version
+          restore-keys: |
+            - ${{ runner.os }}-mygeneset-metadata-version
 
-      #########
+      ##############
 
       - name: Checkout source
         uses: actions/checkout@v3
