@@ -35,7 +35,7 @@ jobs:
       ########
 
       - name: Restore metadata version variable from Cache
-        uses: actions/cache@v3
+        uses: actions/cache/restore@v3
         with:
           # path: ${{ github.workspace }}/.cache/mygeneset-metadata-version
           # key: ${{ runner.os }}-mygeneset-metadata-version
