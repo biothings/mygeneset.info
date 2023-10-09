@@ -41,8 +41,11 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements_web.txt
 
-      - name: Install PyTest
+      - name: Install pytest
         run: pip install pytest
+
+      - name: Install pytest-slack
+        run: pip install pytest-slack
 
       # - name: Run Pytest and Capture Report
       #   id: pytest
@@ -64,33 +67,37 @@ jobs:
       #   env:
       #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-
       - name: Run pytest and generate report
-        run: pytest src/tests/test_remote.py --junitxml=pytest_report.xml
+        run: pytest src/tests/test_remote.py --slack_hook=${{ secrets.SLACK_WEBHOOK_URL }} --slack_channel=observability-test
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-      - name: Upload report to GitHub Artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: pytest-report
-          path: pytest-report.xml
+      # - name: Run pytest and generate report
+      #   run: pytest src/tests/test_remote.py --junitxml=pytest_report.xml
 
-      - name: Extract test counts
-        id: pytest
-        run: |
-          # Parse pytest report and extract desired fields
-          errors=$(grep -o 'errors="[^"]*"' pytest_report.xml | cut -d'"' -f2)
-          failures=$(grep -o 'failures="[^"]*"' pytest_report.xml | cut -d'"' -f2)
-          skipped=$(grep -o 'skipped="[^"]*"' pytest_report.xml | cut -d'"' -f2)
-          tests=$(grep -o 'tests="[^"]*"' pytest_report.xml | cut -d'"' -f2)
-          time=$(grep -o 'time="[^"]*"' pytest_report.xml | cut -d'"' -f2)
+      # - name: Upload report to GitHub Artifacts
+      #   uses: actions/upload-artifact@v2
+      #   with:
+      #     name: pytest-report
+      #     path: pytest-report.xml
 
-          echo "Errors: $errors"
-          echo "Failures: $failures"
-          echo "Skipped: $skipped"
-          echo "Tests: $tests"
-          echo "Time: $time"
-        working-directory: ${{ github.workspace }}
-        continue-on-error: true  # Continue even if the pytest report does not exist
+      # - name: Extract test counts
+      #   id: pytest
+      #   run: |
+      #     # Parse pytest report and extract desired fields
+      #     errors=$(grep -o 'errors="[^"]*"' pytest_report.xml | cut -d'"' -f2)
+      #     failures=$(grep -o 'failures="[^"]*"' pytest_report.xml | cut -d'"' -f2)
+      #     skipped=$(grep -o 'skipped="[^"]*"' pytest_report.xml | cut -d'"' -f2)
+      #     tests=$(grep -o 'tests="[^"]*"' pytest_report.xml | cut -d'"' -f2)
+      #     time=$(grep -o 'time="[^"]*"' pytest_report.xml | cut -d'"' -f2)
+
+      #     echo "Errors: $errors"
+      #     echo "Failures: $failures"
+      #     echo "Skipped: $skipped"
+      #     echo "Tests: $tests"
+      #     echo "Time: $time"
+      #   working-directory: ${{ github.workspace }}
+      #   continue-on-error: true  # Continue even if the pytest report does not exist
 
       # - name: Send report to Slack
       #   uses: 8398a7/action-slack@v3
@@ -102,21 +109,40 @@ jobs:
       #   env:
       #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-      - name: Send report to Slack
-        uses: 8398a7/action-slack@v3
-        with:
-          status: ${{ job.status }}
-          author_name: Mygeneset Scheduled Pytest
-          # title: Pytest Report
-          message: |
-            Pytest Report:
-            - Errors: ${{ steps.pytest.outputs.errors }}
-            - Failures: ${{ steps.pytest.outputs.failures }}
-            - Skipped: ${{ steps.pytest.outputs.skipped }}
-            - Tests: ${{ steps.pytest.outputs.tests }}
-            - Time: ${{ steps.pytest.outputs.time }}
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      # - name: Send Pytest Report to Slack
+      #   id: slack
+      #   uses: slackapi/slack-github-action@v1.24.0
+      #   with:
+      #     # This data can be any valid JSON from a previous step in the GitHub Action
+      #     payload: |
+      #       {
+      #         "blocks": "",
+      #         "attachments": {
+      #           "text": "Passed Count: *{SlackTemplate.RESULTS['passed']}*",
+      #                   "mrkdwn_in": [
+      #                       "text"
+      #                   ],
+      #           "color": "good"
+      #         },
+      #       }
+      #   env:
+      #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      # - name: Send report to Slack
+      #   uses: 8398a7/action-slack@v3
+      #   with:
+      #     status: ${{ job.status }}
+      #     author_name: Mygeneset Scheduled Pytest
+      #     # title: Pytest Report
+      #     message: |
+      #       Pytest Report:
+      #       - Errors: ${{ steps.pytest.outputs.errors }}
+      #       - Failures: ${{ steps.pytest.outputs.failures }}
+      #       - Skipped: ${{ steps.pytest.outputs.skipped }}
+      #       - Tests: ${{ steps.pytest.outputs.tests }}
+      #       - Time: ${{ steps.pytest.outputs.time }}
+      #   env:
+      #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
       # - name: Setup tmate debug session on failure
       #   if: ${{ failure() }}
