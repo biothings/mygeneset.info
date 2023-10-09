@@ -31,24 +31,23 @@ jobs:
 
       - name: Create metadata artifact
         run: |
-          echo "mygeneset_metadata_version" > mygeneset_metadata_version.txt
-          echo "::set-output name=artifact_path::mygeneset_metadata_version.txt"
+          echo "${{fromJson(steps.metadataVersion.outputs.output).data.build_date}}" > mygeneset_metadata_version.txt
         id: create-artifact
 
       - name: Upload metadata artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: mygeneset-metadata-version
-          path: ${{ steps.create-artifact.outputs.artifact_path }}
+          path: mygeneset_metadata_version.txt
 
       - name: Download Artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: mygeneset-metadata-version
 
       - name: Read Artifact
         run: |
-          cat mygeneset-metadata-version/mygeneset_metadata_version.txt
+          cat mygeneset_metadata_version.txt
         # The value 'my_value' will be printed
 
       #########
