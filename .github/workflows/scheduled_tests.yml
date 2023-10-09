@@ -44,8 +44,17 @@ jobs:
 
       - name: Load mygeneset metadata version from Cache
         run: |
-          echo "${{ env.MYGENESET_METADATA_VERSION }}"
-          MYGENESET_METADATA_VERSION=$(cat ${{ github.workspace }}/.cache/mygeneset-metadata-version.cache)
+          file_path="${{ github.workspace }}/.cache/mygeneset-metadata-version.cache"
+
+          # Check if the file exists
+          if [ -f "$file_path" ]; then
+            # Read the file and store its content in the restored_value variable
+            MYGENESET_METADATA_VERSION=$(cat "$file_path")
+            echo "Restored Value: $MYGENESET_METADATA_VERSION"
+          else
+            echo "File does not exist or cannot be read."
+            MYGENESET_METADATA_VERSION=
+          fi
 
       - name: Compare metadata versions
         id: compare
@@ -83,8 +92,6 @@ jobs:
           #   - ${{ runner.os }}-mygeneset-metadata-version
           path: ${{ github.workspace }}/.cache
           key: mygeneset-metadata-version
-          restore-keys: |
-            - mygeneset-metadata-version
 
       ##############
 
