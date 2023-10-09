@@ -108,7 +108,7 @@ jobs:
           status: ${{ job.status }}
           author_name: Mygeneset Scheduled Pytest
           # title: Pytest Report
-          fields: |
+          message: |
             Pytest Report:
             - Errors: ${{ steps.pytest.outputs.errors }}
             - Failures: ${{ steps.pytest.outputs.failures }}
