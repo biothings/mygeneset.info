@@ -66,7 +66,7 @@ jobs:
 
 
       - name: Run pytest and generate report
-        run: pytest src/tests/test_remote.py --junitxml=pytest-report.xml
+        run: pytest src/tests/test_remote.py --junitxml=pytest_report.xml
 
       - name: Upload report to GitHub Artifacts
         uses: actions/upload-artifact@v2
@@ -77,17 +77,21 @@ jobs:
       - name: Install xmlstarlet
         run: sudo apt-get update && sudo apt-get install -y xmlstarlet
       - name: Extract test counts
+        id: pytest
         run: |
-          failed=$(xmlstarlet sel -t -v "count(//testcase[failure])" pytest-report.xml)
-          succeeded=$(xmlstarlet sel -t -v "count(//testcase[not(failure)])" pytest-report.xml)
-          errored=$(xmlstarlet sel -t -v "count(//testcase[error])" pytest-report.xml)
-          skipped=$(xmlstarlet sel -t -v "count(//testcase[skipped])" pytest-report.xml)
-          unknown=$(xmlstarlet sel -t -v "count(//testcase[not(failure) and not(error) and not(skipped)])" pytest-report.xml)
-          echo "FAILED=${failed}" >> $GITHUB_ENV
-          echo "SUCCEEDED=${succeeded}" >> $GITHUB_ENV
-          echo "ERRORED=${errored}" >> $GITHUB_ENV
-          echo "SKIPPED=${skipped}" >> $GITHUB_ENV
-          echo "UNKNOWN=${unknown}" >> $GITHUB_ENV
+          # Parse pytest report and extract desired fields
+          errors=$(grep -o 'errors="[^"]*"' pytest_report.xml | cut -d'"' -f2)
+          failures=$(grep -o 'failures="[^"]*"' pytest_report.xml | cut -d'"' -f2)
+          skipped=$(grep -o 'skipped="[^"]*"' pytest_report.xml | cut -d'"' -f2)
+          tests=$(grep -o 'tests="[^"]*"' pytest_report.xml | cut -d'"' -f2)
+          time=$(grep -o 'time="[^"]*"' pytest_report.xml | cut -d'"' -f2)
+
+          echo "Errors: $errors"
+          echo "Failures: $failures"
+          echo "Skipped: $skipped"
+          echo "Tests: $tests"
+          echo "Time: $time"
+        working-directory: ${{ github.workspace }}
         continue-on-error: true  # Continue even if the pytest report does not exist
 
       # - name: Send report to Slack
@@ -100,20 +104,18 @@ jobs:
       #   env:
       #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-      - name: Send report to Slack
-        uses: 8398a7/action-slack@v3
+      - name: Send to Slack
+        uses: Ilshidur/action-slack@v4
         with:
-          status: ${{ job.status }}
-          author_name: GitHub Actions
-          title: Pytest Report
-          fields: |
-            Name: ${{ github.workflow }}
-            Status: ${{ job.status }}
-            Failed: ${{ env.FAILED }}
-            Succeeded: ${{ env.SUCCEEDED }}
-            Errored: ${{ env.ERRORED }}
-            Skipped: ${{ env.SKIPPED }}
-            Unknown: ${{ env.UNKNOWN }}
+          status: 'success'  # You can customize this based on your needs
+          message: |
+            Pytest Report:
+            - Errors: ${{ steps.pytest.outputs.errors }}
+            - Failures: ${{ steps.pytest.outputs.failures }}
+            - Skipped: ${{ steps.pytest.outputs.skipped }}
+            - Tests: ${{ steps.pytest.outputs.tests }}
+            - Time: ${{ steps.pytest.outputs.time }}
+          # channel: '#your-slack-channel'  # Replace with your Slack channel
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
