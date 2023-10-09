@@ -33,6 +33,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: mygeneset-metadata-version
+          path: mygeneset_metadata_version.txt
 
       - name: Read Artifact
         run: |
