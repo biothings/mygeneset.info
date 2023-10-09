@@ -39,7 +39,7 @@ jobs:
         with:
           # path: ${{ github.workspace }}/.cache/mygeneset-metadata-version
           # key: ${{ runner.os }}-mygeneset-metadata-version
-          path: ${{ github.workspace }}/.cache/
+          path: ${{ github.workspace }}/.cache/mygeneset-metadata-version.cache
           key: mygeneset-metadata-version
 
       - name: Load mygeneset metadata version from Cache
@@ -92,7 +92,7 @@ jobs:
           # key: ${{ runner.os }}-mygeneset-metadata-version
           # restore-keys: |
           #   - ${{ runner.os }}-mygeneset-metadata-version
-          path: ${{ github.workspace }}/.cache
+          path: ${{ github.workspace }}/.cache/mygeneset-metadata-version.cache
           key: mygeneset-metadata-version
 
       ##############
