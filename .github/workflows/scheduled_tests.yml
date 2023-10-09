@@ -29,6 +29,34 @@ jobs:
 
       ########
 
+      - name: Download Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: mygeneset-metadata-version
+
+      - name: Read Artifact
+        run: |
+          cat mygeneset_metadata_version.txt
+
+      - name: Compare metadata versions
+        id: compare
+        run: |
+          version_new=${{fromJson(steps.metadataVersion.outputs.output).data.build_date}}
+          version_old=$(cat mygeneset_metadata_version.txt)
+
+          echo "version_new"
+          echo version_new
+          echo "version_old"
+          echo version_old
+
+          if [ "$version_new" = "$version_old" ]; then
+            echo "No new version identified. Stopping workflow."
+            echo "::error::Values are the same."
+            exit 1
+          else
+            echo "New version identified. Proceeding with the workflow."
+          fi
+
       - name: Create metadata artifact
         run: |
           echo "${{fromJson(steps.metadataVersion.outputs.output).data.build_date}}" > mygeneset_metadata_version.txt
@@ -39,16 +67,6 @@ jobs:
         with:
           name: mygeneset-metadata-version
           path: mygeneset_metadata_version.txt
-
-      - name: Download Artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: mygeneset-metadata-version
-
-      - name: Read Artifact
-        run: |
-          cat mygeneset_metadata_version.txt
-        # The value 'my_value' will be printed
 
       #########
 
