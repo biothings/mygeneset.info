@@ -39,12 +39,13 @@ jobs:
         with:
           # path: ${{ github.workspace }}/.cache/mygeneset-metadata-version
           # key: ${{ runner.os }}-mygeneset-metadata-version
-          path: ${{ github.workspace }}/.cache
+          path: ${{ github.workspace }}/.cache/
           key: mygeneset-metadata-version
 
-      - name: Show mygeneset metadata version from Cache
+      - name: Load mygeneset metadata version from Cache
         run: |
           echo "${{ env.MYGENESET_METADATA_VERSION }}"
+          MYGENESET_METADATA_VERSION=$(cat ${{ github.workspace }}/.cache/mygeneset-metadata-version.cache)
 
       - name: Compare metadata versions
         id: compare
@@ -68,6 +69,10 @@ jobs:
       - name: Set metadata version variable
         run: |
           echo "MYGENESET_METADATA_VERSION=${{fromJson(steps.metadataVersion.outputs.output).data.build_date}}" >> $GITHUB_ENV
+
+      - name: Create metadata version file in Cache folder
+        run: |
+          echo "${{fromJson(steps.metadataVersion.outputs.output).data.build_date}}" >> ${{ github.workspace }}/.cache/mygeneset-metadata-version.cache
 
       - name: Store metadata version variable in Cache
         uses: actions/cache@v3
