@@ -28,7 +28,7 @@ jobs:
           url: https://mygeneset.info/metadata
           method: GET
 
-      - name: Show metadata response
+      - name: Show mygeneset metadata version from API
         run: |
           echo "${{fromJson(steps.metadataVersion.outputs.output).data.build_date}}"
 
@@ -37,10 +37,12 @@ jobs:
       - name: Restore metadata version variable from Cache
         uses: actions/cache@v3
         with:
-          path: ${{ github.workspace }}/.cache/mygeneset-metadata-version
-          key: ${{ runner.os }}-mygeneset-metadata-version
+          # path: ${{ github.workspace }}/.cache/mygeneset-metadata-version
+          # key: ${{ runner.os }}-mygeneset-metadata-version
+          path: ${{ github.workspace }}/.cache
+          key: mygeneset-metadata-version
 
-      - name: Print metadata version variable Value
+      - name: Show mygeneset metadata version from Cache
         run: |
           echo "${{ env.MYGENESET_METADATA_VERSION }}"
 
@@ -70,10 +72,14 @@ jobs:
       - name: Store metadata version variable in Cache
         uses: actions/cache@v3
         with:
-          path: ${{ github.workspace }}/.cache/mygeneset-metadata-version
-          key: ${{ runner.os }}-mygeneset-metadata-version
+          # path: ${{ github.workspace }}/.cache/mygeneset-metadata-version
+          # key: ${{ runner.os }}-mygeneset-metadata-version
+          # restore-keys: |
+          #   - ${{ runner.os }}-mygeneset-metadata-version
+          path: ${{ github.workspace }}/.cache
+          key: mygeneset-metadata-version
           restore-keys: |
-            - ${{ runner.os }}-mygeneset-metadata-version
+            - mygeneset-metadata-version
 
       ##############
 
@@ -97,103 +103,7 @@ jobs:
       - name: Install pytest-slack
         run: pip install pytest-slack
 
-      # - name: Run Pytest and Capture Report
-      #   id: pytest
-      #   run: |
-      #     pytest src/tests/test_remote.py --junitxml=pytest_report.xml
-
-      # - name: Read Pytest Report File Content
-      #   id: read-pytest-report
-      #   run: |
-      #     # Use the cat command to read the file and store its content in a variable
-      #     pytest_report_content=$(cat pytest_report.xml)
-      #     echo "::set-output name=content::$pytest_report_content"
-
-      # - name: Send Report to Slack
-      #   run: |
-      #     curl -X POST -H 'Content-type: application/json' --data '{
-      #       "text": "Pytest Report:\n```'${{ steps.read-pytest-report.outputs.pytest_report_content }}'```"
-      #     }' $SLACK_WEBHOOK_URL
-      #   env:
-      #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-
       - name: Run pytest and generate report
         run: pytest src/tests/test_remote.py --slack_hook=${{ secrets.SLACK_WEBHOOK_URL }} --slack_channel=observability-test
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-
-      # - name: Run pytest and generate report
-      #   run: pytest src/tests/test_remote.py --junitxml=pytest_report.xml
-
-      # - name: Upload report to GitHub Artifacts
-      #   uses: actions/upload-artifact@v2
-      #   with:
-      #     name: pytest-report
-      #     path: pytest-report.xml
-
-      # - name: Extract test counts
-      #   id: pytest
-      #   run: |
-      #     # Parse pytest report and extract desired fields
-      #     errors=$(grep -o 'errors="[^"]*"' pytest_report.xml | cut -d'"' -f2)
-      #     failures=$(grep -o 'failures="[^"]*"' pytest_report.xml | cut -d'"' -f2)
-      #     skipped=$(grep -o 'skipped="[^"]*"' pytest_report.xml | cut -d'"' -f2)
-      #     tests=$(grep -o 'tests="[^"]*"' pytest_report.xml | cut -d'"' -f2)
-      #     time=$(grep -o 'time="[^"]*"' pytest_report.xml | cut -d'"' -f2)
-
-      #     echo "Errors: $errors"
-      #     echo "Failures: $failures"
-      #     echo "Skipped: $skipped"
-      #     echo "Tests: $tests"
-      #     echo "Time: $time"
-      #   working-directory: ${{ github.workspace }}
-      #   continue-on-error: true  # Continue even if the pytest report does not exist
-
-      # - name: Send report to Slack
-      #   uses: 8398a7/action-slack@v3
-      #   with:
-      #     status: ${{ job.status }}
-      #     author_name: GitHub Actions
-      #     title: Pytest Report
-      #     fields: name,status
-      #   env:
-      #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-
-      # - name: Send Pytest Report to Slack
-      #   id: slack
-      #   uses: slackapi/slack-github-action@v1.24.0
-      #   with:
-      #     # This data can be any valid JSON from a previous step in the GitHub Action
-      #     payload: |
-      #       {
-      #         "blocks": "",
-      #         "attachments": {
-      #           "text": "Passed Count: *{SlackTemplate.RESULTS['passed']}*",
-      #                   "mrkdwn_in": [
-      #                       "text"
-      #                   ],
-      #           "color": "good"
-      #         },
-      #       }
-      #   env:
-      #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-
-      # - name: Send report to Slack
-      #   uses: 8398a7/action-slack@v3
-      #   with:
-      #     status: ${{ job.status }}
-      #     author_name: Mygeneset Scheduled Pytest
-      #     # title: Pytest Report
-      #     message: |
-      #       Pytest Report:
-      #       - Errors: ${{ steps.pytest.outputs.errors }}
-      #       - Failures: ${{ steps.pytest.outputs.failures }}
-      #       - Skipped: ${{ steps.pytest.outputs.skipped }}
-      #       - Tests: ${{ steps.pytest.outputs.tests }}
-      #       - Time: ${{ steps.pytest.outputs.time }}
-      #   env:
-      #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-
-      # - name: Setup tmate debug session on failure
-      #   if: ${{ failure() }}
-      #   uses: mxschmitt/action-tmate@v3
