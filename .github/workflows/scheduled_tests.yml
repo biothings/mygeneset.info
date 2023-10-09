@@ -63,9 +63,9 @@ jobs:
           version_old=$(cat mygeneset_metadata_version.txt)
 
           echo "version_new"
-          echo version_new
+          echo $version_new
           echo "version_old"
-          echo version_old
+          echo $version_old
 
           if [ "$version_new" = "$version_old" ]; then
             echo "No new version identified. Stopping workflow."
