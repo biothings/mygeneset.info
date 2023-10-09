@@ -39,6 +39,11 @@ jobs:
           name: mygeneset-metadata-version
           path: mygeneset_metadata_version.txt
 
+      - name: Remove local metadata artifact
+        run: |
+          rm -r mygeneset_metadata_version.txt
+
+
       ### --- ###
 
       - name: Download Artifact
