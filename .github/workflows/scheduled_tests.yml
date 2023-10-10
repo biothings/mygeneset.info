@@ -2,87 +2,18 @@ name: Scheduled Tests
 
 on:
   schedule:
-    - cron: '30 * * * *'
+    - cron: '0 */3 * * *'
 
 jobs:
   run_app_tests:
     runs-on: ubuntu-latest
+
     strategy:
       fail-fast: false
       matrix:
         python-version: [ "3.11" ]
+
     steps:
-
-      ########
-
-      # - name: Get metadata version from API
-      #   id: metadataVersion
-      #   uses: satak/webrequest-action@master
-      #   with:
-      #     url: https://mygeneset.info/metadata
-      #     method: GET
-
-      # - name: Show mygeneset metadata version from API
-      #   run: |
-      #     echo "${{fromJson(steps.metadataVersion.outputs.output).data.build_date}}"
-
-      # - name: Restore metadata version variable from Cache
-      #   uses: actions/cache/restore@v3
-      #   with:
-      #     path: ${{ github.workspace }}/.cache/mygeneset-metadata-version.cache
-      #     key: mygeneset-metadata-version
-
-      # - name: Load mygeneset metadata version from Cache
-      #   run: |
-      #     file_path="${{ github.workspace }}/.cache/mygeneset-metadata-version.cache"
-
-      #     # Check if the file exists
-      #     if [ -f "$file_path" ]; then
-      #       # Read the file and store its content in the restored_value variable
-      #       MYGENESET_METADATA_VERSION=$(cat "$file_path")
-      #       echo "Restored Value: $MYGENESET_METADATA_VERSION"
-      #     else
-      #       echo "File does not exist or cannot be read."
-      #       MYGENESET_METADATA_VERSION=
-      #     fi
-
-      # - name: Compare metadata versions
-      #   id: compare
-      #   run: |
-      #     version_from_api=${{ fromJson(steps.metadataVersion.outputs.output).data.build_date }}
-      #     version_from_cache=${{ env.MYGENESET_METADATA_VERSION }}
-
-      #     echo "version_from_api"
-      #     echo $version_from_api
-      #     echo "version_from_cache"
-      #     echo $version_from_cache
-
-      #     if [ "$version_from_api" = "$version_from_cache" ]; then
-      #       echo "No new version identified. Stopping workflow."
-      #       echo "::error::Values are the same."
-      #       exit 0
-      #     else
-      #       echo "New version identified. Proceeding with the workflow."
-      #     fi
-
-      # - name: Set metadata version variable
-      #   run: |
-      #     echo "MYGENESET_METADATA_VERSION=${{fromJson(steps.metadataVersion.outputs.output).data.build_date}}" >> $GITHUB_ENV
-
-      # - name: Create metadata version file in Cache folder
-      #   run: |
-      #     mkdir ${{ github.workspace }}/.cache/
-      #     echo "${{fromJson(steps.metadataVersion.outputs.output).data.build_date}}" >> ${{ github.workspace }}/.cache/mygeneset-metadata-version.cache
-      #     echo $(cat ${{ github.workspace }}/.cache/mygeneset-metadata-version.cache)
-
-      # - name: Store metadata version variable in Cache
-      #   uses: actions/cache@v3
-      #   with:
-      #     path: ${{ github.workspace }}/.cache/mygeneset-metadata-version.cache
-      #     key: mygeneset-metadata-version
-
-      ##############
-
       - name: Checkout source
         uses: actions/checkout@v3
 
