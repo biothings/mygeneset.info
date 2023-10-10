@@ -1,0 +1,40 @@
+name: Scheduled Tests
+
+on:
+  schedule:
+    - cron: '0 */3 * * *'
+
+jobs:
+  run_app_tests:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ "3.11" ]
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Upgrade pip
+        run: pip install --upgrade pip
+
+      - name: Install dependencies
+        run: pip install -r requirements_web.txt
+
+      - name: Install pytest
+        run: pip install pytest
+
+      - name: Install pytest-slack
+        run: pip install pytest-slack
+
+      - name: Run pytest and generate report
+        run: pytest src/tests/test_remote.py --slack_hook=${{ secrets.SLACK_WEBHOOK_URL }} --slack_channel=observability-test
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
