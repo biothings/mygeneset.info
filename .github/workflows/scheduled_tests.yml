@@ -2,7 +2,7 @@ name: Scheduled Tests
 
 on:
   schedule:
-    - cron: '58 */3 * * *'
+    - cron: '30 * * * *'
 
 jobs:
   run_app_tests:
