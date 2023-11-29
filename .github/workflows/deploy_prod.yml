@@ -1,11 +1,7 @@
 name: Deploy to EC2 Prod
 
 on:
-  push:
-    branches:
-      - add-auto-deploy
-# on:
-#   workflow_dispatch:
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -20,9 +16,6 @@ jobs:
       AWS_EC2_SSH_KEY: ${{ secrets.AWS_EC2_SSH_KEY }}
 
     steps:
-      # - name: Install jq
-      #   run: sudo apt-get install -y jq
-
       - name: Set up AWS CLI
         run: |
           mkdir -p ~/.aws
