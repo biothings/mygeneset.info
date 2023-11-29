@@ -68,7 +68,8 @@ jobs:
 
       - name: Iterate over the array
         run: |
-          for INSTANCE_ID in "${INSTANCES[@]}"; do
+          for INSTANCE_ID in "${INSTANCES[@]}"
+          do
             echo "Processing instance: $INSTANCE_ID"
 
             # Get instance IP
