@@ -56,16 +56,9 @@ jobs:
 
           echo $INSTANCE_IDS
 
-      - name: Extract the instance IDs using jq (JSON processor)
+      - name: Create array with lst of instances
         run: |
-
           INSTANCES=( $INSTANCE_IDS )
-          # set -x
-          # # IFS=$'\n' read -d '' -r -a INSTANCES <<< "$(echo "$INSTANCE_IDS" | sed -n 's/[^"]*"\([^"]*\)".*/\1/p')"
-          # # readarray -t INSTANCES <<< "$(echo "$INSTANCE_IDS" | jq -r '.[]')"
-          # readarray -t INSTANCES <<< "$INSTANCE_IDS"
-          # set +x
-
           echo $INSTANCES
 
       - name: Iterate over the array
