@@ -41,7 +41,6 @@ jobs:
       - name: Deploy to EC2
         run: |
           for INSTANCE_ID in $INSTANCE_ID_STRING; do
-            echo $INSTANCE_IP
             INSTANCE_IP=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --query "Reservations[0].Instances[0].PublicIpAddress" --output json)
             echo "$AWS_EC2_SSH_KEY" > key.pem  # Save the private key to a file
             chmod 600 key.pem  # Set proper permissions
