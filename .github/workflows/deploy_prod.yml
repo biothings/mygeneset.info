@@ -68,8 +68,12 @@ jobs:
 
             echo "Instance IP: $INSTANCE_IP" >> $GITHUB_OUTPUT
 
-            echo "ssh -i key.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ubuntu@$INSTANCE_IP 'cd /home/ubuntu && ./update_mygeneset pull_src'" >> $GITHUB_OUTPUT
-            ssh -i key.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ubuntu@$INSTANCE_IP 'cd /home/ubuntu && ./update_mygeneset pull_src'
+            # Format the command as a string
+            COMMAND="ssh -i key.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ubuntu@$INSTANCE_IP 'cd /home/ubuntu && ./update_mygeneset pull_src'"
+            echo "$COMMAND" >> $GITHUB_OUTPUT
+
+            # Execute the command
+            eval "$COMMAND"
           done
 
       - name: Close SSH port to GitHub Actions IP (even on failure)
