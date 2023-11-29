@@ -45,6 +45,7 @@ jobs:
             echo "$AWS_EC2_SSH_KEY" > key.pem  # Save the private key to a file
             chmod 600 key.pem  # Set proper permissions
             # ssh -i key.pem ubuntu@$INSTANCE_IP 'bash -c "cd /home/ubuntu && ./update_mygeneset pull_src"'
+            echo "ssh -i key.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ec2-user@$INSTANCE_IP 'bash -c \"cd /home/ubuntu && ./update_mygeneset pull_src\"'"
             ssh -i key.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ubuntu@$INSTANCE_IP "cd /home/ubuntu && ./update_mygeneset pull_src"
           done
 
