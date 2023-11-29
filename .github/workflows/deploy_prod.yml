@@ -40,22 +40,21 @@ jobs:
         run: |
           aws ec2 authorize-security-group-ingress --group-id $AWS_SECURITY_GROUP_ID --protocol tcp --port 22 --cidr $(curl -s https://api.ipify.org)/32
 
-      - name: Deploy to EC2
+      - name: Save the private key to a file
         run: |
-          #!/bin/bash
-
-          # Save the private key to a file
           echo "$AWS_EC2_SSH_KEY" > ~/.aws/key.pem
           chmod 400 ~/.aws/key.pem  # Set proper permissions
 
-          # Fetch EC2 instances from Auto Scaling Group
+      - name: Fetch EC2 instances from Auto Scaling Group
+        run: |
           INSTANCE_IDS=$(aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names $AWS_AUTO_SCALING_GROUP_NAME --query "AutoScalingGroups[0].Instances[*].InstanceId" --output json)
-          # echo "Fetched instances from Auto Scaling Group: $INSTANCE_IDS"
 
-          # Extract the instance IDs using jq (JSON processor)
+      - name: Extract the instance IDs using jq (JSON processor)
+        run: |
           IFS=$'\n' read -d '' -r -a INSTANCES <<< "$(echo "$INSTANCE_IDS" | jq -r '.[]')"
 
-          # Iterate over the array
+      - name: Iterate over the array
+        run: |
           for INSTANCE_ID in "${INSTANCES[@]}"; do
             echo "Processing instance: $INSTANCE_ID"
 
