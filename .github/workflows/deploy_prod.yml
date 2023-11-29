@@ -20,6 +20,9 @@ jobs:
       AWS_EC2_SSH_KEY: ${{ secrets.AWS_EC2_SSH_KEY }}
 
     steps:
+      - name: Install jq
+        run: sudo apt-get install -y jq
+
       - name: Set up AWS CLI
         run: |
           mkdir -p ~/.aws
@@ -51,7 +54,9 @@ jobs:
 
       - name: Extract the instance IDs using jq (JSON processor)
         run: |
+          set -x
           IFS=$'\n' read -d '' -r -a INSTANCES <<< "$(echo "$INSTANCE_IDS" | jq -r '.[]')"
+          set +x
 
       - name: Iterate over the array
         run: |
