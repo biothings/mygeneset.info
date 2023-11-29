@@ -37,25 +37,26 @@ jobs:
 
       - name: Deploy to EC2
         run: |
+          echo "LOG: Creating key"
           echo "$AWS_EC2_SSH_KEY" > ~/.aws/key.pem
           chmod 400 ~/.aws/key.pem  # Set proper permissions
           
-          # Fetch EC2 instances from Auto Scaling Group
+          echo "LOG: Fetch EC2 instances from Auto Scaling Group"
           INSTANCE_IDS=$(aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names $AWS_AUTO_SCALING_GROUP_NAME --query "AutoScalingGroups[0].Instances[*].InstanceId" --output text)
 
-          # Create array with list of instances
+          echo "LOG: Create array with list of instances"
           INSTANCES=( $INSTANCE_IDS )
 
-          # Iterate over the array
+          echo "LOG: Iterate over the instances"
           for INSTANCE_ID in "${INSTANCES[@]}"
           do
-            # Get instance IP
+            echo "LOG: Get instance IP"
             INSTANCE_IP=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --query "Reservations[0].Instances[0].PublicIpAddress" --output json)
 
-            # Remove double quotes from INSTANCE_IP
+            echo "LOG: Remove double quotes from INSTANCE_IP"
             INSTANCE_IP="${INSTANCE_IP//\"}"
 
-            echo "ssh -i ~/.aws/key.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ubuntu@$INSTANCE_IP 'cd /home/ubuntu && ./update_mygeneset pull_src'"
+            echo "LOG: Running update script in the remote instance"
             ssh -i ~/.aws/key.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ubuntu@$INSTANCE_IP 'cd /home/ubuntu && ./update_mygeneset pull_src'
           done
 
