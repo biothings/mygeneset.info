@@ -47,10 +47,14 @@ jobs:
         run: |
           echo "$AWS_EC2_SSH_KEY" > ~/.aws/key.pem
           chmod 400 ~/.aws/key.pem  # Set proper permissions
+          
+          ls -la ~/.aws/key.pem
 
       - name: Fetch EC2 instances from Auto Scaling Group
         run: |
           INSTANCE_IDS=$(aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names $AWS_AUTO_SCALING_GROUP_NAME --query "AutoScalingGroups[0].Instances[*].InstanceId" --output text)
+
+          echo $INSTANCE_IDS
 
       - name: Extract the instance IDs using jq (JSON processor)
         run: |
@@ -58,8 +62,9 @@ jobs:
           # IFS=$'\n' read -d '' -r -a INSTANCES <<< "$(echo "$INSTANCE_IDS" | sed -n 's/[^"]*"\([^"]*\)".*/\1/p')"
           # readarray -t INSTANCES <<< "$(echo "$INSTANCE_IDS" | jq -r '.[]')"
           readarray -t INSTANCES <<< "$INSTANCE_IDS"
-          echo $INSTANCES
           set +x
+
+          echo $INSTANCES
 
       - name: Iterate over the array
         run: |
