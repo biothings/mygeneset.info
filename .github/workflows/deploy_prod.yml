@@ -57,6 +57,7 @@ jobs:
           set -x
           # IFS=$'\n' read -d '' -r -a INSTANCES <<< "$(echo "$INSTANCE_IDS" | sed -n 's/[^"]*"\([^"]*\)".*/\1/p')"
           readarray -t INSTANCES <<< "$(echo "$INSTANCE_IDS" | jq -r '.[]')"
+          echo $INSTANCES
           set +x
 
       - name: Iterate over the array
