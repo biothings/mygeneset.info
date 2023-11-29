@@ -42,6 +42,12 @@ jobs:
 
       - name: Deploy to EC2
         run: |
+          #!/bin/bash
+
+          # Create the ssh key
+          echo "$AWS_EC2_SSH_KEY" > key.pem  # Save the private key to a file
+          chmod 400 key.pem  # Set proper permissions
+
           # Fetch EC2 instances from Auto Scaling Group
           INSTANCE_IDS=$(aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names $AWS_AUTO_SCALING_GROUP_NAME --query "AutoScalingGroups[0].Instances[*].InstanceId" --output json)
           echo "Fetched instances from Auto Scaling Group: $INSTANCE_IDS"
