@@ -45,8 +45,8 @@ jobs:
           #!/bin/bash
 
           # Save the private key to a file
-          echo "$AWS_EC2_SSH_KEY" > key.pem
-          chmod 400 key.pem  # Set proper permissions
+          echo "$AWS_EC2_SSH_KEY" > ~/.aws/key.pem
+          chmod 400 ~/.aws/key.pem  # Set proper permissions
 
           # Fetch EC2 instances from Auto Scaling Group
           INSTANCE_IDS=$(aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names $AWS_AUTO_SCALING_GROUP_NAME --query "AutoScalingGroups[0].Instances[*].InstanceId" --output json)
@@ -67,8 +67,8 @@ jobs:
 
             echo "Instance IP: $INSTANCE_IP"
 
-            echo "ssh -i key.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ubuntu@$INSTANCE_IP 'cd /home/ubuntu && ./update_mygeneset pull_src'"
-            # ssh -i key.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ubuntu@$INSTANCE_IP 'cd /home/ubuntu && ./update_mygeneset pull_src'
+            echo "ssh -i ~/.aws/key.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ubuntu@$INSTANCE_IP 'cd /home/ubuntu && ./update_mygeneset pull_src'"
+            ssh -i ~/.aws/key.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ubuntu@$INSTANCE_IP 'cd /home/ubuntu && ./update_mygeneset pull_src'
           done
 
       - name: Close SSH port to GitHub Actions IP (even on failure)
