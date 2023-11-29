@@ -1,0 +1,56 @@
+name: Deploy to EC2 Prod
+
+# on:
+#   push:
+#     branches:
+#       - main
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_AUTO_SCALING_GROUP_NAME: ${{ secrets.AWS_AUTO_SCALING_GROUP_NAME }}
+      AWS_SECURITY_GROUP_ID: ${{ secrets.AWS_SECURITY_GROUP_ID }}
+      AWS_EC2_SSH_KEY: ${{ secrets.AWS_EC2_SSH_KEY }}
+
+    steps:
+      - name: Set up AWS CLI
+        run: |
+          echo "[default]" > ~/.aws/credentials
+          echo "aws_access_key_id = $AWS_ACCESS_KEY_ID" >> ~/.aws/credentials
+          echo "aws_secret_access_key = $AWS_SECRET_ACCESS_KEY" >> ~/.aws/credentials
+          echo "region = $AWS_REGION" >> ~/.aws/credentials
+
+      - name: Fetch EC2 instances from Auto Scaling Group
+        run: |
+          INSTANCE_IDS=$(aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names $AWS_AUTO_SCALING_GROUP_NAME --query "AutoScalingGroups[0].Instances[*].InstanceId" --output json)
+          INSTANCE_ID_STRING=$(echo $INSTANCE_IDS | jq -r '. | join(" ")')
+          echo "Fetched instances from Auto Scaling Group: $INSTANCE_ID_STRING"
+
+      - name: Open SSH port to GitHub Actions IP
+        run: |
+          aws ec2 authorize-security-group-ingress --group-id $AWS_SECURITY_GROUP_ID --protocol tcp --port 22 --cidr $(curl -s https://api.ipify.org)/32
+
+      - name: Deploy to EC2
+        run: |
+          for INSTANCE_ID in $INSTANCE_ID_STRING; do
+            INSTANCE_IP=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --query "Reservations[0].Instances[0].PublicIpAddress" --output json)
+            echo "$AWS_EC2_SSH_KEY" > key.pem  # Save the private key to a file
+            chmod 600 key.pem  # Set proper permissions
+            ssh -i key.pem ubuntu@$INSTANCE_IP 'bash -c "cd /home/ubuntu && ./update_mygeneset pull_src"'
+          done
+
+    finally:
+      - name: Close SSH port to GitHub Actions IP (even on failure)
+        run: |
+          aws ec2 revoke-security-group-ingress --group-id $AWS_SECURITY_GROUP_ID --protocol tcp --port 22 --cidr $(curl -s https://api.ipify.org)/32
+
+      - name: Setup tmate debug session on failure
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3
