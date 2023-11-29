@@ -41,10 +41,12 @@ jobs:
       - name: Deploy to EC2
         run: |
           for INSTANCE_ID in $INSTANCE_ID_STRING; do
+            echo $INSTANCE_IP
             INSTANCE_IP=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --query "Reservations[0].Instances[0].PublicIpAddress" --output json)
             echo "$AWS_EC2_SSH_KEY" > key.pem  # Save the private key to a file
             chmod 600 key.pem  # Set proper permissions
-            ssh -i key.pem ubuntu@$INSTANCE_IP "cd /home/ubuntu && ./update_mygeneset pull_src"
+            # ssh -i key.pem ubuntu@$INSTANCE_IP 'bash -c "cd /home/ubuntu && ./update_mygeneset pull_src"'
+            ssh -i key.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ubuntu@$INSTANCE_IP "cd /home/ubuntu && ./update_mygeneset pull_src"
           done
 
       - name: Close SSH port to GitHub Actions IP (even on failure)
