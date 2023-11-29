@@ -41,24 +41,23 @@ jobs:
           aws ec2 authorize-security-group-ingress --group-id $AWS_SECURITY_GROUP_ID --protocol tcp --port 22 --cidr $(curl -s https://api.ipify.org)/32
 
       - name: Deploy to EC2
-        id: run_tests
         run: |
           #!/bin/bash
 
-          # Save the private key to a file 
+          # Save the private key to a file
           echo "$AWS_EC2_SSH_KEY" > key.pem
           chmod 400 key.pem  # Set proper permissions
 
           # Fetch EC2 instances from Auto Scaling Group
           INSTANCE_IDS=$(aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names $AWS_AUTO_SCALING_GROUP_NAME --query "AutoScalingGroups[0].Instances[*].InstanceId" --output json)
-          echo "Fetched instances from Auto Scaling Group: $INSTANCE_IDS" >> $GITHUB_OUTPUT
+          # echo "Fetched instances from Auto Scaling Group: $INSTANCE_IDS"
 
           # Extract the instance IDs using jq (JSON processor)
           IFS=$'\n' read -d '' -r -a INSTANCES <<< "$(echo "$INSTANCE_IDS" | jq -r '.[]')"
 
           # Iterate over the array
           for INSTANCE_ID in "${INSTANCES[@]}"; do
-            echo "Processing instance: $INSTANCE_ID" >> $GITHUB_OUTPUT
+            echo "Processing instance: $INSTANCE_ID"
 
             # Get instance IP
             INSTANCE_IP=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --query "Reservations[0].Instances[0].PublicIpAddress" --output json)
@@ -66,14 +65,10 @@ jobs:
             # Remove double quotes from INSTANCE_IP
             INSTANCE_IP="${INSTANCE_IP//\"}"
 
-            echo "Instance IP: $INSTANCE_IP" >> $GITHUB_OUTPUT
+            echo "Instance IP: $INSTANCE_IP"
 
-            # Format the command as a string
-            COMMAND="ssh -i key.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ubuntu@$INSTANCE_IP 'cd /home/ubuntu && ./update_mygeneset pull_src'"
-            echo "$COMMAND" >> $GITHUB_OUTPUT
-
-            # Execute the command
-            eval "$COMMAND"
+            echo "ssh -i key.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ubuntu@$INSTANCE_IP 'cd /home/ubuntu && ./update_mygeneset pull_src'"
+            ssh -i key.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ubuntu@$INSTANCE_IP 'cd /home/ubuntu && ./update_mygeneset pull_src'
           done
 
       - name: Close SSH port to GitHub Actions IP (even on failure)
