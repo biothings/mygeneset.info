@@ -32,7 +32,7 @@ jobs:
         run: |
           INSTANCE_IDS=$(aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names $AWS_AUTO_SCALING_GROUP_NAME --query "AutoScalingGroups[0].Instances[*].InstanceId" --output json)
           INSTANCE_ID_STRING=$(echo $INSTANCE_IDS | jq -r '. | join(" ")')
-          echo "Fetched instances from Auto Scaling Group: $INSTANCE_ID_STRING"
+          # echo "Fetched instances from Auto Scaling Group: $INSTANCE_ID_STRING"
 
       - name: Open SSH port to GitHub Actions IP
         run: |
@@ -40,7 +40,12 @@ jobs:
 
       - name: Deploy to EC2
         run: |
-          for INSTANCE_ID in $(echo $INSTANCE_ID_STRING | tr " " "\n"); do
+          # Extract the instance IDs using jq (JSON processor)
+          IFS=$'\n' read -d '' -r -a INSTANCES <<< "$(echo "$INSTANCE_ID_STRING" | jq -r '.[]')"
+
+          # Iterate over the array
+          for INSTANCE_ID in "${INSTANCES[@]}"; do
+            echo "Processing instance: $INSTANCE_ID"
             INSTANCE_IP=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --query "Reservations[0].Instances[0].PublicIpAddress" --output json)
             echo "Instance IP: $INSTANCE_IP"
             echo "$AWS_EC2_SSH_KEY" > key.pem  # Save the private key to a file
@@ -49,6 +54,7 @@ jobs:
             echo "ssh -i key.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ec2-user@$INSTANCE_IP 'bash -c \"cd /home/ubuntu && ./update_mygeneset pull_src\"'"
             ssh -i key.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ubuntu@$INSTANCE_IP "cd /home/ubuntu && ./update_mygeneset pull_src"
           done
+
 
       - name: Close SSH port to GitHub Actions IP (even on failure)
         run: |
