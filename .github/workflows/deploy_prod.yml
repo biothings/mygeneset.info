@@ -59,6 +59,7 @@ jobs:
       - name: Create array with list of instances
         run: |
           echo "START: Create array with list of instances"
+          echo $INSTANCE_IDS
           INSTANCES=( $INSTANCE_IDS )
           echo $INSTANCES
           echo "END: Create array with list of instances"
