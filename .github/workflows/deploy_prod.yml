@@ -28,13 +28,13 @@ jobs:
           echo "aws_secret_access_key = $AWS_SECRET_ACCESS_KEY" >> ~/.aws/credentials
           echo "region = $AWS_REGION" >> ~/.aws/credentials
 
-      - name: Fetch EC2 instances from Auto Scaling Group
-        run: |
-          INSTANCE_IDS=$(aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names $AWS_AUTO_SCALING_GROUP_NAME --query "AutoScalingGroups[0].Instances[*].InstanceId" --output json)
-          echo "Fetched instances from Auto Scaling Group: $INSTANCE_IDS"
+      # - name: Fetch EC2 instances from Auto Scaling Group
+      #   run: |
+      #     INSTANCE_IDS=$(aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names $AWS_AUTO_SCALING_GROUP_NAME --query "AutoScalingGroups[0].Instances[*].InstanceId" --output json)
+      #     echo "Fetched instances from Auto Scaling Group: $INSTANCE_IDS"
 
-          # INSTANCE_ID_STRING=$(echo $INSTANCE_IDS | jq -r '. | join(" ")')
-          # echo "Fetched instances from Auto Scaling Group: $INSTANCE_ID_STRING"
+      #     # INSTANCE_ID_STRING=$(echo $INSTANCE_IDS | jq -r '. | join(" ")')
+      #     # echo "Fetched instances from Auto Scaling Group: $INSTANCE_ID_STRING"
 
       - name: Open SSH port to GitHub Actions IP
         run: |
@@ -42,6 +42,10 @@ jobs:
 
       - name: Deploy to EC2
         run: |
+          # Fetch EC2 instances from Auto Scaling Group
+          INSTANCE_IDS=$(aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names $AWS_AUTO_SCALING_GROUP_NAME --query "AutoScalingGroups[0].Instances[*].InstanceId" --output json)
+          echo "Fetched instances from Auto Scaling Group: $INSTANCE_IDS"
+
           # Extract the instance IDs using jq (JSON processor)
           IFS=$'\n' read -d '' -r -a INSTANCES <<< "$(echo "$INSTANCE_IDS" | jq -r '.[]')"
 
