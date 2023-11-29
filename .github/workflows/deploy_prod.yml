@@ -46,7 +46,6 @@ jobs:
             ssh -i key.pem ubuntu@$INSTANCE_IP 'bash -c "cd /home/ubuntu && ./update_mygeneset pull_src"'
           done
 
-    finally:
       - name: Close SSH port to GitHub Actions IP (even on failure)
         run: |
           aws ec2 revoke-security-group-ingress --group-id $AWS_SECURITY_GROUP_ID --protocol tcp --port 22 --cidr $(curl -s https://api.ipify.org)/32
