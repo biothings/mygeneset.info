@@ -42,13 +42,12 @@ jobs:
         run: |
           for INSTANCE_ID in $INSTANCE_ID_STRING; do
             INSTANCE_IP=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --query "Reservations[0].Instances[0].PublicIpAddress" --output json)
+            echo "Instance IP: $INSTANCE_IP"
             echo "$AWS_EC2_SSH_KEY" > key.pem  # Save the private key to a file
-            chmod 600 key.pem  # Set proper permissions
+            chmod 400 key.pem  # Set proper permissions
             # ssh -i key.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ubuntu@$INSTANCE_IP 'bash -c "cd /home/ubuntu && ./update_mygeneset pull_src"'
             echo "ssh -i key.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ec2-user@$INSTANCE_IP 'bash -c \"cd /home/ubuntu && ./update_mygeneset pull_src\"'"
-            set -x  # Enable debugging
             ssh -i key.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ubuntu@$INSTANCE_IP "cd /home/ubuntu && ./update_mygeneset pull_src"
-            set +x  # Disable debugging
           done
 
       - name: Close SSH port to GitHub Actions IP (even on failure)
