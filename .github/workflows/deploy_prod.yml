@@ -40,32 +40,20 @@ jobs:
           echo "$AWS_EC2_SSH_KEY" > ~/.aws/key.pem
           chmod 400 ~/.aws/key.pem  # Set proper permissions
           
-          ls -la ~/.aws/key.pem
-
           # Fetch EC2 instances from Auto Scaling Group
           INSTANCE_IDS=$(aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names $AWS_AUTO_SCALING_GROUP_NAME --query "AutoScalingGroups[0].Instances[*].InstanceId" --output text)
 
-          echo $INSTANCE_IDS
-
           # Create array with list of instances
-          echo "START: Create array with list of instances"
-          echo $INSTANCE_IDS
           INSTANCES=( $INSTANCE_IDS )
-          echo $INSTANCES
-          echo "END: Create array with list of instances"
 
           # Iterate over the array
           for INSTANCE_ID in "${INSTANCES[@]}"
           do
-            echo "Processing instance: $INSTANCE_ID"
-
             # Get instance IP
             INSTANCE_IP=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --query "Reservations[0].Instances[0].PublicIpAddress" --output json)
 
             # Remove double quotes from INSTANCE_IP
             INSTANCE_IP="${INSTANCE_IP//\"}"
-
-            echo "Instance IP: $INSTANCE_IP"
 
             echo "ssh -i ~/.aws/key.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ubuntu@$INSTANCE_IP 'cd /home/ubuntu && ./update_mygeneset pull_src'"
             ssh -i ~/.aws/key.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ubuntu@$INSTANCE_IP 'cd /home/ubuntu && ./update_mygeneset pull_src'
@@ -76,6 +64,6 @@ jobs:
           aws ec2 revoke-security-group-ingress --group-id $AWS_SECURITY_GROUP_ID --protocol tcp --port 22 --cidr $(curl -s https://api.ipify.org)/32
         if: always()
 
-      - name: Setup tmate debug session on failure
-        if: ${{ failure() }}
-        uses: mxschmitt/action-tmate@v3
+      # - name: Setup tmate debug session on failure
+      #   if: ${{ failure() }}
+      #   uses: mxschmitt/action-tmate@v3
