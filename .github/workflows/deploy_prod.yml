@@ -1,0 +1,63 @@
+name: Deploy to EC2 Prod
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_AUTO_SCALING_GROUP_NAME: ${{ secrets.AWS_AUTO_SCALING_GROUP_NAME }}
+      AWS_SECURITY_GROUP_ID: ${{ secrets.AWS_SECURITY_GROUP_ID }}
+      AWS_EC2_SSH_KEY: ${{ secrets.AWS_EC2_SSH_KEY }}
+
+    steps:
+      - name: Set up AWS CLI
+        run: |
+          mkdir -p ~/.aws
+          echo "[default]" > ~/.aws/credentials
+          echo "aws_access_key_id = $AWS_ACCESS_KEY_ID" >> ~/.aws/credentials
+          echo "aws_secret_access_key = $AWS_SECRET_ACCESS_KEY" >> ~/.aws/credentials
+          echo "region = $AWS_REGION" >> ~/.aws/credentials
+
+      - name: Open SSH port to GitHub Actions IP
+        run: |
+          aws ec2 authorize-security-group-ingress --group-id $AWS_SECURITY_GROUP_ID --protocol tcp --port 22 --cidr $(curl -s https://api.ipify.org)/32
+
+      - name: Deploy to EC2
+        run: |
+          echo "LOG: Creating key"
+          echo "$AWS_EC2_SSH_KEY" > ~/.aws/key.pem
+          chmod 400 ~/.aws/key.pem  # Set proper permissions
+          
+          echo "LOG: Fetch EC2 instances from Auto Scaling Group"
+          INSTANCE_IDS=$(aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names $AWS_AUTO_SCALING_GROUP_NAME --query "AutoScalingGroups[0].Instances[*].InstanceId" --output text)
+
+          echo "LOG: Create array with list of instances"
+          INSTANCES=( $INSTANCE_IDS )
+
+          echo "LOG: Iterate over the instances"
+          for INSTANCE_ID in "${INSTANCES[@]}"
+          do
+            echo "LOG: Get instance IP"
+            INSTANCE_IP=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --query "Reservations[0].Instances[0].PublicIpAddress" --output json)
+
+            echo "LOG: Remove double quotes from INSTANCE_IP"
+            INSTANCE_IP="${INSTANCE_IP//\"}"
+
+            echo "LOG: Running update script in the remote instance"
+            ssh -i ~/.aws/key.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ubuntu@$INSTANCE_IP 'cd /home/ubuntu && ./update_mygeneset pull_src'
+          done
+
+      - name: Close SSH port to GitHub Actions IP (even on failure)
+        run: |
+          aws ec2 revoke-security-group-ingress --group-id $AWS_SECURITY_GROUP_ID --protocol tcp --port 22 --cidr $(curl -s https://api.ipify.org)/32
+        if: always()
+
+      # - name: Setup tmate debug session on failure
+      #   if: ${{ failure() }}
+      #   uses: mxschmitt/action-tmate@v3
