@@ -33,6 +33,7 @@ def load_data(data_folder):
             "Saccharomyces cerevisiae": 559292,
             "Populus trichocarpa": 3694,
             "Sus scrofa": 9823,
+            "Zea mays": 4577,
         }
         if species in taxids:
             return str(taxids[species])
