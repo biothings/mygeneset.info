@@ -1,11 +1,11 @@
 import glob
 import logging
 import os
-
 import biothings
 import bs4
 import config
 import lxml.etree as ET
+import re
 
 biothings.config_for_app(config)
 
@@ -44,6 +44,12 @@ class msigdbDumper(HTTPDumper):
         if force or not self.current_release or float(self.release) > float(self.current_release):
             home = self.__class__.BASE_URL
             long_version_str = "msigdb_v" + self.release  # Should have the format "msigdb_v2022.1"
+
+            human_xml_file_name = long_version_str + ".Hs.xml.zip"
+            human_xml_url = home + self.release + ".Hs/" + human_xml_file_name
+            self.human_xml_data_file = os.path.join(self.new_data_folder, human_xml_file_name)
+            self.to_dump.append({"remote": human_xml_url, "local": self.human_xml_data_file})
+
             human_file_name = long_version_str + ".Hs_files_to_download_locally.zip"
             # Why keeping mouse geneset commented: https://github.com/biothings/mygeneset.info/commit/08d0aa80f606c27e5c383077a5e629d373b85a14
             # mouse_file_name = long_version_str + '.Mm_files_to_download_locally.zip'
@@ -58,13 +64,66 @@ class msigdbDumper(HTTPDumper):
             self.to_dump.append({"remote": human_url, "local": self.human_data_file})
             # self.to_dump.append({"remote": mouse_url, "local": self.mouse_data_file})
 
+
+    def encode_xml(xml_text: str):
+        fixed_xml_string = xml_text.replace('&', '&amp;')
+        fixed_xml_string = fixed_xml_string.replace('<sup>', '&lt;sup&gt;')
+        fixed_xml_string = fixed_xml_string.replace('</sup>', '&lt;/sup&gt;')
+        fixed_xml_string = fixed_xml_string.replace('<sub>', '&lt;sub&gt;')
+        fixed_xml_string = fixed_xml_string.replace('</sub>', '&lt;/sub&gt;')
+        fixed_xml_string = fixed_xml_string.replace('<i>', '&lt;i&gt;')
+        fixed_xml_string = fixed_xml_string.replace('</i>', '&lt;/i&gt;')
+        fixed_xml_string = fixed_xml_string.replace('<b>', '&lt;b&gt;')
+        fixed_xml_string = fixed_xml_string.replace('</b>', '&lt;/b&gt;')
+        fixed_xml_string = fixed_xml_string.replace('<BR/>','&lt;BR/&gt;')
+        fixed_xml_string = fixed_xml_string.replace('<br/>','&lt;br/&gt;')
+
+        fixed_xml_string = fixed_xml_string.replace(' "TRP-EGL" ', ' &quot;TRP-EGL&quot; ')
+        fixed_xml_string = fixed_xml_string.replace(' "Treg" ', ' &quot;Treg&quot; ')
+
+        fixed_xml_string = re.sub(r'<([\d_.=-])', r'&lt;\1', fixed_xml_string)
+        fixed_xml_string = re.sub(r'>([\d_.=-])', r'&gt;\1', fixed_xml_string)
+
+        fixed_xml_string = fixed_xml_string.replace('</=', '&lt;/=')
+        fixed_xml_string = fixed_xml_string.replace('>/=', '&gt;/=')
+        fixed_xml_string = fixed_xml_string.replace('< ', '&lt; ')
+        fixed_xml_string = fixed_xml_string.replace('> ', '&gt; ')
+        fixed_xml_string = fixed_xml_string.replace('<or', '&lt;or')
+        fixed_xml_string = fixed_xml_string.replace('>or', '&gt;or')
+
+        fixed_xml_string = fixed_xml_string.replace(' > ', ' &gt; ')
+        fixed_xml_string = fixed_xml_string.replace(' < ', ' &lt; ')
+        fixed_xml_string = fixed_xml_string.replace(' =< ', ' =&lt; ')
+        fixed_xml_string = fixed_xml_string.replace(' => ', ' =&gt; ')
+        fixed_xml_string = fixed_xml_string.replace('(', '&#40;')
+        fixed_xml_string = fixed_xml_string.replace(')', '&#41;')
+
+        return fixed_xml_string
+
+
     def sort_xml(self, file, output_file):
         """Sort XML file by organism
         Args:
             file (str): path to XML file
             output_file (str): path to new XML file
         """
-        original_xml = ET.parse(file)
+
+        self.logger.info(f"### File: {file}")
+        # Read the XML file
+        with open(file, "r", encoding="utf-8") as f:
+            xml_text = f.read()
+
+        # Encode special characters
+        encoded_xml_string = self.encode_xml(xml_text=xml_text)
+
+        # For reference, create a file with encoded string
+        with open(file + ".encoded", "w", encoding="utf-8") as f:
+            f.write(encoded_xml_string)
+        # Convert the fixed XML string to bytes
+        fixed_xml_bytes = encoded_xml_string.encode('utf-8')
+        # Parse the modified XML bytes
+        original_xml = ET.fromstring(fixed_xml_bytes)
+
         logging.info(f"Sorting documents in XML file: {file}")
         # Use XSLT file to sort XML file
         xslt = ET.parse(os.path.join(os.path.dirname(__file__), "sort_genesets.xsl"))

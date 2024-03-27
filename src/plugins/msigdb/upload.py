@@ -25,7 +25,11 @@ class msigdbUploader(uploader.BaseSourceUploader):
         """Load data from data folder"""
         human_data_file = os.path.join(data_folder, "human_genesets.xml")
         mouse_data_file = os.path.join(data_folder, "mouse_genesets.xml")
-        for file in [human_data_file, mouse_data_file]:
+        # Keeping just human data for now
+        # Reference:
+        # https://github.com/biothings/mygeneset.info/commit/08d0aa80f606c27e5c383077a5e629d373b85a14
+        # for file in [human_data_file, mouse_data_file]:
+        for file in [human_data_file]:
             if not os.path.exists(file):
                 raise FileNotFoundError("Missing data file: %s" % file)
         return parse_msigdb(data_folder)
