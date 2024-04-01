@@ -66,7 +66,7 @@ class msigdbDumper(HTTPDumper):
             # self.to_dump.append({"remote": mouse_url, "local": self.mouse_data_file})
 
 
-    def encode_xml(xml_text: str):
+    def encode_xml(self, xml_text: str):
         # Dictionary for replacements
         replacements = {
             '&': '&amp;',
