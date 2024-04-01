@@ -51,7 +51,7 @@ def get_shared_genesets(geneset_type):
     shared_genesets = dict()
     for line in text_lines:
         tokens = line.strip("\n").split("\t")
-        entry = tokens[0].split(":")[1]
+        entry = tokens[0]
         name = tokens[1]
         shared_genesets[entry] = {"id": tokens[0], "type": geneset_type, "name": name}
     return shared_genesets
@@ -69,7 +69,7 @@ def get_pathway_genesets(organism_code):
     text_lines = get_url_text_lines(url)
     for line in text_lines:
         tokens = line.split("\t")
-        entry = tokens[0].split(":")[1]
+        entry = tokens[0]
         name = tokens[1]
         if entry in pathway_genesets:
             raise Exception(f"Duplicate entry in {url}: {entry}")
