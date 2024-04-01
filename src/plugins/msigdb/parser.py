@@ -16,6 +16,7 @@ if __name__ == "__main__":
 
 from biothings.utils.dataload import dict_sweep, unlist
 from utils.mygene_lookup import MyGeneLookup
+from xml_encoder import xmlEncoder
 
 
 def parse_msigdb(data_folder):
@@ -51,6 +52,9 @@ def parse_msigdb(data_folder):
         "8": "cell type signature genesets",
     }
 
+    # Decode special characters
+    encoder = xmlEncoder()
+
     for f in ["human_genesets.xml"]:
         data_file = os.path.join(data_folder, f)
         # File contains newline-delimited XML documents. Each document is a single geneset.
@@ -66,6 +70,7 @@ def parse_msigdb(data_folder):
                     tree = ET.fromstring(line)
                     assert tree.tag == "GENESET", "Expected GENESET tag"
                     data = tree.attrib
+                    logging.info("Uploading _id: {}".format(data["STANDARD_NAME"]))
                     doc["_id"] = data["STANDARD_NAME"]
                     doc["name"] = data["STANDARD_NAME"].replace("_", " ").lower()
                     doc["description"] = data["DESCRIPTION_BRIEF"]
@@ -180,6 +185,12 @@ def parse_msigdb(data_folder):
                         "external_details": data.get("EXTERNAL_DETAILS_URL"),
                         "geneset_listing": data.get("GENESET_LISTING_URL"),
                     }
+
+                    # Replace &amp; by space in all fields of msigdb
+                    for key, value in msigdb.items():
+                        if isinstance(value, str):
+                            msigdb[key] = encoder.decode_xml(value)
+
                     doc["msigdb"] = msigdb
                     # Remove lists with only one item
                     doc = unlist(doc)

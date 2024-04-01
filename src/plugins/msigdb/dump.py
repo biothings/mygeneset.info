@@ -5,13 +5,13 @@ import biothings
 import bs4
 import config
 import lxml.etree as ET
-import re
 
 biothings.config_for_app(config)
 
 from biothings.hub.dataload.dumper import HTTPDumper
 from biothings.utils.common import unzipall
 from config import DATA_ARCHIVE_ROOT
+from xml_encoder import xmlEncoder
 
 
 class msigdbDumper(HTTPDumper):
@@ -65,42 +65,6 @@ class msigdbDumper(HTTPDumper):
             # self.to_dump.append({"remote": mouse_url, "local": self.mouse_data_file})
 
 
-    def encode_xml(xml_text: str):
-        fixed_xml_string = xml_text.replace('&', '&amp;')
-        fixed_xml_string = fixed_xml_string.replace('<sup>', '&lt;sup&gt;')
-        fixed_xml_string = fixed_xml_string.replace('</sup>', '&lt;/sup&gt;')
-        fixed_xml_string = fixed_xml_string.replace('<sub>', '&lt;sub&gt;')
-        fixed_xml_string = fixed_xml_string.replace('</sub>', '&lt;/sub&gt;')
-        fixed_xml_string = fixed_xml_string.replace('<i>', '&lt;i&gt;')
-        fixed_xml_string = fixed_xml_string.replace('</i>', '&lt;/i&gt;')
-        fixed_xml_string = fixed_xml_string.replace('<b>', '&lt;b&gt;')
-        fixed_xml_string = fixed_xml_string.replace('</b>', '&lt;/b&gt;')
-        fixed_xml_string = fixed_xml_string.replace('<BR/>','&lt;BR/&gt;')
-        fixed_xml_string = fixed_xml_string.replace('<br/>','&lt;br/&gt;')
-
-        fixed_xml_string = fixed_xml_string.replace(' "TRP-EGL" ', ' &quot;TRP-EGL&quot; ')
-        fixed_xml_string = fixed_xml_string.replace(' "Treg" ', ' &quot;Treg&quot; ')
-
-        fixed_xml_string = re.sub(r'<([\d_.=-])', r'&lt;\1', fixed_xml_string)
-        fixed_xml_string = re.sub(r'>([\d_.=-])', r'&gt;\1', fixed_xml_string)
-
-        fixed_xml_string = fixed_xml_string.replace('</=', '&lt;/=')
-        fixed_xml_string = fixed_xml_string.replace('>/=', '&gt;/=')
-        fixed_xml_string = fixed_xml_string.replace('< ', '&lt; ')
-        fixed_xml_string = fixed_xml_string.replace('> ', '&gt; ')
-        fixed_xml_string = fixed_xml_string.replace('<or', '&lt;or')
-        fixed_xml_string = fixed_xml_string.replace('>or', '&gt;or')
-
-        fixed_xml_string = fixed_xml_string.replace(' > ', ' &gt; ')
-        fixed_xml_string = fixed_xml_string.replace(' < ', ' &lt; ')
-        fixed_xml_string = fixed_xml_string.replace(' =< ', ' =&lt; ')
-        fixed_xml_string = fixed_xml_string.replace(' => ', ' =&gt; ')
-        fixed_xml_string = fixed_xml_string.replace('(', '&#40;')
-        fixed_xml_string = fixed_xml_string.replace(')', '&#41;')
-
-        return fixed_xml_string
-
-
     def sort_xml(self, file, output_file):
         """Sort XML file by organism
         Args:
@@ -114,7 +78,8 @@ class msigdbDumper(HTTPDumper):
             xml_text = f.read()
 
         # Encode special characters
-        encoded_xml_string = self.encode_xml(xml_text=xml_text)
+        encoder = xmlEncoder()
+        encoded_xml_string = encoder.encode_xml(xml_text=xml_text)
 
         # For reference, create a file with encoded string
         with open(file + ".encoded", "w", encoding="utf-8") as f:
