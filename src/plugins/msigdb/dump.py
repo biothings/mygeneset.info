@@ -11,7 +11,6 @@ biothings.config_for_app(config)
 from biothings.hub.dataload.dumper import HTTPDumper
 from biothings.utils.common import unzipall
 from config import DATA_ARCHIVE_ROOT
-from xml_encoder import xmlEncoder
 
 
 class msigdbDumper(HTTPDumper):

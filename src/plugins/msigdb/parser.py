@@ -16,7 +16,6 @@ if __name__ == "__main__":
 
 from biothings.utils.dataload import dict_sweep, unlist
 from utils.mygene_lookup import MyGeneLookup
-from xml_encoder import xmlEncoder
 
 
 def parse_msigdb(data_folder):
