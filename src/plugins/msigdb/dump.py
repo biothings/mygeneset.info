@@ -4,6 +4,8 @@ import os
 import biothings
 import bs4
 import config
+import re
+
 import lxml.etree as ET
 
 biothings.config_for_app(config)
@@ -64,6 +66,47 @@ class msigdbDumper(HTTPDumper):
             # self.to_dump.append({"remote": mouse_url, "local": self.mouse_data_file})
 
 
+    def encode_xml(xml_text: str):
+        # Dictionary for replacements
+        replacements = {
+            '&': '&amp;',
+            '<sup>': '&lt;sup&gt;',
+            '</sup>': '&lt;/sup&gt;',
+            '<sub>': '&lt;sub&gt;',
+            '</sub>': '&lt;/sub&gt;',
+            '<i>': '&lt;i&gt;',
+            '</i>': '&lt;/i&gt;',
+            '<b>': '&lt;b&gt;',
+            '</b>': '&lt;/b&gt;',
+            '<BR/>': '&lt;BR/&gt;',
+            '<br/>': '&lt;br/&gt;',
+            ' "TRP-EGL" ': ' &quot;TRP-EGL&quot; ',
+            ' "Treg" ': ' &quot;Treg&quot; ',
+            '</=': '&lt;/=',
+            '>/=': '&gt;/=',
+            '< ': '&lt; ',
+            '> ': '&gt; ',
+            '<or': '&lt;or',
+            '>or': '&gt;or',
+            ' > ': ' &gt; ',
+            ' < ': ' &lt; ',
+            ' =< ': ' =&lt; ',
+            ' => ': ' =&gt; ',
+            '(': '&#40;',
+            ')': '&#41;'
+        }
+
+        # Apply replacements
+        for pattern, replacement in replacements.items():
+            xml_text = re.sub(re.escape(pattern), replacement, xml_text)
+
+        # Handle remaining cases
+        xml_text = re.sub(r'<([\d_.=-])', r'&lt;\1', xml_text)
+        xml_text = re.sub(r'>([\d_.=-])', r'&gt;\1', xml_text)
+
+        return xml_text
+
+
     def sort_xml(self, file, output_file):
         """Sort XML file by organism
         Args:
@@ -77,8 +120,7 @@ class msigdbDumper(HTTPDumper):
             xml_text = f.read()
 
         # Encode special characters
-        encoder = xmlEncoder()
-        encoded_xml_string = encoder.encode_xml(xml_text=xml_text)
+        encoded_xml_string = self.encode_xml(xml_text=xml_text)
 
         # For reference, create a file with encoded string
         with open(file + ".encoded", "w", encoding="utf-8") as f:

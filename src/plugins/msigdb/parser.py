@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 
 import lxml.etree as ET
 
@@ -16,6 +17,47 @@ if __name__ == "__main__":
 
 from biothings.utils.dataload import dict_sweep, unlist
 from utils.mygene_lookup import MyGeneLookup
+
+
+def decode_xml(xml_text: str):
+    # Dictionary for replacements
+    replacements = {
+        '&amp;': '&',
+        '&lt;sup&gt;': '<sup>',
+        '&lt;/sup&gt;': '</sup>',
+        '&lt;sub&gt;': '<sub>',
+        '&lt;/sub&gt;': '</sub>',
+        '&lt;i&gt;': '<i>',
+        '&lt;/i&gt;': '</i>',
+        '&lt;b&gt;': '<b>',
+        '&lt;/b&gt;': '</b>',
+        '&lt;BR/&gt;': '<BR/>',
+        '&lt;br/&gt;': '<br/>',
+        '&quot;TRP-EGL&quot;': ' "TRP-EGL" ',
+        '&quot;Treg&quot;': ' "Treg" ',
+        '&lt;=': '</=',
+        '&gt;=': '>/=',
+        '&lt; ': '< ',
+        '&gt; ': '> ',
+        '&lt;or': '<or',
+        '&gt;or': '>or',
+        ' &gt; ': ' > ',
+        ' &lt; ': ' < ',
+        ' =&lt; ': ' =< ',
+        ' =&gt; ': ' => ',
+        '&#40;': '(',
+        '&#41;': ')'
+    }
+
+    # Apply replacements
+    for pattern, replacement in replacements.items():
+        xml_text = xml_text.replace(pattern, replacement)
+
+    # Handle remaining cases
+    xml_text = re.sub(r'&lt;([\d_.=-])', r'<\1', xml_text)
+    xml_text = re.sub(r'&gt;([\d_.=-])', r'>\1', xml_text)
+
+    return xml_text
 
 
 def parse_msigdb(data_folder):
@@ -50,9 +92,6 @@ def parse_msigdb(data_folder):
         "7": "immunologic signature genesets",
         "8": "cell type signature genesets",
     }
-
-    # Decode special characters
-    encoder = xmlEncoder()
 
     for f in ["human_genesets.xml"]:
         data_file = os.path.join(data_folder, f)
@@ -188,7 +227,7 @@ def parse_msigdb(data_folder):
                     # Replace &amp; by space in all fields of msigdb
                     for key, value in msigdb.items():
                         if isinstance(value, str):
-                            msigdb[key] = encoder.decode_xml(value)
+                            msigdb[key] = decode_xml(value)
 
                     doc["msigdb"] = msigdb
                     # Remove lists with only one item
