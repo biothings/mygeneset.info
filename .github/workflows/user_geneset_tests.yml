@@ -82,6 +82,8 @@ jobs:
         run: pip install webdriver-manager
       - name: Install Blinker
         run: pip install blinker==1.7.0
+      - name: Install/Upgrade setuptools
+        run: pip install --upgrade setuptools
       - name: Run App Tests
         run: pytest test_user_genesets.py
         working-directory: src/tests
