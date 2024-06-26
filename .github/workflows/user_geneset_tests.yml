@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ "3.7", "3.8", "3.9", "3.10", "3.11" ]
+        python-version: [ "3.8", "3.9", "3.10", "3.11", "3.12" ]
     services:
       elasticsearch:
         image: docker.elastic.co/elasticsearch/elasticsearch:8.5.2
@@ -80,6 +80,10 @@ jobs:
         run: pip install selenium-wire
       - name: Install Webdriver Manager
         run: pip install webdriver-manager
+      - name: Install Blinker
+        run: pip install blinker==1.7.0
+      - name: Install/Upgrade setuptools
+        run: pip install --upgrade setuptools
       - name: Run App Tests
         run: pytest test_user_genesets.py
         working-directory: src/tests
