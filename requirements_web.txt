@@ -1,2 +1,2 @@
-biothings[web_extra]==0.12.4
+biothings[web_extra]==0.12.5
 mygene>=3.1.0
