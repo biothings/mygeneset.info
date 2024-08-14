@@ -89,7 +89,7 @@ jobs:
 
                 # Create the payload for Slack
                 slack_data = {
-                    "channel": "#observability-test",
+                    "channel": "#observability",
                     "username": "Mygeneset.Info Tests",
                     "icon_emoji": f"{status_emoji}",
                     "attachments": [
