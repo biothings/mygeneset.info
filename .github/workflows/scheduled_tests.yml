@@ -1,6 +1,9 @@
 name: Scheduled Tests
 
 on:
+  workflow_dispatch: # Manual trigger
+  schedule: # Scheduled trigger
+    - cron: "0 18 * * 1-5"  # Runs every weekday at 6 AM UTC
   # workflow_dispatch:
   # schedule:
   #   - cron: '0 */3 * * *'
