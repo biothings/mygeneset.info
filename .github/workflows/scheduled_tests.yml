@@ -1,7 +1,7 @@
 name: Scheduled Tests
 
 on:
-  workflow_dispatch:
+  # workflow_dispatch:
   # schedule:
   #   - cron: '0 */3 * * *'
   pull_request:
