@@ -47,7 +47,7 @@ jobs:
         uses: DamianReeves/write-file-action@master
         with:
           path: conftest.py
-          write-mode: override
+          write-mode: overwrite
           contents: |
             import pytest
             import requests
