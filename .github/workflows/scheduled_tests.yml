@@ -4,6 +4,7 @@ on:
   # workflow_dispatch:
   # schedule:
   #   - cron: '0 */3 * * *'
+  push: {}
   pull_request:
     branches:
       - github-action-schedule-remote-tests
