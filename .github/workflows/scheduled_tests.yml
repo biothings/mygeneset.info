@@ -44,10 +44,11 @@ jobs:
         run: pip install pytest-slack
 
       - name: Create conftest.py for Slack Notifications
-        uses: andstor/create-file-action@v1
+        uses: DamianReeves/write-file-action@master
         with:
-          path: src/tests/conftest.py
-          content: |
+          path: conftest.py
+          write-mode: override
+          contents: |
             import pytest
             import requests
             from _pytest.terminal import TerminalReporter
