@@ -129,3 +129,7 @@ jobs:
         run: python -m pytest src/tests/test_remote.py --slack-webhook-url=${{ secrets.SLACK_WEBHOOK_URL }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Setup tmate debug session on failure
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3
