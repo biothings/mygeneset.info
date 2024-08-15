@@ -1,6 +1,7 @@
 name: Scheduled Tests
 
 on:
+  push: {}
   pull_request:
     branches:
       - slack-messages-in-pytest-from-biothings
