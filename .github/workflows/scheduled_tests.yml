@@ -37,7 +37,7 @@ jobs:
           pip install pytest
 
       - name: Run pytest and send report to Slack
-        run: PYTHONPATH=$PYTHONPATH:.venv/lib/python3.11/site-packages/biothings/tests/conftest_slack.py python -m pytest src/tests/test_remote.py --slack-webhook-url=${{ secrets.SLACK_WEBHOOK_URL }} --slack-channel="#observability-test" --slack-username="Mygeneset.Info Tests"
+        run: PYTHONPATH=$PYTHONPATH:.venv/lib/python3.11/site-packages/biothings/tests/conftest_slack/conftest.py python -m pytest src/tests/test_remote.py --slack-webhook-url=${{ secrets.SLACK_WEBHOOK_URL }} --slack-channel="#observability-test" --slack-username="Mygeneset.Info Tests"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
