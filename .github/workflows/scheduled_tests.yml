@@ -1,6 +1,9 @@
 name: Scheduled Tests
 
 on:
+  pull_request:
+    branches:
+      - slack-messages-in-pytest-from-biothings
   workflow_dispatch: # Manual trigger
   schedule: # Scheduled trigger
     - cron: "0 6 * * 1-5"  # Runs every weekday at 6 AM UTC
