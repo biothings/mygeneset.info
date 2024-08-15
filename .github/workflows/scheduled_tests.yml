@@ -39,8 +39,9 @@ jobs:
       - name: Run pytest and send report to Slack
         run: |
           source .venv/bin/activate
-          cd .venv/lib/python3.11/site-packages/biothings/tests/conftest_slack/
+          cp .venv/lib/python3.11/site-packages/biothings/tests/conftest_slack/conftest.py src/tests/
           python -m pytest src/tests/test_remote.py --slack-webhook-url=${{ secrets.SLACK_WEBHOOK_URL }} --slack-channel="#observability-test" --slack-username="Mygeneset.Info Tests"
+          rm src/tests/conftest.py
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
