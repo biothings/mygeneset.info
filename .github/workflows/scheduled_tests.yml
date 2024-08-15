@@ -62,7 +62,7 @@ jobs:
       - name: Print Build Version
         run: |
           echo "Build Version: ${{ env.build_version }}"
-          if [[ "${{ env.build_version }}" != "${{ RELEASE_VERSION }}" ]]; then
+          if [[ "${{ env.build_version }}" != "$RELEASE_VERSION" ]]; then
             source .venv/bin/activate
             cp .venv/lib/python3.11/site-packages/biothings/tests/conftest_slack/conftest.py src/tests/
             python -m pytest src/tests/test_remote.py --slack-webhook-url=${{ secrets.SLACK_WEBHOOK_URL }} --slack-channel="#observability-test" --slack-username="Mygeneset.Info Tests"
