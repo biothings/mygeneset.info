@@ -36,14 +36,56 @@ jobs:
           pip install -r requirements_web.txt
           pip install pytest
 
-      - name: Run pytest and send report to Slack
+      # - name: Run pytest and send report to Slack
+      #   run: |
+      #     source .venv/bin/activate
+      #     cp .venv/lib/python3.11/site-packages/biothings/tests/conftest_slack/conftest.py src/tests/
+      #     python -m pytest src/tests/test_remote.py --slack-webhook-url=${{ secrets.SLACK_WEBHOOK_URL }} --slack-channel="#observability-test" --slack-username="Mygeneset.Info Tests"
+      #     rm src/tests/conftest.py
+      #   env:
+      #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+
+      - name: Get release version from the store
+        uses: UnlyEd/github-action-store-variable@v2.1.0
+        with:
+          variables: |
+            RELEASE_VERSION
+
+      - name: Get release version from the hub
+        id: http_request
         run: |
-          source .venv/bin/activate
-          cp .venv/lib/python3.11/site-packages/biothings/tests/conftest_slack/conftest.py src/tests/
-          python -m pytest src/tests/test_remote.py --slack-webhook-url=${{ secrets.SLACK_WEBHOOK_URL }} --slack-channel="#observability-test" --slack-username="Mygeneset.Info Tests"
-          rm src/tests/conftest.py
+          response=$(curl -s "https://mygene.info/metadata")
+          echo "Response: $response"
+          echo "build_version=$(echo $response | jq -r .build_version)" >> $GITHUB_ENV
+  
+      - name: Print Build Version
+        run: |
+          echo "Build Version: ${{ env.build_version }}"
+          if [[ "${{ env.build_version }}" != "${{ RELEASE_VERSION }}" ]]; then
+            source .venv/bin/activate
+            cp .venv/lib/python3.11/site-packages/biothings/tests/conftest_slack/conftest.py src/tests/
+            python -m pytest src/tests/test_remote.py --slack-webhook-url=${{ secrets.SLACK_WEBHOOK_URL }} --slack-channel="#observability-test" --slack-username="Mygeneset.Info Tests"
+            rm src/tests/conftest.py
+          fi
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      # - name: Get build version
+      #   id: get_build_version
+      #   run: |
+      #     response=$(curl -s "https://mygene.info/v3/metadata")
+      #     build_version=$(echo $response | jq -r '.build_version')
+      #     echo "::set-output name=build_version::$build_version"
+
+      # - name: Use build version
+      #   run: echo "Build version is ${{ steps.get_build_version.outputs.build_version }}"
+
+      - name: Set release version
+        uses: UnlyEd/github-action-store-variable@v2.1.0
+        with:
+          variables: |
+            RELEASE_VERSION=${{ env.build_version }}
 
       - name: Setup tmate debug session on failure
         if: ${{ failure() }}
