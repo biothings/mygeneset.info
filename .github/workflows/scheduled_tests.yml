@@ -82,9 +82,9 @@ jobs:
           def fetch_build_version_s3(build_version_file):
               s3 = boto3.client(
                   's3',
-                  aws_access_key_id=os.environ.get("AWS_REGION"),
-                  aws_secret_access_key=os.environ.get("SLACK_WEBHOOK_URL"),
-                  region_name=os.environ.get("SLACK_CHANNEL")
+                  aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
+                  aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
+                  region_name=os.environ.get("AWS_REGION")
               )
               try:
                   s3.download_file('biothings-codebuild', build_version_file, build_version_file)
@@ -130,9 +130,9 @@ jobs:
                   
                   s3 = boto3.client(
                       's3',
-                      aws_access_key_id=os.environ.get("AWS_REGION"),
-                      aws_secret_access_key=os.environ.get("SLACK_WEBHOOK_URL"),
-                      region_name=os.environ.get("SLACK_CHANNEL")
+                      aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
+                      aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
+                      region_name=os.environ.get("AWS_REGION")
                   )
 
                   s3.upload_file(build_version_file, 'biothings-codebuild', build_version_file)
