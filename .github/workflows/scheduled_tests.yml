@@ -70,10 +70,11 @@ jobs:
               # os.environ["AWS_DEFAULT_REGION"] = "AWS_REGION"
               # os.environ["SLACK_WEBHOOK_URL"] = "SLACK_WEBHOOK_URL"
               # os.environ["SLACK_CHANNEL"] = "SLACK_CHANNEL"
-              subprocess.run(["python", "-m", "venv", ".venv_test"], check=True)
-              subprocess.run([".venv_test/bin/pip", "install", "--upgrade", "pip"], check=True)
-              subprocess.run([".venv_test/bin/pip", "install", "-r", "requirements_web.txt"], check=True)
-              subprocess.run([".venv_test/bin/pip", "install", "pytest", "boto3", "jq"], check=True)
+              # subprocess.run(["python", "-m", "venv", ".venv_test"], check=True)
+              # subprocess.run([".venv_test/bin/pip", "install", "--upgrade", "pip"], check=True)
+              # subprocess.run([".venv_test/bin/pip", "install", "-r", "requirements_web.txt"], check=True)
+              # subprocess.run([".venv_test/bin/pip", "install", "pytest", "boto3", "jq"], check=True)
+              print(f"    └─ Done!")
           
           # Determine repository name and set build version file name
           def determine_repo_name():
