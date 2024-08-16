@@ -81,7 +81,7 @@ jobs:
           echo "BUILD_VERSION_HUB=$(echo $response | jq -r .build_version)" >> $GITHUB_ENV
 
           echo "### Old Build Version ${{ env.BUILD_VERSION_S3 }}"
-          echo "### New Build Version: ${{ env.BUILD_VERSION_HUB }}"
+          echo "### New Build Version: $BUILD_VERSION_HUB"
           if [[ "${{ env.BUILD_VERSION_HUB }}" != "$BUILD_VERSION_S3" ]]; then
             source .venv/bin/activate
             cp .venv/lib/python3.11/site-packages/biothings/tests/conftest_slack/conftest.py src/tests/
