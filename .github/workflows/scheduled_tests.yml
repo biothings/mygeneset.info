@@ -29,6 +29,14 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v3
 
+      - name: Set up AWS CLI
+        run: |
+          mkdir -p ~/.aws
+          echo "[default]" > ~/.aws/credentials
+          echo "aws_access_key_id = $AWS_ACCESS_KEY_ID" >> ~/.aws/credentials
+          echo "aws_secret_access_key = $AWS_SECRET_ACCESS_KEY" >> ~/.aws/credentials
+          echo "region = $AWS_REGION" >> ~/.aws/credentials
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
@@ -86,7 +94,7 @@ jobs:
                       build_version_s3 = file.read().strip()
                   print(f"    └─ BUILD_VERSION_S3={build_version_s3}")
               except Exception as e:
-                  print(f"No {build_version_file} found in S3, assuming first run.")
+                  print(f"    └─ No {build_version_file} found in S3, assuming first run.")
                   build_version_s3 = ""
               return build_version_s3
 
