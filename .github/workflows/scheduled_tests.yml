@@ -55,8 +55,7 @@ jobs:
           import requests
           import subprocess
           import sys
-          import importlib.resources
-          import shutil
+
 
 
           # Set up Python environment
@@ -113,12 +112,14 @@ jobs:
             python_version = f"{sys.version_info.major}.{sys.version_info.minor}"
 
             if build_version_hub != build_version_s3 or github_event_name == "workflow_dispatch":
-                with importlib.resources.path(biothings.tests.conftest_slack, 'conftest.py') as conftest_path:
-                    print(f"### conftest_path {conftest_path}")
-                    shutil.copy(conftest_path, 'src/tests/')
-                    # subprocess.run(["cp", f".venv_test/lib/python{python_version}/site-packages/biothings/tests/conftest_slack/conftest.py", "src/tests/"], check=True)
+                package_path = os.path.dirname(biothings.__file__)
+                conftest_path = os.path.join(package_path, 'tests', 'conftest_slack', 'conftest.py')
+                print(f"### conftest_path {conftest_path}")
+                # shutil.copy(conftest_path, 'src/tests/')
+                subprocess.run(["cp", conftest_path, "src/tests/"], check=True)
                 subprocess.run([
-                    ".venv_test/bin/python", "-m", "pytest", "src/tests/test_remote.py",
+                    # ".venv_test/bin/python", "-m", "pytest", "src/tests/test_remote.py",
+                    "python", "-m", "pytest", "src/tests/test_remote.py",
                     f"--slack-webhook-url={slack_webhook_url}",
                     f"--slack-channel={slack_channel}",
                     f"--slack-username={slack_username}"
@@ -167,7 +168,6 @@ jobs:
           if __name__ == "__main__":
             main()
             
-
           EOF
 
       - name: Run Python script
