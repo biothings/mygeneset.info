@@ -59,7 +59,20 @@ jobs:
           echo "Response: $response"
           echo "build_version=$(echo $response | jq -r .build_version)" >> $GITHUB_ENV
   
-          echo "### Old Build Version $RELEASE_VERSION"
+
+  run_app_tests_2:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ "3.11" ]
+
+    steps:
+        
+      - name: Print Build Version
+        run: |
+          echo "### Old Build Version: $RELEASE_VERSION"
           echo "### New Build Version: ${{ env.build_version }}"
           if [[ "${{ env.build_version }}" != "$RELEASE_VERSION" ]]; then
             source .venv/bin/activate
