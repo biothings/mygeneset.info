@@ -158,6 +158,8 @@ jobs:
           if __name__ == "__main__":
               main()
 
+          EOF
+
       - name: Run Python script
         run: |
           source .venv/bin/activate
