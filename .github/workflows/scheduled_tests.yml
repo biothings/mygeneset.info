@@ -74,19 +74,22 @@ jobs:
           echo "BUILD_VERSION_S3=$BUILD_VERSION_S3" >> $GITHUB_ENV
 
       - name: Get release version from the Hub
-        id: http_request
         run: |
           response=$(curl -s "https://mygene.info/metadata")
           echo "Response: $response"
           echo "BUILD_VERSION_HUB=$(echo $response | jq -r .build_version)" >> $GITHUB_ENV
 
-          echo "### Old Build Version ${{ env.BUILD_VERSION_S3 }}"
-          echo "### New Build Version: $BUILD_VERSION_HUB"
-          if [[ "${{ env.BUILD_VERSION_HUB }}" != "$BUILD_VERSION_S3" ]]; then
+      - name: Run pytest if needed
+        run: |  
+          echo "### S3  Build Version: ${{ env.BUILD_VERSION_S3 }}"
+          echo "### Hub Build Version: ${{ env.BUILD_VERSION_HUB }}"
+          if [[ "${{ env.BUILD_VERSION_HUB }}" != "${{ env.BUILD_VERSION_S3 }}" ]]; then
             source .venv/bin/activate
             cp .venv/lib/python3.11/site-packages/biothings/tests/conftest_slack/conftest.py src/tests/
             python -m pytest src/tests/test_remote.py --slack-webhook-url=${{ secrets.SLACK_WEBHOOK_URL }} --slack-channel="#observability-test" --slack-username="Mygeneset.Info Tests"
             rm src/tests/conftest.py
+          else
+            echo "### "
           fi
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
