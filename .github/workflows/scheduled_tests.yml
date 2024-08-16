@@ -71,95 +71,99 @@ jobs:
           
           # Determine repository name and set build version file name
           def determine_repo_name():
-              application_name = os.environ.get("APPLICATION_NAME")
-              slack_username = application_name
-              build_version_file = f"{application_name}.txt"
-              print(f"    ├─ Slack username set to: {slack_username}")
-              print(f"    └─ Build version file name set to: {build_version_file}")
-              return slack_username, build_version_file
+            application_name = os.environ.get("APPLICATION_NAME")
+            slack_username = application_name
+            build_version_file = f"{application_name}.txt"
+            print(f"    ├─ Slack username set to: {slack_username}")
+            print(f"    └─ Build version file name set to: {build_version_file}")
+            return slack_username, build_version_file
 
           # Fetch BUILD_VERSION_S3 from S3
           def fetch_build_version_s3(build_version_file):
-              s3 = boto3.client(
-                  's3',
-                  aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
-                  aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
-                  region_name=os.environ.get("AWS_REGION")
-              )
-              try:
-                  s3.download_file('biothings-codebuild', build_version_file, build_version_file)
-                  with open(build_version_file, 'r') as file:
-                      build_version_s3 = file.read().strip()
-                  print(f"    └─ BUILD_VERSION_S3={build_version_s3}")
-              except Exception as e:
-                  print(f"    └─ No {build_version_file} found in S3, assuming first run.")
-                  build_version_s3 = ""
-              return build_version_s3
+            s3 = boto3.client(
+                's3',
+                aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
+                aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
+                region_name=os.environ.get("AWS_REGION")
+            )
+            try:
+                s3.download_file('biothings-codebuild', build_version_file, build_version_file)
+                with open(build_version_file, 'r') as file:
+                    build_version_s3 = file.read().strip()
+                print(f"    └─ BUILD_VERSION_S3={build_version_s3}")
+            except Exception as e:
+                print(f"    └─ No {build_version_file} found in S3, assuming first run.")
+                build_version_s3 = ""
+            return build_version_s3
 
           # Get release version from the Hub
           def fetch_build_version_hub():
-              response = requests.get("https://mygene.info/metadata")
-              response_json = response.json()
-              build_version_hub = response_json.get('build_version', "")
-              print(f"    └─ BUILD_VERSION_HUB={build_version_hub}")
-              return build_version_hub
+            response = requests.get("https://mygene.info/metadata")
+            response_json = response.json()
+            build_version_hub = response_json.get('build_version', "")
+            print(f"    └─ BUILD_VERSION_HUB={build_version_hub}")
+            return build_version_hub
 
           # Run pytest if needed
           def run_pytest_if_needed(build_version_hub, build_version_s3, slack_webhook_url, slack_channel, slack_username):
-              github_event_name = os.getenv("GITHUB_EVENT_NAME", "")
-              python_version = f"{sys.version_info.major}.{sys.version_info.minor}"
+            github_event_name = os.getenv("GITHUB_EVENT_NAME", "")
+            python_version = f"{sys.version_info.major}.{sys.version_info.minor}"
 
-              if build_version_hub != build_version_s3 or github_event_name == "workflow_dispatch":
-                  subprocess.run(["cp", f".venv_test/lib/python{python_version}/site-packages/biothings/tests/conftest_slack/conftest.py", "src/tests/"], check=True)
-                  subprocess.run([
-                      ".venv_test/bin/python", "-m", "pytest", "src/tests/test_remote.py",
-                      f"--slack-webhook-url={slack_webhook_url}",
-                      f"--slack-channel={slack_channel}",
-                      f"--slack-username={slack_username}"
-                  ], check=True)
-                  subprocess.run(["rm", "src/tests/conftest.py"], check=True)
-              else:
-                  print("    └─ No need to run the pytest! The S3 and Hub build versions are the same!")
+            if build_version_hub != build_version_s3 or github_event_name == "workflow_dispatch":
+                with importlib.resources.path(biothings.tests.conftest_slack, 'conftest.py') as conftest_path:
+                    print(f"### conftest_path {conftest_path}")
+                    shutil.copy(conftest_path, 'src/tests/')
+                    # subprocess.run(["cp", f".venv_test/lib/python{python_version}/site-packages/biothings/tests/conftest_slack/conftest.py", "src/tests/"], check=True)
+                subprocess.run([
+                    ".venv_test/bin/python", "-m", "pytest", "src/tests/test_remote.py",
+                    f"--slack-webhook-url={slack_webhook_url}",
+                    f"--slack-channel={slack_channel}",
+                    f"--slack-username={slack_username}"
+                ], check=True)
+                subprocess.run(["rm", "src/tests/conftest.py"], check=True)
+            else:
+                print("    └─ No need to run the pytest! The S3 and Hub build versions are the same!")
 
           # Store new release version to S3
           def store_build_version_s3(build_version_file, build_version_hub):
-              if build_version_hub:
-                  with open(build_version_file, 'w') as file:
-                      file.write(build_version_hub)
-                  
-                  s3 = boto3.client(
-                      's3',
-                      aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
-                      aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
-                      region_name=os.environ.get("AWS_REGION")
-                  )
+            if build_version_hub:
+                with open(build_version_file, 'w') as file:
+                    file.write(build_version_hub)
+                
+                s3 = boto3.client(
+                    's3',
+                    aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
+                    aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
+                    region_name=os.environ.get("AWS_REGION")
+                )
 
-                  s3.upload_file(build_version_file, 'biothings-codebuild', build_version_file)
-                  print("    └─ Stored!")
-              else:
-                  print("    └─ Not stored!")
+                s3.upload_file(build_version_file, 'biothings-codebuild', build_version_file)
+                print("    └─ Stored!")
+            else:
+                print("    └─ Not stored!")
 
           def main():
-              print("### Setup environment...")
-              setup_environment()
+            print("### Setup environment...")
+            setup_environment()
 
-              print("### Determine repository name and set build version file name...")
-              slack_username, build_version_file = determine_repo_name()
+            print("### Determine repository name and set build version file name...")
+            slack_username, build_version_file = determine_repo_name()
 
-              print("### Fetching BUILD_VERSION_S3 from S3...")
-              build_version_s3 = fetch_build_version_s3(build_version_file)
+            print("### Fetching BUILD_VERSION_S3 from S3...")
+            build_version_s3 = fetch_build_version_s3(build_version_file)
 
-              print("### Fetching BUILD_VERSION_HUB from HUB...")
-              build_version_hub = fetch_build_version_hub()
+            print("### Fetching BUILD_VERSION_HUB from HUB...")
+            build_version_hub = fetch_build_version_hub()
 
-              print("### Running pytest...")
-              run_pytest_if_needed(build_version_hub, build_version_s3, os.environ.get("SLACK_WEBHOOK_URL"), os.environ.get("SLACK_CHANNEL"), slack_username)
+            print("### Running pytest...")
+            run_pytest_if_needed(build_version_hub, build_version_s3, os.environ.get("SLACK_WEBHOOK_URL"), os.environ.get("SLACK_CHANNEL"), slack_username)
 
-              print("### Storing new build version to S3...")
-              store_build_version_s3(build_version_file, build_version_hub)
+            print("### Storing new build version to S3...")
+            store_build_version_s3(build_version_file, build_version_hub)
 
           if __name__ == "__main__":
-              main()
+            main()
+            
 
           EOF
 
