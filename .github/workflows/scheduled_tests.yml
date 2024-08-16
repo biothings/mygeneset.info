@@ -17,6 +17,8 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_REGION: ${{ secrets.AWS_REGION }}
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      SLACK_CHANNEL: "#observability-test"
 
     strategy:
       fail-fast: false
@@ -26,14 +28,6 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v3
-
-      - name: Set up AWS CLI
-        run: |
-          mkdir -p ~/.aws
-          echo "[default]" > ~/.aws/credentials
-          echo "aws_access_key_id = $AWS_ACCESS_KEY_ID" >> ~/.aws/credentials
-          echo "aws_secret_access_key = $AWS_SECRET_ACCESS_KEY" >> ~/.aws/credentials
-          echo "region = $AWS_REGION" >> ~/.aws/credentials
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -50,62 +44,108 @@ jobs:
           pip install -r requirements_web.txt
           pip install pytest boto3
 
-      - name: Set build version file name for the current application
+      - name: Create python script
         run: |
-          REPO_NAME=$(echo "${{ github.repository }}" | awk -F'/' '{print $2}')
-          echo "Repository name is: $REPO_NAME"
-          echo "BUILD_VERSION_FILE=$REPO_NAME.txt" >> $GITHUB_ENV
-
-      - name: Retrieve release version from S3
-        run: |
-          source .venv/bin/activate
-          echo "Fetching BUILD_VERSION_S3 from S3..."
-          export BUILD_VERSION_S3=$(python -c "
-          import boto3
+          cat << 'EOF' > test_remote_release.py
           import os
-          s3 = boto3.client('s3')
-          try:
-              s3.download_file('biothings-codebuild', '${{ env.BUILD_VERSION_FILE }}', '${{ env.BUILD_VERSION_FILE }}')
-              with open('${{ env.BUILD_VERSION_FILE }}', 'r') as file:
-                  print(file.read().strip())
-          except Exception as e:
-              print('No ${{ env.BUILD_VERSION_FILE }} found in S3, assuming first run.')
-          ")
-          echo "BUILD_VERSION_S3=$BUILD_VERSION_S3" >> $GITHUB_ENV
-
-      - name: Get release version from the Hub
-        run: |
-          response=$(curl -s "https://mygene.info/metadata")
-          echo "Response: $response"
-          echo "BUILD_VERSION_HUB=$(echo $response | jq -r .build_version)" >> $GITHUB_ENV
-
-      - name: Run pytest if needed
-        run: |  
-          echo "### S3  Build Version: ${{ env.BUILD_VERSION_S3 }}"
-          echo "### Hub Build Version: ${{ env.BUILD_VERSION_HUB }}"
-          if [[ "${{ env.BUILD_VERSION_HUB }}" != "${{ env.BUILD_VERSION_S3 }}" ]]; then
-            source .venv/bin/activate
-            cp .venv/lib/python3.11/site-packages/biothings/tests/conftest_slack/conftest.py src/tests/
-            python -m pytest src/tests/test_remote.py --slack-webhook-url=${{ secrets.SLACK_WEBHOOK_URL }} --slack-channel="#observability-test" --slack-username="Mygeneset.Info Tests"
-            rm src/tests/conftest.py
-          else
-            echo "### The is no need to run the pytest! The S3 and Hub build versions are the same!"
-          fi
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-
-      - name: Store new release version to S3
-        if: ${{ env.BUILD_VERSION_HUB != '' }}
-        run: |
-          source .venv/bin/activate
-          echo "Storing new BUILD_VERSION_S3 to S3..."
-          echo "${{ env.BUILD_VERSION_HUB }}" > ${{ env.BUILD_VERSION_FILE }}
-          python -c "
+          import subprocess
           import boto3
-          s3 = boto3.client('s3')
-          s3.upload_file('${{ env.BUILD_VERSION_FILE }}', 'biothings-codebuild', '${{ env.BUILD_VERSION_FILE }}')
-          "
-        
+          import requests
+          import sys
+
+
+          # Set up Python environment
+          def setup_environment():
+              # os.environ["AWS_ACCESS_KEY_ID"] = "AWS_ACCESS_KEY_ID"
+              # os.environ["AWS_SECRET_ACCESS_KEY"] = "AWS_SECRET_ACCESS_KEY"
+              # os.environ["AWS_DEFAULT_REGION"] = "AWS_REGION"
+              # os.environ["SLACK_WEBHOOK_URL"] = "SLACK_WEBHOOK_URL"
+              # os.environ["SLACK_CHANNEL"] = "SLACK_CHANNEL"
+
+          # Determine repository name and set build version file name
+          def determine_repo_name():
+              repo_name = subprocess.run(["basename", "$(git rev-parse --show-toplevel)"], capture_output=True, text=True, shell=True).stdout.strip()
+              slack_username = repo_name
+              build_version_file = f"{repo_name}.txt"
+              print(f"    ├─ Repository name is: {repo_name}")
+              print(f"    ├─ Slack username set to: {slack_username}")
+              print(f"    └─ Build version file name set to: {build_version_file}")
+              return repo_name, slack_username, build_version_file
+
+          # Fetch BUILD_VERSION_S3 from S3
+          def fetch_build_version_s3(build_version_file):
+              s3 = boto3.client('s3')
+              try:
+                  s3.download_file('biothings-codebuild', build_version_file, build_version_file)
+                  with open(build_version_file, 'r') as file:
+                      build_version_s3 = file.read().strip()
+                  print(f"    └─ BUILD_VERSION_S3={build_version_s3}")
+              except Exception as e:
+                  print(f"No {build_version_file} found in S3, assuming first run.")
+                  build_version_s3 = ""
+              return build_version_s3
+
+          # Get release version from the Hub
+          def fetch_build_version_hub():
+              response = requests.get("https://mygene.info/metadata")
+              response_json = response.json()
+              build_version_hub = response_json.get('build_version', "")
+              print(f"    └─ BUILD_VERSION_HUB={build_version_hub}")
+              return build_version_hub
+
+          # Run pytest if needed
+          def run_pytest_if_needed(build_version_hub, build_version_s3, slack_webhook_url, slack_channel, slack_username):
+              github_event_name = os.getenv("GITHUB_EVENT_NAME", "")
+              python_version = f"{sys.version_info.major}.{sys.version_info.minor}"
+
+              if build_version_hub != build_version_s3 or github_event_name == "workflow_dispatch":
+                  subprocess.run(["cp", f".venv_test/lib/python{python_version}/site-packages/biothings/tests/conftest_slack/conftest.py", "src/tests/"], check=True)
+                  subprocess.run([
+                      ".venv_test/bin/python", "-m", "pytest", "src/tests/test_remote.py",
+                      f"--slack-webhook-url={slack_webhook_url}",
+                      f"--slack-channel={slack_channel}",
+                      f"--slack-username={slack_username}"
+                  ], check=True)
+                  subprocess.run(["rm", "src/tests/conftest.py"], check=True)
+              else:
+                  print("    └─ No need to run the pytest! The S3 and Hub build versions are the same!")
+
+          # Store new release version to S3
+          def store_build_version_s3(build_version_file, build_version_hub):
+              if build_version_hub:
+                  with open(build_version_file, 'w') as file:
+                      file.write(build_version_hub)
+                  
+                  s3 = boto3.client('s3')
+                  s3.upload_file(build_version_file, 'biothings-codebuild', build_version_file)
+                  print("    └─ Stored!")
+              else:
+                  print("    └─ Not stored!")
+
+          def main():
+              setup_environment()
+
+              print("### Determine repository name and set build version file name...")
+              _, slack_username, build_version_file = determine_repo_name()
+
+              print("### Fetching BUILD_VERSION_S3 from S3...")
+              build_version_s3 = fetch_build_version_s3(build_version_file)
+
+              print("### Fetching BUILD_VERSION_HUB from HUB...")
+              build_version_hub = fetch_build_version_hub()
+
+              print("### Running pytest...")
+              run_pytest_if_needed(build_version_hub, build_version_s3, os.environ.get("SLACK_WEBHOOK_URL"), os.environ.get("SLACK_CHANNEL"), slack_username)
+
+              print("### Storing new build version to S3...")
+              store_build_version_s3(build_version_file, build_version_hub)
+
+          if __name__ == "__main__":
+              main()
+
+      - name: Run Python script
+        run: python test_remote_release.py
+
       # - name: Setup tmate debug session on failure
       #   if: ${{ failure() }}
       #   uses: mxschmitt/action-tmate@v3
