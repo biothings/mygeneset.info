@@ -164,7 +164,7 @@ jobs:
       - name: Run Python script
         run: |
           source .venv_test/bin/activate
-          python test_remote_release.py
+          python -u test_remote_release.py
 
       # - name: Setup tmate debug session on failure
       #   if: ${{ failure() }}
