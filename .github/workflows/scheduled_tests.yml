@@ -47,14 +47,14 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python -m venv .venv
-          source .venv/bin/activate
+          python -m venv .venv_test
+          source .venv_test/bin/activate
           pip install -r requirements_web.txt
           pip install pytest boto3
 
       - name: Create python script
         run: |
-          source .venv/bin/activate
+          source .venv_test/bin/activate
           cat << 'EOF' > test_remote_release.py
           import os
           import subprocess
@@ -163,7 +163,7 @@ jobs:
 
       - name: Run Python script
         run: |
-          source .venv/bin/activate
+          source .venv_test/bin/activate
           python test_remote_release.py
 
       # - name: Setup tmate debug session on failure
