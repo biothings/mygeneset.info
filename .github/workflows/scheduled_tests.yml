@@ -54,13 +54,13 @@ jobs:
           import sys
 
 
-          # Set up Python environment
-          def setup_environment():
-              # os.environ["AWS_ACCESS_KEY_ID"] = "AWS_ACCESS_KEY_ID"
-              # os.environ["AWS_SECRET_ACCESS_KEY"] = "AWS_SECRET_ACCESS_KEY"
-              # os.environ["AWS_DEFAULT_REGION"] = "AWS_REGION"
-              # os.environ["SLACK_WEBHOOK_URL"] = "SLACK_WEBHOOK_URL"
-              # os.environ["SLACK_CHANNEL"] = "SLACK_CHANNEL"
+          # # Set up Python environment
+          # def setup_environment():
+          #     # os.environ["AWS_ACCESS_KEY_ID"] = "AWS_ACCESS_KEY_ID"
+          #     # os.environ["AWS_SECRET_ACCESS_KEY"] = "AWS_SECRET_ACCESS_KEY"
+          #     # os.environ["AWS_DEFAULT_REGION"] = "AWS_REGION"
+          #     # os.environ["SLACK_WEBHOOK_URL"] = "SLACK_WEBHOOK_URL"
+          #     # os.environ["SLACK_CHANNEL"] = "SLACK_CHANNEL"
 
           # Determine repository name and set build version file name
           def determine_repo_name():
@@ -123,7 +123,7 @@ jobs:
                   print("    └─ Not stored!")
 
           def main():
-              setup_environment()
+              # setup_environment()
 
               print("### Determine repository name and set build version file name...")
               _, slack_username, build_version_file = determine_repo_name()
