@@ -46,6 +46,7 @@ jobs:
 
       - name: Create python script
         run: |
+          source .venv/bin/activate
           cat << 'EOF' > test_remote_release.py
           import os
           import subprocess
