@@ -8,9 +8,15 @@ on:
   workflow_dispatch: # Manual trigger
   schedule: # Scheduled trigger
     - cron: "0 6 * * 1-5"  # Runs every weekday at 6 AM UTC
+
 jobs:
   run_app_tests:
     runs-on: ubuntu-latest
+
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
 
     strategy:
       fail-fast: false
@@ -21,6 +27,14 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v3
 
+      - name: Set up AWS CLI
+        run: |
+          mkdir -p ~/.aws
+          echo "[default]" > ~/.aws/credentials
+          echo "aws_access_key_id = $AWS_ACCESS_KEY_ID" >> ~/.aws/credentials
+          echo "aws_secret_access_key = $AWS_SECRET_ACCESS_KEY" >> ~/.aws/credentials
+          echo "region = $AWS_REGION" >> ~/.aws/credentials
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
@@ -29,52 +43,46 @@ jobs:
       - name: Upgrade pip
         run: pip install --upgrade pip
 
-      - name: Install dependences
+      - name: Install dependencies
         run: |
           python -m venv .venv
           source .venv/bin/activate
           pip install -r requirements_web.txt
-          pip install pytest
+          pip install pytest boto3
 
-      # - name: Run pytest and send report to Slack
-      #   run: |
-      #     source .venv/bin/activate
-      #     cp .venv/lib/python3.11/site-packages/biothings/tests/conftest_slack/conftest.py src/tests/
-      #     python -m pytest src/tests/test_remote.py --slack-webhook-url=${{ secrets.SLACK_WEBHOOK_URL }} --slack-channel="#observability-test" --slack-username="Mygeneset.Info Tests"
-      #     rm src/tests/conftest.py
-      #   env:
-      #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      - name: Set build version file name for the current application
+        run: |
+          REPO_NAME=$(echo "${{ github.repository }}" | awk -F'/' '{print $2}')
+          echo "Repository name is: $REPO_NAME"
+          echo "BUILD_VERSION_FILE=$REPO_NAME.txt" >> $GITHUB_ENV
 
+      - name: Retrieve release version from S3
+        run: |
+          source .venv/bin/activate
+          echo "Fetching BUILD_VERSION_S3 from S3..."
+          export BUILD_VERSION_S3=$(python -c "
+            import boto3
+            import os
+            s3 = boto3.client('s3')
+            try:
+                s3.download_file('biothings-codebuild', '${{ env.BUILD_VERSION_FILE }}', '${{ env.BUILD_VERSION_FILE }}')
+                with open('${{ env.BUILD_VERSION_FILE }}', 'r') as file:
+                    print(file.read().strip())
+            except Exception as e:
+                print('No ${{ env.BUILD_VERSION_FILE }} found in S3, assuming first run.')
+          ")
+          echo "BUILD_VERSION_S3=$BUILD_VERSION_S3" >> $GITHUB_ENV
 
-      - name: Get release version from the store
-        uses: UnlyEd/github-action-store-variable@v2.1.0
-        with:
-          variables: |
-            RELEASE_VERSION
-
-      - name: Get release version from the hub
+      - name: Get release version from the Hub
         id: http_request
         run: |
           response=$(curl -s "https://mygene.info/metadata")
           echo "Response: $response"
-          echo "build_version=$(echo $response | jq -r .build_version)" >> $GITHUB_ENV
-  
+          echo "BUILD_VERSION_HUB=$(echo $response | jq -r .build_version)" >> $GITHUB_ENV
 
-  run_app_tests_2:
-    runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: [ "3.11" ]
-
-    steps:
-        
-      - name: Print Build Version
-        run: |
-          echo "### Old Build Version: $RELEASE_VERSION"
-          echo "### New Build Version: ${{ env.build_version }}"
-          if [[ "${{ env.build_version }}" != "$RELEASE_VERSION" ]]; then
+          echo "### Old Build Version ${{ env.BUILD_VERSION_S3 }}"
+          echo "### New Build Version: ${{ env.BUILD_VERSION_HUB }}"
+          if [[ "${{ env.BUILD_VERSION_HUB }}" != "$BUILD_VERSION_S3" ]]; then
             source .venv/bin/activate
             cp .venv/lib/python3.11/site-packages/biothings/tests/conftest_slack/conftest.py src/tests/
             python -m pytest src/tests/test_remote.py --slack-webhook-url=${{ secrets.SLACK_WEBHOOK_URL }} --slack-channel="#observability-test" --slack-username="Mygeneset.Info Tests"
@@ -83,22 +91,18 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-      # - name: Get build version
-      #   id: get_build_version
-      #   run: |
-      #     response=$(curl -s "https://mygene.info/v3/metadata")
-      #     build_version=$(echo $response | jq -r '.build_version')
-      #     echo "::set-output name=build_version::$build_version"
-
-      # - name: Use build version
-      #   run: echo "Build version is ${{ steps.get_build_version.outputs.build_version }}"
-
-      - name: Set release version
-        uses: UnlyEd/github-action-store-variable@v2.1.0
-        with:
-          variables: |
-            RELEASE_VERSION=${{ env.build_version }}
-
-      - name: Setup tmate debug session on failure
-        if: ${{ failure() }}
-        uses: mxschmitt/action-tmate@v3
+      - name: Store new release version to S3
+        if: ${{ env.BUILD_VERSION_HUB != '' }}
+        run: |
+          source .venv/bin/activate
+          echo "Storing new BUILD_VERSION_S3 to S3..."
+          echo "${{ env.BUILD_VERSION_HUB }}" > ${{ env.BUILD_VERSION_FILE }}
+          python -c "
+            import boto3
+            s3 = boto3.client('s3')
+            s3.upload_file('${{ env.BUILD_VERSION_FILE }}', 'biothings-codebuild', '${{ env.BUILD_VERSION_FILE }}')
+          "
+        
+      # - name: Setup tmate debug session on failure
+      #   if: ${{ failure() }}
+      #   uses: mxschmitt/action-tmate@v3
