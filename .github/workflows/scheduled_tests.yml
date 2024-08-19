@@ -7,7 +7,7 @@ on:
       - slack-messages-in-pytest-from-biothings
   workflow_dispatch: # Manual trigger
   schedule: # Scheduled trigger
-    - cron: "0 6 * * 1-5"  # Runs every weekday at 6 AM UTC
+    - cron: "0 0 * * 1"  # Runs every Monday at 00:00 AM UTC
 
 jobs:
   run_app_tests:
@@ -56,11 +56,11 @@ jobs:
           BIOTHINGS_CONFTEST_PATH="$BIOTHINGS_PACKAGE_LOCATION$BIOTHINGS_CONFTEST_LOCATION"
           ln -s $BIOTHINGS_CONFTEST_PATH .
 
-          # Run the pytest
+          # Run the pytest. It's getting the param variables from the env variables.
           python -m pytest $PYTEST_PATH -s -vv -k test_query_default_fields
 
           : '
-          # Use the follow command to run it locally.
+          # To run the pytest manually or locally, it is possible to use the following parameters:
           pytest -s -vv \
             --aws-access-key-id=<value> \
             --aws-secret-access-key=<value> \
@@ -75,6 +75,6 @@ jobs:
             --application-metadata-field=<value>
           '
 
-      - name: Setup tmate debug session on failure
-        if: ${{ failure() }}
-        uses: mxschmitt/action-tmate@v3
+      # - name: Setup tmate debug session on failure
+      #   if: ${{ failure() }}
+      #   uses: mxschmitt/action-tmate@v3
