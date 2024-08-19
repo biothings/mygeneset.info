@@ -12,6 +12,9 @@ class TestMyGenesetDataIntegrity(MyGenesetWebTestBase):
     # Query endpoint
     # --------------
 
+    def test_query_default_fields_force_error(self):
+        self.query(q="FORCE_ERROR")
+
     def test_query_default_fields(self):
         self.query(q="glucose")
 
