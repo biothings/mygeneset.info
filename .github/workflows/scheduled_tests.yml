@@ -55,6 +55,6 @@ jobs:
           cp .venv/lib/python3.11/site-packages/biothings/tests/conftest_slack/conftest.py src/tests/
           python -m pytest src/tests/test_remote.py -s -vv -k test_query_default_fields --aws-access-key-id="$AWS_ACCESS_KEY_ID" --aws-secret-access-key="$AWS_SECRET_ACCESS_KEY" --aws-region="$AWS_REGION" --aws-s3-bucket="$AWS_S3_BUCKET" --slack-webhook-url="$SLACK_WEBHOOK_URL" --slack-channel="$SLACK_CHANNEL" --application-name="$APPLICATION_NAME" --github-event-name="" --pytest-path="$PYTEST_PATH" --application-metadata-path="$APPLICATION_METADATA_PATH"
 
-      # - name: Setup tmate debug session on failure
-      #   if: ${{ failure() }}
-      #   uses: mxschmitt/action-tmate@v3
+      - name: Setup tmate debug session on failure
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3
