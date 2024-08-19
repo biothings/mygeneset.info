@@ -53,8 +53,8 @@ jobs:
           # Create symlink to the conftest.py from Biothings API
           BIOTHINGS_CONFTEST_LOCATION="/biothings/tests/conftest_slack/conftest.py"
           BIOTHINGS_PACKAGE_LOCATION=$(pip show biothings | grep 'Location:' | awk '{print $2}')
-          CONFTEST_PATH="$BIOTHINGS_PACKAGE_LOCATION$BIOTHINGS_CONFTEST_LOCATION"
-          ln -s CONFTEST_PATH .
+          BIOTHINGS_CONFTEST_PATH="$BIOTHINGS_PACKAGE_LOCATION$BIOTHINGS_CONFTEST_LOCATION"
+          ln -s $BIOTHINGS_CONFTEST_PATH .
 
           # Run the pytest
           python -m pytest $PYTEST_PATH -s -vv -k test_query_default_fields
