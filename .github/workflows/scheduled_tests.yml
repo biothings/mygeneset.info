@@ -14,15 +14,16 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_REGION: ${{ secrets.AWS_REGION }}
-      AWS_S3_BUCKET: "biothings-codebuild"
-      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-      SLACK_CHANNEL: "#observability-test"
-      APPLICATION_NAME: "mygeneset.info"
-      APPLICATION_METADATA_PATH: "https://mygene.info/metadata"
-      PYTEST_PATH: "src/tests/test_remote.py"
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }} # AWS Access Key ID.
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }} # AWS Secret Access Key.
+      AWS_REGION: ${{ secrets.AWS_REGION }} # AWS Default Region.
+      AWS_S3_BUCKET: "biothings-codebuild" # The S3 bucket name for storing application metadata.
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # The Slack webhook URL for sending notifications.
+      SLACK_CHANNEL: "#observability-test" # The Slack channel where notifications will be posted.
+      APPLICATION_NAME: "mygeneset.info" # The name of the application being tested. It will be displayed in the Slack message.
+      APPLICATION_METADATA_PATH: "https://mygene.info/metadata" # Path to the application metadata, typically a URL.
+      APPLICATION_METADATA_FIELD: "build_version" # Notation to the build version field. Ex.: "metadata.build_version"
+      PYTEST_PATH: "src/tests/test_remote.py" # Path to the Pytest test files.
 
     strategy:
       fail-fast: false
@@ -53,6 +54,6 @@ jobs:
           cp "$CONFTEST_PATH" .
           python -m pytest src/tests/test_remote.py -s -vv -k test_query_default_fields --aws-access-key-id="$AWS_ACCESS_KEY_ID" --aws-secret-access-key="$AWS_SECRET_ACCESS_KEY" --aws-region="$AWS_REGION" --aws-s3-bucket="$AWS_S3_BUCKET" --slack-webhook-url="$SLACK_WEBHOOK_URL" --slack-channel="$SLACK_CHANNEL" --application-name="$APPLICATION_NAME" --github-event-name="" --pytest-path="$PYTEST_PATH" --application-metadata-path="$APPLICATION_METADATA_PATH"
 
-      - name: Setup tmate debug session on failure
-        if: ${{ failure() }}
-        uses: mxschmitt/action-tmate@v3
+      # - name: Setup tmate debug session on failure
+      #   if: ${{ failure() }}
+      #   uses: mxschmitt/action-tmate@v3
