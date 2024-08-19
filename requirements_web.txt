@@ -1,5 +1,5 @@
 # Use this instead to test the latest fixes on 0.12.x branch before official release
-biothings@git+https://github.com/biothings/biothings.api@f8d36e8bd4ffda496754304fc3551f0661f69cec
+biothings@git+https://github.com/biothings/biothings.api@6d838aa28b26ab653e08f6217422b63acd5569da
 # biothings[web_extra]==0.12.5
 
 mygene>=3.1.0
