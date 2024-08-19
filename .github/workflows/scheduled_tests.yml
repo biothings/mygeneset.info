@@ -73,7 +73,7 @@ jobs:
             --pytest-path=<value> \
             --application-metadata-path=<value> \
             --application-metadata-field=<value>
-            ''
+            '
 
       - name: Setup tmate debug session on failure
         if: ${{ failure() }}
