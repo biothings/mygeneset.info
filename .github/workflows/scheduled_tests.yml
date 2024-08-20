@@ -39,41 +39,26 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Upgrade pip
-        run: pip install --upgrade pip
-
-      - name: Run pytest
+      - name: Prepare virtual environment and dependences
         run: |
-          # Create virtual environment and install dependences
+          pip install --upgrade pip
           python -m venv .venv_test
           source .venv_test/bin/activate
           pip install -r requirements_web.txt
           pip install pytest boto3
 
-          # Create symlink to the conftest.py from Biothings API
+      - name: Create symlink to the conftest.py from Biothings API
+        run: |
+          source .venv_test/bin/activate
           BIOTHINGS_CONFTEST_LOCATION="/biothings/tests/conftest_slack/conftest.py"
           BIOTHINGS_PACKAGE_LOCATION=$(pip show biothings | grep 'Location:' | awk '{print $2}')
           BIOTHINGS_CONFTEST_PATH="$BIOTHINGS_PACKAGE_LOCATION$BIOTHINGS_CONFTEST_LOCATION"
           ln -s $BIOTHINGS_CONFTEST_PATH .
 
-          # Run the pytest. It's getting the param variables from the env variables.
-          python -m pytest $PYTEST_PATH -s -vv -k test_query_default_fields
-
-          : '
-          # To run the pytest manually or locally, it is possible to use the following parameters:
-          pytest -s -vv \
-            --aws-access-key-id=<value> \
-            --aws-secret-access-key=<value> \
-            --aws-default-region=<value> \
-            --aws-s3-bucket=<value> \
-            --slack-webhook-url=<value> \
-            --slack-channel=<value> \
-            --application-name=<value> \
-            --github-event-name=<value> \
-            --pytest-path=<value> \
-            --application-metadata-path=<value> \
-            --application-metadata-field=<value>
-          '
+      - name: Run pytest
+        run: |
+          source .venv_test/bin/activate
+          python -m pytest $PYTEST_PATH -s -vv
 
       # - name: Setup tmate debug session on failure
       #   if: ${{ failure() }}
