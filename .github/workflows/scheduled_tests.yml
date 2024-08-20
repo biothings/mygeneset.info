@@ -21,8 +21,8 @@ jobs:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # The Slack webhook URL for sending notifications.
       SLACK_CHANNEL: "#observability-test" # The Slack channel where notifications will be posted.
       APPLICATION_NAME: "mygeneset.info" # The name of the application being tested. It will be displayed in the Slack message.
-      APPLICATION_METADATA_PATH: "https://mygene.info/metadata" # Path to the application metadata, typically a URL.
-      APPLICATION_METADATA_FIELD: "build_version" # Notation to the build version field. Ex.: "metadata.build_version"
+      APPLICATION_METADATA_PATH: "https://mygeneset.info/metadata" # Path to the application metadata, typically a URL.
+      APPLICATION_METADATA_FIELD: "build_date" # Notation to the build version field. Ex.: "metadata.build_version"
       PYTEST_PATH: "src/tests/test_remote.py" # Path to the Pytest test files.
 
     strategy:
