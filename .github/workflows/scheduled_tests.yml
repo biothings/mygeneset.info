@@ -46,7 +46,9 @@ jobs:
           source .venv_test/bin/activate
           pip install -r requirements_web.txt
           pip install pytest boto3
-          pip install git+https://github.com/biothings/biothings.api@slack-messages-in-pytest#egg=biothings&subdirectory=biothings/tests/biothings_pytest_plugin
+          cd /home/runner/work/mygeneset.info/mygeneset.info/.venv_test/lib/python3.11/site-packages/biothings/tests/biothings_pytest_plugin
+          pip install .
+      #    pip install git+https://github.com/biothings/biothings.api@slack-messages-in-pytest#egg=biothings_pytest_plugin&subdirectory=biothings/tests/biothings_pytest_plugin
 
       # - name: Create symlink to the conftest.py from Biothings API
       #   run: |
@@ -54,7 +56,10 @@ jobs:
       #     BIOTHINGS_CONFTEST_LOCATION="/biothings/tests/conftest_slack/conftest.py"
       #     BIOTHINGS_PACKAGE_LOCATION=$(pip show biothings | grep 'Location:' | awk '{print $2}')
       #     BIOTHINGS_CONFTEST_PATH="$BIOTHINGS_PACKAGE_LOCATION$BIOTHINGS_CONFTEST_LOCATION"
-      #     ln -s $BIOTHINGS_CONFTEST_PATH .
+          
+      #     # ln -s $biothings_pytest_plugin .
+      #     cd $biothings_pytest_plugin
+      #     pip install -e .
 
       - name: Run pytest
         run: |
