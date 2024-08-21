@@ -44,7 +44,7 @@ jobs:
           python -m venv .venv_test
           source .venv_test/bin/activate
           pip install --upgrade pip
-          pip install -r requirements_web.txt --force-reinstall
+          pip install -r requirements_web.txt
           pip install pytest boto3
       #    pip install git+https://github.com/biothings/biothings.api@slack-messages-in-pytest#egg=biothings_pytest_plugin&subdirectory=biothings/tests/biothings_pytest_plugin
 
@@ -52,13 +52,13 @@ jobs:
         run: |
           source .venv_test/bin/activate
           cd /home/runner/work/mygeneset.info/mygeneset.info/.venv_test/lib/python3.11/site-packages/biothings/tests/biothings_pytest_plugin
-          pip install . --force-reinstall
-          python -m pytest -v
-
-      - name: Run pytest
-        run: |
-          source .venv_test/bin/activate
+          pip install .
           python -m pytest $PYTEST_PATH -s -vv
+
+      # - name: Run pytest
+      #   run: |
+      #     source .venv_test/bin/activate
+      #     python -m pytest $PYTEST_PATH -s -vv
 
       - name: Setup tmate debug session on failure
         if: ${{ failure() }}
