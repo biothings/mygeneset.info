@@ -47,27 +47,12 @@ jobs:
           pip install -r requirements_web.txt
           pip install pytest boto3
 
-      # # pip install git+https://github.com/biothings/biothings.api@slack-messages-in-pytest#egg=biothings_pytest_plugin&subdirectory=biothings/tests/biothings_pytest_plugin
-      # # cd /home/runner/work/mygeneset.info/mygeneset.info/.venv_test/lib/python3.11/site-packages/biothings/tests/biothings_pytest_plugin
-      # - name: Install biothings_pytest_plugin from Biothings API
-      #   run: |
-      #     source .venv_test/bin/activate
-      #     pip install .venv_test/lib/python3.11/site-packages/biothings/tests/biothings_pytest_plugin
-
-      # - name: Run pytest
-      #   run: |
-      #     source .venv_test/bin/activate
-      #     cd .venv_test/lib/python3.11/site-packages/biothings/tests/biothings_pytest_plugin
-      #     pip install .
-      #     cd ../../../../../../../
-      #     python -m pytest $PYTEST_PATH -s -vv
-
-      - name: Run pytest
+      - name: Prepare and run pytest
         run: |
           source .venv_test/bin/activate
           pip install .venv_test/lib/python3.11/site-packages/biothings/tests/biothings_pytest_plugin
           python -m pytest $PYTEST_PATH -s -vv
 
-      - name: Setup tmate debug session on failure
-        if: ${{ failure() }}
-        uses: mxschmitt/action-tmate@v3
+      # - name: Setup tmate debug session on failure
+      #   if: ${{ failure() }}
+      #   uses: mxschmitt/action-tmate@v3
