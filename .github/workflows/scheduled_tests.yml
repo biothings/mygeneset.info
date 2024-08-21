@@ -59,7 +59,6 @@ jobs:
           source .venv_test/bin/activate
           cd .venv_test/lib/python3.11/site-packages/biothings/tests/biothings_pytest_plugin
           pip install .
-          python -m pytest -v
           python -m pytest $PYTEST_PATH -s -vv
 
       - name: Setup tmate debug session on failure
