@@ -40,6 +40,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Prepare virtual environment and dependences
+        working-directory: ./app
         run: |
           python -m venv .venv_test
           source .venv_test/bin/activate
@@ -49,9 +50,9 @@ jobs:
       #    pip install git+https://github.com/biothings/biothings.api@slack-messages-in-pytest#egg=biothings_pytest_plugin&subdirectory=biothings/tests/biothings_pytest_plugin
 
       - name: Install biothings_pytest_plugin from Biothings API
+        working-directory: /home/runner/work/mygeneset.info/mygeneset.info/.venv_test/lib/python3.11/site-packages/biothings/tests/biothings_pytest_plugin
         run: |
           source .venv_test/bin/activate
-          cd /home/runner/work/mygeneset.info/mygeneset.info/.venv_test/lib/python3.11/site-packages/biothings/tests/biothings_pytest_plugin
           pip install .
           python -m pytest $PYTEST_PATH -s -vv
 
