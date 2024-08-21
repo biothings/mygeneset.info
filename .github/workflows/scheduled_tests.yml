@@ -44,7 +44,7 @@ jobs:
           python -m venv .venv_test
           source .venv_test/bin/activate
           pip install --upgrade pip
-          pip install -r requirements_web.txt
+          pip install -r requirements_web.txt --force-reinstall
           pip install pytest boto3
       #    pip install git+https://github.com/biothings/biothings.api@slack-messages-in-pytest#egg=biothings_pytest_plugin&subdirectory=biothings/tests/biothings_pytest_plugin
 
