@@ -56,7 +56,7 @@ jobs:
           # BIOTHINGS_PLUGIN_PATH="$BIOTHINGS_PACKAGE_LOCATION$BIOTHINGS_PLUGIN_LOCATION"
           # cd $BIOTHINGS_PLUGIN_PATH
           cd /home/runner/work/mygeneset.info/mygeneset.info/.venv_test/lib/python3.11/site-packages/biothings/tests/biothings_pytest_plugin
-          pip install .
+          pip install . --force-reinstall
 
       - name: Run pytest
         run: |
