@@ -40,7 +40,6 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Prepare virtual environment and dependences
-        working-directory: ./app
         run: |
           python -m venv .venv_test
           source .venv_test/bin/activate
