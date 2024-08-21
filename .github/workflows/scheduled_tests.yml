@@ -46,11 +46,11 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements_web.txt
           pip install pytest boto3
+          pip install .venv_test/lib/python3.11/site-packages/biothings/tests/biothings_pytest_plugin
 
-      - name: Prepare and run pytest
+      - name: Run pytest
         run: |
           source .venv_test/bin/activate
-          pip install .venv_test/lib/python3.11/site-packages/biothings/tests/biothings_pytest_plugin
           python -m pytest $PYTEST_PATH -s -vv
 
       # - name: Setup tmate debug session on failure
