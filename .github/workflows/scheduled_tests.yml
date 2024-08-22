@@ -4,7 +4,7 @@ on:
   workflow_dispatch: # Manual trigger
   schedule: # Scheduled trigger
     - cron: "15,45 14-23,0-1 * * 1-5"  # At minutes 15 and 45 past every hour from 14:00 through 01:00 on every day-of-week from Monday through Friday.
-    - cron: "15 0,4,8,10 * * 1-5"  # At minute 15 past hour 0, 4, 8, and 10 on every day-of-week from Monday through Friday.
+    - cron: "15 7,13 * * 1-5"  # At minute 15 past hour 7 and 13 on every day-of-week from Monday through Friday.
 
 jobs:
   run_app_tests:
@@ -38,18 +38,20 @@ jobs:
 
       - name: Prepare virtual environment and dependences
         run: |
-          python -m venv .venv_test
-          source .venv_test/bin/activate
+          python -m venv .venv
+          source .venv/bin/activate
           pip install --upgrade pip
           pip install -r requirements_web.txt
           pip install pytest boto3
-          pip install .venv_test/lib/python${{ matrix.python-version }}/site-packages/biothings/tests/biothings_pytest_plugin
+          pip install .venv/lib/python${{ matrix.python-version }}/site-packages/biothings/tests/biothings_pytest_plugin
 
       - name: Run pytest
         run: |
-          source .venv_test/bin/activate
+          source .venv/bin/activate
           python -m pytest $PYTEST_PATH -s -vv
 
+      # ### For debugging purposes in case of github action failure
+      # ### Reference:https://github.com/mxschmitt/action-tmate
       # - name: Setup tmate debug session on failure
       #   if: ${{ failure() }}
       #   uses: mxschmitt/action-tmate@v3
