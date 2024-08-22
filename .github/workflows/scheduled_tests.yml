@@ -6,7 +6,7 @@ on:
     branches:
       - slack-messages-in-pytest-from-biothings
   schedule: # Scheduled trigger
-    - cron: "0,15,30,45 14-23 * * 1-5"  # At minute 15 and 45 past every hour from 14:00 through 01:00 on every day-of-week from Monday through Friday.  
+    - cron: "15,45 14-23 * * 1-5"  # At minutes 15 and 45 past every hour from 14:00 through 01:00 on every day-of-week from Monday through Friday.  
   workflow_dispatch: # Manual trigger
 
 jobs:
