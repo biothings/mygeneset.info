@@ -3,10 +3,24 @@ name: Scheduled Tests
 on:
   workflow_dispatch: # Manual trigger
   schedule: # Scheduled trigger
-    - cron: "0 18 * * 1-5"  # Runs every weekday at 6 AM UTC
+    - cron: "15,45 14-23,0-1 * * 1-5"  # At minutes 15 and 45 past every hour from 14:00 through 01:00 on every day-of-week from Monday through Friday.
+    - cron: "15 0,4,8,10 * * 1-5"  # At minute 15 past hour 0, 4, 8, and 10 on every day-of-week from Monday through Friday.
+
 jobs:
   run_app_tests:
     runs-on: ubuntu-latest
+
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }} # AWS Access Key ID.
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }} # AWS Secret Access Key.
+      AWS_REGION: ${{ secrets.AWS_REGION }} # AWS Default Region.
+      AWS_S3_BUCKET: "biothings-codebuild" # The S3 bucket name for storing application metadata.
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # The Slack webhook URL for sending notifications.
+      SLACK_CHANNEL: "#observability-test" # The Slack channel where notifications will be posted.
+      APPLICATION_NAME: "mygeneset.info" # The name of the application being tested. It will be displayed in the Slack message.
+      APPLICATION_METADATA_PATH: "https://mygeneset.info/metadata" # Path to the application metadata, typically a URL.
+      APPLICATION_METADATA_FIELD: "build_date" # Notation to the build version field. Ex.: "metadata.build_version"
+      PYTEST_PATH: "src/tests/test_remote.py" # Path to the Pytest test files.
 
     strategy:
       fail-fast: false
@@ -22,111 +36,19 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Upgrade pip
-        run: pip install --upgrade pip
-
-      - name: Create python virtual environment
+      - name: Prepare virtual environment and dependences
         run: |
-          python -m venv .venv
-          source .venv/bin/activate
+          python -m venv .venv_test
+          source .venv_test/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements_web.txt
+          pip install pytest boto3
+          pip install .venv_test/lib/python${{ matrix.python-version }}/site-packages/biothings/tests/biothings_pytest_plugin
 
-      - name: Install dependencies
-        run: pip install -r requirements_web.txt
-
-      - name: Install pytest
-        run: pip install pytest
-
-      - name: Install pytest-slack
-        run: pip install pytest-slack
-
-      - name: Create conftest.py for Slack Notifications
-        uses: DamianReeves/write-file-action@master
-        with:
-          path: conftest.py
-          write-mode: overwrite
-          contents: |
-            import pytest
-            import requests
-            from _pytest.terminal import TerminalReporter
-
-            @pytest.hookimpl(tryfirst=True)
-            def pytest_terminal_summary(terminalreporter: TerminalReporter, exitstatus: int, config):
-                """Customize pytest terminal summary and send to Slack."""
-
-                SLACK_WEBHOOK_URL = config.getoption('--slack-webhook-url')
-
-                # Collect test summary information
-                total_tests = terminalreporter.stats.get('passed', []) + \
-                              terminalreporter.stats.get('failed', []) + \
-                              terminalreporter.stats.get('error', []) + \
-                              terminalreporter.stats.get('skipped', [])
-
-                passed_tests = len(terminalreporter.stats.get('passed', []))
-                failed_tests = len(terminalreporter.stats.get('failed', []))
-                error_tests = len(terminalreporter.stats.get('error', []))
-                skipped_tests = len(terminalreporter.stats.get('skipped', []))
-
-                # Prepare error details
-                error_details = ""
-                for test in terminalreporter.stats.get('failed', []) + terminalreporter.stats.get('error', []):
-                    error_details += f"• *Test*: `{test.nodeid}`\n"
-                    error_details += f"  _Details:_\n```\n{''.join(test.longreprtext.splitlines(keepends=True)[-10:])}```\n\n"
-                error_details = "*Error Details:*\n" + error_details if error_details else ""
-
-                # Determine status emoji and color
-                status_emoji = ":thumbsup:" if failed_tests == 0 and error_tests == 0 else ":thumbsdown:"
-                bug_emoji = "" if failed_tests == 0 and error_tests == 0 else ":bug-happy:"
-                status_color = "good" if failed_tests == 0 and error_tests == 0 else "danger"
-
-                # Check if there's anything to report
-                if len(total_tests) == 0:
-                    terminalreporter.write("No tests were run, skipping Slack notification.\n")
-                    return
-
-                # Create the payload for Slack
-                slack_data = {
-                    "channel": "#logger---web",
-                    "username": "Mygeneset.Info Tests",
-                    "icon_emoji": f"{status_emoji}",
-                    "attachments": [
-                        {
-                            "color": status_color,
-                            "title": f"{bug_emoji} Mygeneset Pytest Summary",
-                            "text": f"Total Tests: *{len(total_tests)}*\n"
-                                    f"Passed: *{passed_tests}* :white_check_mark:\n"
-                                    f"Failed: *{failed_tests}* :x:\n"
-                                    f"Errors: *{error_tests}* :exclamation:\n"
-                                    f"Skipped: *{skipped_tests}* :fast_forward:\n\n"
-                                    f"{error_details}"
-                        }
-                    ]
-                }
-
-                # Send to Slack
-                webhook_url = SLACK_WEBHOOK_URL  # config.getoption('--slack-webhook-url')
-                if webhook_url:
-                    response = requests.post(webhook_url, json=slack_data)
-                    if response.status_code == 200:
-                        terminalreporter.write("Slack notification sent successfully.\n")
-                    else:
-                        terminalreporter.write(f"Failed to send message to Slack: {response.status_code}, {response.text}\n")
-                else:
-                    terminalreporter.write("Slack webhook URL not provided, skipping notification.\n")
-
-            @pytest.hookimpl(tryfirst=True)
-            def pytest_addoption(parser):
-                """Add command-line options for Slack integration."""
-                parser.addoption("--slack-webhook-url", action="store", default=None, help="Slack webhook URL to send messages")
-                parser.addoption("--slack-channel", action="store", default="#general", help="Slack channel to send messages")
-                parser.addoption("--slack-username", action="store", default="pytest-bot", help="Slack username to send messages as")
-
-            # ### How to run manually:
-            # python -m pytest src/tests/test_remote.py --slack-webhook-url=$SLACK_WEBHOOK_URL
-
-      - name: Run pytest and send report to Slack
-        run: python -m pytest src/tests/test_remote.py --slack-webhook-url=${{ secrets.SLACK_WEBHOOK_URL }}
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      - name: Run pytest
+        run: |
+          source .venv_test/bin/activate
+          python -m pytest $PYTEST_PATH -s -vv
 
       # - name: Setup tmate debug session on failure
       #   if: ${{ failure() }}
