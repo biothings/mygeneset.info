@@ -1,14 +1,10 @@
 name: Scheduled Tests
 
 on:
-  push: {}
-  pull_request:
-    branches:
-      - slack-messages-in-pytest-from-biothings
+  workflow_dispatch: # Manual trigger
   schedule: # Scheduled trigger
     - cron: "15,45 14-23,0-1 * * 1-5"  # At minutes 15 and 45 past every hour from 14:00 through 01:00 on every day-of-week from Monday through Friday.
     - cron: "15 0,4,8,10 * * 1-5"  # At minute 15 past hour 0, 4, 8, and 10 on every day-of-week from Monday through Friday.
-  workflow_dispatch: # Manual trigger
 
 jobs:
   run_app_tests:
