@@ -48,6 +48,7 @@ jobs:
           git clone https://github.com/biothings/biothings_client.py.git
           cd biothings_client.py
           pip install .
+          cd ..
 
           pip install .venv/lib/python${{ matrix.python-version }}/site-packages/biothings/tests/slack_test_notification
 
