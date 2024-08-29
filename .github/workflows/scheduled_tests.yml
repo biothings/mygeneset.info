@@ -21,7 +21,6 @@ jobs:
       APPLICATION_NAME: "mygeneset.info" # The name of the application being tested. It will be displayed in the Slack message.
       APPLICATION_METADATA_URL: "https://mygeneset.info/metadata" # Path to the application metadata, typically a URL.
       APPLICATION_METADATA_FIELD: "build_date" # Notation to the build version field. Ex.: "metadata.build_version"
-      PYTEST_PATH: "src/tests/test_remote.py" # Path to the Pytest test files.
 
     strategy:
       fail-fast: false
@@ -58,7 +57,6 @@ jobs:
       - name: Run pytest
         run: |
           source .venv/bin/activate
-          # python -m pytest $PYTEST_PATH -s -vv
           python -m pytest src/tests/test_remote.py biothings_client.py/tests/geneset.py -s -vv
 
       # ### For debugging purposes in case of github action failure
