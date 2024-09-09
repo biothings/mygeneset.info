@@ -13,7 +13,7 @@ import pytest
 from biothings.tests.web import BiothingsWebTest
 from selenium.webdriver.common.by import By
 
-from .bot import Bot
+from bot import Bot
 
 
 class MyGenesetLocalTestBase(BiothingsWebTest, Bot):
