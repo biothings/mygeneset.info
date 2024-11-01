@@ -59,8 +59,8 @@ jobs:
           source .venv/bin/activate
           python -m pytest src/tests/test_remote.py biothings_client.py/tests/geneset.py -s -vv
 
-      # ### For debugging purposes in case of github action failure
-      # ### Reference:https://github.com/mxschmitt/action-tmate
-      # - name: Setup tmate debug session on failure
-      #   if: ${{ failure() }}
-      #   uses: mxschmitt/action-tmate@v3
+      ### For debugging purposes in case of github action failure
+      ### Reference:https://github.com/mxschmitt/action-tmate
+      - name: Setup tmate debug session on failure
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3
