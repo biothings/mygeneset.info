@@ -1,9 +1,6 @@
 name: Scheduled Tests
 
 on:
-  push:
-    branches:
-      - fix-scheduled-tests
   workflow_dispatch: # Manual trigger
   schedule: # Scheduled trigger
     - cron: "15,45 14-23,0-1 * * 1-5"  # At minutes 15 and 45 past every hour from 14:00 through 01:00 on every day-of-week from Monday through Friday.
@@ -60,10 +57,10 @@ jobs:
       - name: Run pytest
         run: |
           source .venv/bin/activate
-          python -m pytest src/tests/test_remote.py biothings_client.py/tests/geneset.py -s -vv
+          python -m pytest src/tests/test_remote.py biothings_client.py/tests/test_geneset.py -s -vv
 
-      ### For debugging purposes in case of github action failure
-      ### Reference:https://github.com/mxschmitt/action-tmate
-      - name: Setup tmate debug session on failure
-        if: ${{ failure() }}
-        uses: mxschmitt/action-tmate@v3
+      # ### For debugging purposes in case of github action failure
+      # ### Reference:https://github.com/mxschmitt/action-tmate
+      # - name: Setup tmate debug session on failure
+      #   if: ${{ failure() }}
+      #   uses: mxschmitt/action-tmate@v3
