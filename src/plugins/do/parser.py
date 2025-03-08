@@ -463,7 +463,7 @@ def build_doid_omim_dict(obo_filename):
                     if doid:
                         doid = doid.group(0)
 
-                if line.startswith("xref: OMIM:"):
+                if line.startswith("xref: MIM:"):
                     # If term has OMIM xref, get it and add it to the
                     # doid_omim_dict. Otherwise, ignore.
                     omim = re.search("[0-9]+", line).group(0)
