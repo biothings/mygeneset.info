@@ -429,21 +429,21 @@ class GOTerm:
 
 # Copied from "annotation-refinery/process_do.py"
 # See https://github.com/greenelab/annotation-refinery
-def build_doid_omim_dict(obo_filename):
+def build_doid_mim_dict(obo_filename):
     """
     Function to read in DO OBO file and build dictionary of DO terms
-    from OBO file that have OMIM cross-reference IDs
+    from OBO file that have MIM cross-reference IDs
 
     Arguments:
     obo_filename -- A string. Location of the DO OBO file to be read in.
 
     Returns:
-    doid_omim_dict -- A dictionary of only the DO terms in the OBO file
-    that have OMIM xrefs. The keys in the dictionary are DOIDs, and the
-    values are sets of OMIM xref IDs.
+    doid_mim_dict -- A dictionary of only the DO terms in the OBO file
+    that have MIM xrefs. The keys in the dictionary are DOIDs, and the
+    values are sets of MIM xref IDs.
     """
     obo_fh = open(obo_filename, "r")
-    doid_omim_dict = {}
+    doid_mim_dict = {}
 
     # This statement builds a list of the lines in the file and reverses
     # its order. This is because the list 'pop()' method pops out list
@@ -463,18 +463,18 @@ def build_doid_omim_dict(obo_filename):
                     if doid:
                         doid = doid.group(0)
 
-                if line.startswith("xref: OMIM:"):
-                    # If term has OMIM xref, get it and add it to the
-                    # doid_omim_dict. Otherwise, ignore.
-                    omim = re.search("[0-9]+", line).group(0)
+                if line.startswith("xref: MIM:"):
+                    # If term has MIM xref, get it and add it to the
+                    # doid_mim_dict. Otherwise, ignore.
+                    mim = re.search("[0-9]+", line).group(0)
 
-                    if doid not in doid_omim_dict:
-                        doid_omim_dict[doid] = set()
-                    if omim not in doid_omim_dict[doid]:
-                        doid_omim_dict[doid].add(omim)
+                    if doid not in doid_mim_dict:
+                        doid_mim_dict[doid] = set()
+                    if mim not in doid_mim_dict[doid]:
+                        doid_mim_dict[doid].add(mim)
 
     obo_fh.close()
-    return doid_omim_dict
+    return doid_mim_dict
 
 
 # Based on `MIMdisease` class in "annotation-refinery/process_do.py".
@@ -560,14 +560,14 @@ def build_mim_diseases_dict(genemap_filename):
 
 # Based on `add_do_term_annotations()` in "annotation-refinery/process_do.py"
 # See https://github.com/greenelab/annotation-refinery
-def add_term_annotations(doid_omim_dict, disease_ontology, mim_diseases):
+def add_term_annotations(doid_mim_dict, disease_ontology, mim_diseases):
     """
     Function to add annotations to only the disease_ontology terms found in
-    the doid_omim_dict (created by the build_doid_omim_dict() function).
+    the doid_mim_dict (created by the build_doid_mim_dict() function).
 
     Arguments:
-    doid_omim_dict -- Dictionary mapping DO IDs to OMIM xref IDs. Only DOIDs
-    with existing OMIM xref IDs are present as keys in this dictionary.
+    doid_mim_dict -- Dictionary mapping DO IDs to MIM xref IDs. Only DOIDs
+    with existing MIM xref IDs are present as keys in this dictionary.
 
     disease_ontology -- A Disease Ontology that has parsed the DO OBO file.
     This is actually just a GO object (see imports for this file) that
@@ -583,20 +583,20 @@ def add_term_annotations(doid_omim_dict, disease_ontology, mim_diseases):
     # logging.debug(disease_ontology.go_terms)
 
     entrez_set = set()
-    for doid in doid_omim_dict.keys():
+    for doid in doid_mim_dict.keys():
         term = disease_ontology.get_term(doid)
         if term is None:
             continue
 
         # logging.info("Processing %s", term)
 
-        omim_id_list = doid_omim_dict[doid]
-        for omim_id in omim_id_list:
-            # If omim_id is not in mim_diseases dict, ignore it.
-            if omim_id not in mim_diseases:
+        mim_id_list = doid_mim_dict[doid]
+        for mim_id in mim_id_list:
+            # If mim_id is not in mim_diseases dict, ignore it.
+            if mim_id not in mim_diseases:
                 continue
 
-            mim_entry = mim_diseases[omim_id]
+            mim_entry = mim_diseases[mim_id]
             for gene_id in mim_entry.genes:
                 entrez = int(gene_id)
                 entrez_set.add(entrez)
@@ -607,7 +607,7 @@ def add_term_annotations(doid_omim_dict, disease_ontology, mim_diseases):
 
 # Based on `create_do_term_bastract()` in "annotation-refinery/process_do.py".
 # See https://github.com/greenelab/annotation-refinery
-def create_gs_abstract(do_term, doid_omim_dict):
+def create_gs_abstract(do_term, doid_mim_dict):
     """
     Function to create the DO term abstract in the desired
     format.
@@ -615,31 +615,31 @@ def create_gs_abstract(do_term, doid_omim_dict):
     Arguments:
     do_term -- This is a go_term object from `GO` class
 
-    doid_omim_dict -- A dictionary of DO terms mapping to sets of OMIM xrefs.
-    This is returned by the build_doid_omim_dict() function above.
+    doid_mim_dict -- A dictionary of DO terms mapping to sets of MIM xrefs.
+    This is returned by the build_doid_mim_dict() function above.
 
     Returns:
     abstract -- A string of the DO term's abstract in the desired format.
     """
-    omim_clause = ""
+    mim_clause = ""
 
     doid = do_term.go_id
-    if doid in doid_omim_dict:
-        # `omim_list` is sorted to make return value reproducible.
-        omim_list = sorted(list(doid_omim_dict[doid]))
+    if doid in doid_mim_dict:
+        # `mim_list` is sorted to make return value reproducible.
+        mim_list = sorted(list(doid_mim_dict[doid]))
     else:
-        omim_list = []
+        mim_list = []
 
-    if len(omim_list):
-        omim_clause = (
-            " Annotations directly to this term are provided " + "by the OMIM disease ID"
+    if len(mim_list):
+        mim_clause = (
+            " Annotations directly to this term are provided " + "by the MIM disease ID"
         )  # Is that sentence right?
 
-        if len(omim_list) == 1:
-            omim_clause = omim_clause + " " + omim_list[0]
+        if len(mim_list) == 1:
+            mim_clause = mim_clause + " " + mim_list[0]
         else:
-            omim_clause = omim_clause + "s " + ", ".join(omim_list[:-1]) + " and " + omim_list[-1]
-        omim_clause = omim_clause + "."
+            mim_clause = mim_clause + "s " + ", ".join(mim_list[:-1]) + " and " + mim_list[-1]
+        mim_clause = mim_clause + "."
 
     abstract = ""
 
@@ -652,7 +652,7 @@ def create_gs_abstract(do_term, doid_omim_dict):
     abstract += (
         " Annotations from child terms in the disease ontology are"
         + " propagated through transitive closure."
-        + omim_clause
+        + mim_clause
     )
 
     # logging.info(abstract)
@@ -669,11 +669,11 @@ def get_genesets(obo_filename, genemap_filename):
     if obo_is_loaded is False:
         logging.error("Failed to load OBO file.")
 
-    doid_omim_dict = build_doid_omim_dict(obo_filename)
+    doid_mim_dict = build_doid_mim_dict(obo_filename)
 
     mim_diseases = build_mim_diseases_dict(genemap_filename)
 
-    entrez_set = add_term_annotations(doid_omim_dict, disease_ontology, mim_diseases)
+    entrez_set = add_term_annotations(doid_mim_dict, disease_ontology, mim_diseases)
 
     gene_lookup = MyGeneLookup(TAX_ID)
     gene_lookup.query_mygene(list(map(str, entrez_set)), "entrezgene,retired")
@@ -695,7 +695,7 @@ def get_genesets(obo_filename, genemap_filename):
             my_geneset["taxid"] = TAX_ID
             my_geneset["source"] = "do"
             my_geneset["name"] = term.full_name
-            do_abstract = create_gs_abstract(term, doid_omim_dict)
+            do_abstract = create_gs_abstract(term, doid_mim_dict)
             my_geneset["description"] = do_abstract
             my_geneset["do"] = {"id": term_id, "abstract": do_abstract}
 
