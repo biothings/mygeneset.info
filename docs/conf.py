@@ -252,7 +252,7 @@ except ImportError:
     pass
 
 def setup(app):
-    app.add_javascript('mygeneset_doc.js')
-    app.add_javascript('jquery.dataTables.min.js')
-    app.add_stylesheet('mygeneset_doc.css')
-    app.add_stylesheet('jquery.dataTables.min.css')
+    app.add_js_file('mygeneset_doc.js')
+    app.add_js_file('jquery.dataTables.min.js')
+    app.add_css_file('mygeneset_doc.css')
+    app.add_css_file('jquery.dataTables.min.css')
