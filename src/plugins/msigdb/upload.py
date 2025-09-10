@@ -15,7 +15,7 @@ class msigdbUploader(uploader.BaseSourceUploader):
     __metadata__ = {
         "src_meta": {
             "license_url": "https://www.gsea-msigdb.org/gsea/msigdb_license_terms.jsp",
-            "licence": "CC BY 4.0",
+            "license": "CC BY 4.0",
             "url": "https://www.gsea-msigdb.org/gsea/msigdb/",
             "description": "Molecular Signatures Database",
         }
