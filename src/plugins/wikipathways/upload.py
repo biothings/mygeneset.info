@@ -9,7 +9,7 @@ class WikiPathwaysUploader(uploader.BaseSourceUploader):
     __metadata__ = {
         "src_meta": {
             "license_url": "https://www.wikipathways.org/terms.html",
-            "licence": "CC0",
+            "license": "CC0",
             "url": "https://www.wikipathways.org/",
             "description": "WikiPathways",
         }
