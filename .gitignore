@@ -148,3 +148,4 @@ config.py
 *.vscode
 
 **/*/.biothings_hub
+.idea
