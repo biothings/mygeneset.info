@@ -146,3 +146,5 @@ config.py
 
 # vscode
 *.vscode
+
+**/*/.biothings_hub
