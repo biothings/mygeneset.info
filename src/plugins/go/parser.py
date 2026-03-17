@@ -56,6 +56,13 @@ def load_data(data_folder):
             yield annotations
 
 
+# todo: escape double quotation mark, there could be more special chars to handle
+def escape_special_chars(text: str) -> str:
+    """Escape special characters in text for MyGene.info queries."""
+    return str.replace(text, '"', '\\"')
+
+
+
 def parse_gene_annotations(f):
     """Parse a gene annotation (.gaf.gz) file."""
     data = tabfile_feeder(f, header=0)
@@ -67,7 +74,7 @@ def parse_gene_annotations(f):
                 taxid = str(rec[12].split("|")[0].replace("taxon:", ""))
                 genesets[_id] = {"_id": _id + "_" + str(taxid), "is_public": True, "taxid": taxid}
             uniprot = rec[1]
-            symbol = rec[2]
+            symbol = escape_special_chars(rec[2])
             qualifiers = rec[3].split("|")
             # The gene can belong to several sets:
             if "NOT" in qualifiers:
