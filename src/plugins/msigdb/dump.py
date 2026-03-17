@@ -2,37 +2,38 @@ import glob
 import logging
 import os
 import biothings
-import bs4
 import config
 import re
 
 import lxml.etree as ET
+import requests
 
 biothings.config_for_app(config)
 
 from biothings.hub.dataload.dumper import HTTPDumper
 from biothings.utils.common import unzipall
 from config import DATA_ARCHIVE_ROOT
+from .xml_sanitizer import sanitize_xml_attributes
 
 
 class msigdbDumper(HTTPDumper):
     SRC_NAME = "msigdb"
     SRC_ROOT_FOLDER = os.path.join(DATA_ARCHIVE_ROOT, SRC_NAME)
     BASE_URL = "https://data.broadinstitute.org/gsea-msigdb/msigdb/release/"
-    VERSION_HOME = "https://software.broadinstitute.org/cancer/software/gsea/wiki/index.php/MSigDB_Latest_Release_Notes"
+    VERSION_HOME = BASE_URL
+
     SCHEDULE = "0 8 20 * *"
 
     def get_remote_version(self):
         """Scrape version number from MSIGDB homepage.
-        Header 1 text ends with the version number.
         """
-        release_notes = self.client.get(self.__class__.VERSION_HOME)
-        html = bs4.BeautifulSoup(release_notes.text, "html.parser")
-        content = html.find("div", {"id": "content"})
-        p = content.find_all("p")
-        version_txt = p[0].find("a").text
-        version = version_txt.replace("MSigDB_v", "").replace(".Hs_Release_Notes", "")
-        return version
+
+        # C=M;O=D sorts the listing by modification time
+        html = requests.get(self.__class__.VERSION_HOME + "?C=M;O=D").text
+        versions = re.findall(r'href="(\d+\.\d+)\.(?:Mm|Hs)/"', html)
+
+        latest = sorted(set(versions), reverse=True)[0]
+        return latest
 
     def create_todump_list(self, force=False):
         """Dump XML geneset file.
@@ -67,6 +68,9 @@ class msigdbDumper(HTTPDumper):
 
 
     def encode_xml(self, xml_text: str):
+        return sanitize_xml_attributes(xml_text)
+
+    def _encode_xml(self, xml_text: str):
         # Dictionary for replacements
         replacements = {
             '&': '&amp;',
@@ -139,10 +143,10 @@ class msigdbDumper(HTTPDumper):
             new_xml.write(f, pretty_print=True, encoding="utf-8")
 
     def post_dump(self, *args, **kwargs):
-        """ "Create a new XML file with genesets sorted by organism"""
+        """Create a new XML file with genesets sorted by organism."""
         self.logger.info("Sorting documents in XML file")
         unzipall(self.new_data_folder)
-        human_file_path = glob.glob(self.human_data_file.replace(".zip", "") + "/msigdb_v*.Hs.xml")
+        human_file_path = glob.glob(self.human_xml_data_file.replace(".zip", ""))
         # mouse_file_path = glob.glob(self.mouse_data_file.replace(".zip", "") + "/msigdb_v*.Mm.xml")
         self.sort_xml(human_file_path[0], os.path.join(self.new_data_folder, "human_genesets.xml"))
         # self.sort_xml(mouse_file_path[0], os.path.join(self.new_data_folder, "mouse_genesets.xml"))

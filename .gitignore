@@ -151,4 +151,4 @@ config.py
 .idea/
 
 # biothings cli
-**/.biothings_hub
+**/*/.biothings_hub
