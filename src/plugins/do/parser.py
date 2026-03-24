@@ -659,6 +659,51 @@ def create_gs_abstract(do_term, doid_mim_dict):
     return abstract
 
 
+def create_gs_direct_annotation_abstract(do_term, doid_ensp_dict):
+    """
+    Create a DO term abstract for the current direct-annotation pipeline.
+
+    Arguments:
+    do_term -- This is a go_term object from `GO` class
+
+    doid_ensp_dict -- A dictionary of DO terms mapping to sets of Ensembl
+    protein IDs. This is returned by the build_doid_ensp_dict() function.
+
+    Returns:
+    abstract -- A string of the DO term's abstract in the desired format.
+    """
+    ensp_clause = ""
+    doid = do_term.go_id
+
+    if doid in doid_ensp_dict:
+        ensp_list = sorted(list(doid_ensp_dict[doid]))
+    else:
+        ensp_list = []
+
+    if len(ensp_list):
+        ensp_clause = " Direct annotations to this term are provided by the Ensembl protein ID"
+        if len(ensp_list) == 1:
+            ensp_clause = ensp_clause + " " + ensp_list[0]
+        else:
+            ensp_clause = ensp_clause + "s " + ", ".join(ensp_list[:-1]) + " and " + ensp_list[-1]
+        ensp_clause = ensp_clause + "."
+
+    abstract = ""
+
+    if do_term.description:
+        abstract += do_term.description
+    else:
+        logging.info("No OBO description for term %s", do_term)
+
+    abstract += (
+        " Annotations from child terms in the disease ontology are propagated through"
+        " transitive closure."
+        + ensp_clause
+    )
+
+    return abstract
+
+
 def build_doid_ensp_dict():
     """
     Fetch a direct mapping of DOIDs to Ensembl protein IDs from the
@@ -745,7 +790,7 @@ def get_genesets(obo_filename):
     if obo_is_loaded is False:
         logging.error("Failed to load OBO file.")
 
-    doid_mim_dict = build_doid_mim_dict(obo_filename)
+    # doid_mim_dict = build_doid_mim_dict(obo_filename)
     # mim_diseases = build_mim_diseases_dict(genemap_filename)
     # entrez_set = add_term_annotations(doid_mim_dict, disease_ontology, mim_diseases)
     doid_ensp_dict = build_doid_ensp_dict()
@@ -772,7 +817,10 @@ def get_genesets(obo_filename):
             my_geneset["taxid"] = TAX_ID
             my_geneset["source"] = "do"
             my_geneset["name"] = term.full_name
-            do_abstract = create_gs_abstract(term, doid_mim_dict)
+
+            # do_abstract = create_gs_abstract(term, doid_mim_dict)
+
+            do_abstract = create_gs_direct_annotation_abstract(term, doid_ensp_dict)
             my_geneset["description"] = do_abstract
             my_geneset["do"] = {"id": term_id, "abstract": do_abstract}
 
@@ -819,7 +867,7 @@ if __name__ == "__main__":
     data_dir = os.path.join(config.DATA_ARCHIVE_ROOT, "do", version)
 
     genesets = list(load_data(data_dir))
-    # for gs in genesets:
-    #     print(json.dumps(gs, indent=2))
+    if genesets:
+        print(json.dumps(genesets[0], indent=2))
 
     print("\nTotal number of gs:", len(genesets))
