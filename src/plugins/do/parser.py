@@ -486,6 +486,45 @@ class MIMdisease:
         self.genes = []  # list of gene IDs
 
 
+def build_mim_uniprot_dict(humsavar_filename):
+    """
+    Parse the UniProt Humsavar file and build a dictionary of MIM IDs to
+    Swiss-Prot accessions.
+
+    Arguments:
+    humsavar_filename -- A string. Location of the humsavar file to read in.
+
+    Returns:
+    mim_uniprot_dict -- A dictionary where keys are MIM IDs and values are
+    sets of Swiss-Prot accessions found in the disease name column.
+    """
+    mim_uniprot_dict = {}
+
+    with open(humsavar_filename, "r") as humsavar_fh:
+        for line in humsavar_fh:
+            line = line.rstrip("\n")
+            if not line or line.startswith("-") or line.startswith(" "):
+                continue
+
+            tokens = re.split(r"\s{2,}", line, maxsplit=6)
+            if len(tokens) != 7:
+                continue
+
+            swissprot_ac = tokens[1].strip()
+            disease_name = tokens[6].strip()
+
+            mim_info = re.search(r"\[MIM:(\d+)\]", disease_name)
+            if mim_info is None:
+                continue
+
+            mim_id = mim_info.group(1)
+            if mim_id not in mim_uniprot_dict:
+                mim_uniprot_dict[mim_id] = set()
+            mim_uniprot_dict[mim_id].add(swissprot_ac)
+
+    return mim_uniprot_dict
+
+
 # Based on `build_mim_diseases_dict()` in "annotation-refinery/process_do.py".
 # See https://github.com/greenelab/annotation-refinery
 def build_mim_diseases_dict(genemap_filename):
@@ -603,6 +642,32 @@ def add_term_annotations(doid_mim_dict, disease_ontology, mim_diseases):
                 term.add_annotation(gid=entrez, ref=None)
 
     return entrez_set
+
+
+def add_term_uniprot_annotations(doid_mim_dict, disease_ontology, mim_uniprot_dict):
+    """
+    Add Swiss-Prot annotations to disease ontology terms using the
+    DOID -> MIM -> UniProt path.
+
+    Returns:
+    A set of Swiss-Prot accessions, which will be used in MyGene.info query.
+    """
+    uniprot_set = set()
+    for doid in doid_mim_dict.keys():
+        term = disease_ontology.get_term(doid)
+        if term is None:
+            continue
+
+        mim_id_list = doid_mim_dict[doid]
+        for mim_id in mim_id_list:
+            if mim_id not in mim_uniprot_dict:
+                continue
+
+            for swissprot_ac in mim_uniprot_dict[mim_id]:
+                uniprot_set.add(swissprot_ac)
+                term.add_annotation(gid=swissprot_ac, ref=None)
+
+    return uniprot_set
 
 
 # Based on `create_do_term_bastract()` in "annotation-refinery/process_do.py".
@@ -746,12 +811,10 @@ def build_doid_ensp_dict():
 
             for association in associations:
                 ensembl_id = association.get("ensembl")
+
+                # todo
                 if not ensembl_id or not ensembl_id.startswith("ENSP"):
                     continue
-
-                # Result comparison:
-                # Everything 6058 vs only ENSP: 5985
-                # with 2025-08-29 genemap2.txt: 5261
 
                 doid_ensp_dict.setdefault(doid, set()).add(str(ensembl_id))
 
@@ -780,25 +843,81 @@ def add_term_ensp_annotations(doid_ensp_dict, disease_ontology):
     return ensp_set
 
 
+def build_gene_lookup_from_mim(obo_filename, genemap_filename, disease_ontology):
+    """
+    Build a MyGene lookup object using the legacy DOID -> MIM -> Entrez flow.
+
+    Returns:
+    gene_lookup -- Populated MyGeneLookup object
+    annotation_dict -- Dictionary used to build abstracts
+    abstract_builder -- Function used to generate gene set abstracts
+    """
+    doid_mim_dict = build_doid_mim_dict(obo_filename)
+    mim_diseases = build_mim_diseases_dict(genemap_filename)
+    entrez_set = add_term_annotations(doid_mim_dict, disease_ontology, mim_diseases)
+
+    gene_lookup = MyGeneLookup(TAX_ID)
+    gene_lookup.query_mygene(list(map(str, entrez_set)), "entrezgene,retired")
+
+    return gene_lookup, doid_mim_dict, create_gs_abstract
+
+
+def build_gene_lookup_from_direct_annotations(disease_ontology):
+    """
+    Build a MyGene lookup object using direct DOID -> Ensembl protein mappings.
+
+    Returns:
+    gene_lookup -- Populated MyGeneLookup object
+    annotation_dict -- Dictionary used to build abstracts
+    abstract_builder -- Function used to generate gene set abstracts
+    """
+    doid_ensp_dict = build_doid_ensp_dict()
+    ensp_set = add_term_ensp_annotations(doid_ensp_dict, disease_ontology)
+
+    gene_lookup = MyGeneLookup(TAX_ID)
+    gene_lookup.query_mygene(sorted(ensp_set), "ensembl.protein")
+
+    return gene_lookup, doid_ensp_dict, create_gs_direct_annotation_abstract
+
+
+def build_gene_lookup_from_uniprot(obo_filename, humsavar_filename, disease_ontology):
+    """
+    Build a MyGene lookup object using the DOID -> MIM -> Swiss-Prot flow.
+
+    Returns:
+    gene_lookup -- Populated MyGeneLookup object
+    annotation_dict -- Dictionary used to build abstracts
+    abstract_builder -- Function used to generate gene set abstracts
+    """
+    doid_mim_dict = build_doid_mim_dict(obo_filename)
+    mim_uniprot_dict = build_mim_uniprot_dict(humsavar_filename)
+    uniprot_set = add_term_uniprot_annotations(doid_mim_dict, disease_ontology, mim_uniprot_dict)
+
+    gene_lookup = MyGeneLookup(TAX_ID)
+    gene_lookup.query_mygene(sorted(uniprot_set), "uniprot")
+
+    return gene_lookup, doid_mim_dict, create_gs_abstract
+
+
 # Based on `process_do_terms()` in "annotation-refinery/process_do.py".
 # See https://github.com/greenelab/annotation-refinery
 # Changed from a regular function to generator to work with Biothings SDK.
-def get_genesets(obo_filename):
+def get_genesets(obo_filename, genemap_filename=None, humsavar_filename=None):
     disease_ontology = GO()
     obo_is_loaded = disease_ontology.load_obo(obo_filename)
 
     if obo_is_loaded is False:
         logging.error("Failed to load OBO file.")
 
-    # doid_mim_dict = build_doid_mim_dict(obo_filename)
-    # mim_diseases = build_mim_diseases_dict(genemap_filename)
-    # entrez_set = add_term_annotations(doid_mim_dict, disease_ontology, mim_diseases)
-    doid_ensp_dict = build_doid_ensp_dict()
-    ensp_set = add_term_ensp_annotations(doid_ensp_dict, disease_ontology)
-
-    gene_lookup = MyGeneLookup(TAX_ID)
-    # gene_lookup.query_mygene(list(map(str, entrez_set)), "entrezgene,retired")
-    gene_lookup.query_mygene(sorted(ensp_set), "ensembl.protein")
+    # gene_lookup, annotation_dict, abstract_builder = build_gene_lookup_from_mim(
+    #     obo_filename, genemap_filename, disease_ontology
+    # )
+    gene_lookup, annotation_dict, abstract_builder = build_gene_lookup_from_uniprot(
+        obo_filename, humsavar_filename, disease_ontology
+    )
+    # gene_lookup, annotation_dict, abstract_builder = build_gene_lookup_from_direct_annotations(
+    #     disease_ontology
+    # )
 
     disease_ontology.populated = True
     disease_ontology.propagate()
@@ -818,9 +937,7 @@ def get_genesets(obo_filename):
             my_geneset["source"] = "do"
             my_geneset["name"] = term.full_name
 
-            # do_abstract = create_gs_abstract(term, doid_mim_dict)
-
-            do_abstract = create_gs_direct_annotation_abstract(term, doid_ensp_dict)
+            do_abstract = abstract_builder(term, annotation_dict)
             my_geneset["description"] = do_abstract
             my_geneset["do"] = {"id": term_id, "abstract": do_abstract}
 
@@ -840,16 +957,19 @@ def load_data(data_dir):
     """Simple generator for Biothings SDK."""
 
     obo_filename = os.path.join(data_dir, "HumanDO.obo")
-    # genemap_filename = os.path.join(data_dir, "genemap2.txt")
+    genemap_filename = os.path.join(data_dir, "genemap2.txt")
+    humsavar_filename = os.path.join(data_dir, "humsavar.txt")
 
     print(obo_filename)
     # print(genemap_filename)
+    # print(humsavar_filename)
     assert os.path.exists(obo_filename), f"Could not find file: {obo_filename}"
     # assert os.path.exists(genemap_filename), f"Could not find file: {genemap_filename}"
+    # assert os.path.exists(humsavar_filename), f"Could not find file: {humsavar_filename}"
 
-    # genesets = get_genesets(obo_filename, genemap_filename)
+    genesets = get_genesets(obo_filename, genemap_filename, humsavar_filename)
 
-    genesets = get_genesets(obo_filename)
+    # genesets = get_genesets(obo_filename)
 
     for gs in genesets:
         yield gs
@@ -871,3 +991,8 @@ if __name__ == "__main__":
         print(json.dumps(genesets[0], indent=2))
 
     print("\nTotal number of gs:", len(genesets))
+
+    # Result comparison:
+    # Everything 6058 vs only ENSP: 5985
+    # with 2025-08-29 genemap2.txt: 5261
+    # with uniprot only: 4604
