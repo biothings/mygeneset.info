@@ -24,22 +24,24 @@ def get_release(self):
             obo_release = full_version.split("/")[2]
             break
 
-    # Get release date of "genemap2.txt" data file:
-    genemap2_url = "https://data.omim.org/downloads/BQtb2GI3Tz6aKpp8PLrYcg/genemap2.txt"
-    genemap2_resp = requests.get(genemap2_url)
-    genemap2_text_lines = genemap2_resp.text.strip("\n").split("\n")
-    genemap2_release = ""
+    return "obo-" + obo_release
 
-    # Find the line that is in the following format:
-    # "# Genearated: YYYY-MM-DD"
-    # and extract "YYYY-MM-DD" part as the release string in "genemap2.txt":
-    for line in genemap2_text_lines:
-        if line.startswith("# Generated: "):
-            genemap2_release = line.strip().split(": ")[1]
-            break
-
-    # Return a string that combines both release dates
-    return "obo-" + obo_release + "_" + "genemap2-" + genemap2_release
+    # # Get release date of "genemap2.txt" data file:
+    # genemap2_url = "https://data.omim.org/downloads/BQtb2GI3Tz6aKpp8PLrYcg/genemap2.txt"
+    # genemap2_resp = requests.get(genemap2_url)
+    # genemap2_text_lines = genemap2_resp.text.strip("\n").split("\n")
+    # genemap2_release = ""
+    #
+    # # Find the line that is in the following format:
+    # # "# Genearated: YYYY-MM-DD"
+    # # and extract "YYYY-MM-DD" part as the release string in "genemap2.txt":
+    # for line in genemap2_text_lines:
+    #     if line.startswith("# Generated: "):
+    #         genemap2_release = line.strip().split(": ")[1]
+    #         break
+    #
+    # # Return a string that combines both release dates
+    # return "obo-" + obo_release + "_" + "genemap2-" + genemap2_release
 
 
 # Test harness

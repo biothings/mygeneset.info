@@ -659,10 +659,86 @@ def create_gs_abstract(do_term, doid_mim_dict):
     return abstract
 
 
+def build_doid_ensp_dict():
+    """
+    Fetch a direct mapping of DOIDs to Ensembl protein IDs from the
+    BioThings disease API.
+    """
+    import json
+    from urllib.parse import urlencode
+    from urllib.request import urlopen
+
+    api_url = "https://biothings.ci.transltr.io/diseases/query"
+    query = "_exists_:DISEASES.doid AND _exists_:DISEASES.associatedWith.ensembl"
+    params = {
+        "q": query,
+        "fields": "DISEASES.doid,DISEASES.associatedWith.ensembl",
+        "size": 1000,
+        "from": 0,
+    }
+    doid_ensp_dict = {}
+    total = None
+
+    while total is None or params["from"] < total:
+        request_url = api_url + "?" + urlencode(params)
+        with urlopen(request_url) as response:
+            payload = json.load(response)
+
+        total = payload.get("total", 0)
+        hits = payload.get("hits", [])
+        if not hits:
+            break
+
+        for hit in hits:
+            disease_doc = hit.get("DISEASES", {})
+            doid = disease_doc.get("doid")
+            if not doid:
+                continue
+
+            associations = disease_doc.get("associatedWith", [])
+            if isinstance(associations, dict):
+                associations = [associations]
+
+            for association in associations:
+                ensembl_id = association.get("ensembl")
+                if not ensembl_id or not ensembl_id.startswith("ENSP"):
+                    continue
+
+                # Result comparison:
+                # Everything 6058 vs only ENSP: 5985
+                # with 2025-08-29 genemap2.txt: 5261
+
+                doid_ensp_dict.setdefault(doid, set()).add(str(ensembl_id))
+
+
+
+        params["from"] += params["size"]
+
+    return doid_ensp_dict
+
+
+def add_term_ensp_annotations(doid_ensp_dict, disease_ontology):
+    """
+    Add Ensembl protein annotations directly to DO terms and return the
+    unique set of Ensembl protein IDs for MyGene lookup.
+    """
+    ensp_set = set()
+    for doid, ensp_ids in doid_ensp_dict.items():
+        term = disease_ontology.get_term(doid)
+        if term is None:
+            continue
+
+        for ensp_id in ensp_ids:
+            ensp_set.add(ensp_id)
+            term.add_annotation(gid=ensp_id, ref=None)
+
+    return ensp_set
+
+
 # Based on `process_do_terms()` in "annotation-refinery/process_do.py".
 # See https://github.com/greenelab/annotation-refinery
 # Changed from a regular function to generator to work with Biothings SDK.
-def get_genesets(obo_filename, genemap_filename):
+def get_genesets(obo_filename):
     disease_ontology = GO()
     obo_is_loaded = disease_ontology.load_obo(obo_filename)
 
@@ -670,13 +746,14 @@ def get_genesets(obo_filename, genemap_filename):
         logging.error("Failed to load OBO file.")
 
     doid_mim_dict = build_doid_mim_dict(obo_filename)
-
-    mim_diseases = build_mim_diseases_dict(genemap_filename)
-
-    entrez_set = add_term_annotations(doid_mim_dict, disease_ontology, mim_diseases)
+    # mim_diseases = build_mim_diseases_dict(genemap_filename)
+    # entrez_set = add_term_annotations(doid_mim_dict, disease_ontology, mim_diseases)
+    doid_ensp_dict = build_doid_ensp_dict()
+    ensp_set = add_term_ensp_annotations(doid_ensp_dict, disease_ontology)
 
     gene_lookup = MyGeneLookup(TAX_ID)
-    gene_lookup.query_mygene(list(map(str, entrez_set)), "entrezgene,retired")
+    # gene_lookup.query_mygene(list(map(str, entrez_set)), "entrezgene,retired")
+    gene_lookup.query_mygene(sorted(ensp_set), "ensembl.protein")
 
     disease_ontology.populated = True
     disease_ontology.propagate()
@@ -715,13 +792,17 @@ def load_data(data_dir):
     """Simple generator for Biothings SDK."""
 
     obo_filename = os.path.join(data_dir, "HumanDO.obo")
-    genemap_filename = os.path.join(data_dir, "genemap2.txt")
-    print(obo_filename)
-    print(genemap_filename)
-    assert os.path.exists(obo_filename), f"Could not find file: {obo_filename}"
-    assert os.path.exists(genemap_filename), f"Could not find file: {genemap_filename}"
+    # genemap_filename = os.path.join(data_dir, "genemap2.txt")
 
-    genesets = get_genesets(obo_filename, genemap_filename)
+    print(obo_filename)
+    # print(genemap_filename)
+    assert os.path.exists(obo_filename), f"Could not find file: {obo_filename}"
+    # assert os.path.exists(genemap_filename), f"Could not find file: {genemap_filename}"
+
+    # genesets = get_genesets(obo_filename, genemap_filename)
+
+    genesets = get_genesets(obo_filename)
+
     for gs in genesets:
         yield gs
 
@@ -738,7 +819,7 @@ if __name__ == "__main__":
     data_dir = os.path.join(config.DATA_ARCHIVE_ROOT, "do", version)
 
     genesets = list(load_data(data_dir))
-    for gs in genesets:
-        print(json.dumps(gs, indent=2))
+    # for gs in genesets:
+    #     print(json.dumps(gs, indent=2))
 
     print("\nTotal number of gs:", len(genesets))
