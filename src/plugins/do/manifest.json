@@ -1,6 +1,6 @@
 {
   "version": "0.1",
-  "requires" : ["mygene"],
+  "requires" : ["mygene", "biothings_client"],
   "__metadata__": {
     "license": "CC0",
     "license_url": "https://raw.githubusercontent.com/DiseaseOntology/HumanDiseaseOntology/main/LICENSE",

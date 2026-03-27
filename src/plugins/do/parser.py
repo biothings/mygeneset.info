@@ -828,38 +828,27 @@ def create_gs_merged_annotation_abstract(do_term, annotation_dict):
 def build_doid_ensp_dict():
     """
     Fetch a direct mapping of DOIDs to Ensembl protein IDs from the
-    BioThings disease API.
+    BioThings pending diseases API.
     """
-    import json
-    from urllib.parse import urlencode
-    from urllib.request import urlopen
+    import biothings_client
 
     # prefer production over ci
-    api_url = "https://biothings.transltr.io/diseases/query"
+    disease_client = biothings_client.get_client("disease", url="https://biothings.transltr.io/diseases/")
     query = "_exists_:DISEASES.doid AND _exists_:DISEASES.associatedWith.ensembl"
-    params = {
-        "q": query,
-        "fields": "DISEASES.doid,DISEASES.associatedWith.ensembl",
-        "size": 1000,
-        "from": 0,
-    }
     doid_ensp_dict = {}
-    total = None
 
-    # todo scrolling results using biothings client fetch-all
+    hits = disease_client.query(
+        query,
+        fields="DISEASES.doid,DISEASES.associatedWith.ensembl",
+        fetch_all=True,
+    )
 
-    while total is None or params["from"] < total:
-        request_url = api_url + "?" + urlencode(params)
-        with urlopen(request_url) as response:
-            payload = json.load(response)
+    for hit in hits:
+        disease_docs = hit.get("DISEASES", {})
+        if isinstance(disease_docs, dict):
+            disease_docs = [disease_docs]
 
-        total = payload.get("total", 0)
-        hits = payload.get("hits", [])
-        if not hits:
-            break
-
-        for hit in hits:
-            disease_doc = hit.get("DISEASES", {})
+        for disease_doc in disease_docs:
             doid = disease_doc.get("doid")
             if not doid:
                 continue
@@ -875,8 +864,6 @@ def build_doid_ensp_dict():
                     continue
 
                 doid_ensp_dict.setdefault(doid, set()).add(str(ensembl_id))
-
-        params["from"] += params["size"]
 
     return doid_ensp_dict
 
