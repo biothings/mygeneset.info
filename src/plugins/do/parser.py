@@ -769,6 +769,62 @@ def create_gs_direct_annotation_abstract(do_term, doid_ensp_dict):
     return abstract
 
 
+def create_gs_merged_annotation_abstract(do_term, annotation_dict):
+    """
+    Create a DO term abstract for the merged Ensembl and Swiss-Prot pipeline.
+
+    Arguments:
+    do_term -- This is a go_term object from `GO` class
+
+    annotation_dict -- Dictionary containing "ensp" and "uniprot" mappings.
+
+    Returns:
+    abstract -- A string of the DO term's abstract in the desired format.
+    """
+    direct_clause = ""
+    doid = do_term.go_id
+
+    ensp_list = sorted(list(annotation_dict["ensp"].get(doid, [])))
+    uniprot_list = sorted(list(annotation_dict["uniprot"].get(doid, [])))
+
+    clauses = []
+    if len(ensp_list):
+        ensp_clause = "Direct annotations to this term are provided by the Ensembl protein ID"
+        if len(ensp_list) == 1:
+            ensp_clause = ensp_clause + " " + ensp_list[0]
+        else:
+            ensp_clause = ensp_clause + "s " + ", ".join(ensp_list[:-1]) + " and " + ensp_list[-1]
+        clauses.append(ensp_clause + ".")
+
+    if len(uniprot_list):
+        uniprot_clause = "Direct annotations to this term are provided by the Swiss-Prot accession"
+        if len(uniprot_list) == 1:
+            uniprot_clause = uniprot_clause + " " + uniprot_list[0]
+        else:
+            uniprot_clause = (
+                uniprot_clause + "s " + ", ".join(uniprot_list[:-1]) + " and " + uniprot_list[-1]
+            )
+        clauses.append(uniprot_clause + ".")
+
+    if clauses:
+        direct_clause = " " + " ".join(clauses)
+
+    abstract = ""
+
+    if do_term.description:
+        abstract += do_term.description
+    else:
+        logging.info("No OBO description for term %s", do_term)
+
+    abstract += (
+        " Annotations from child terms in the disease ontology are propagated through"
+        " transitive closure."
+        + direct_clause
+    )
+
+    return abstract
+
+
 def build_doid_ensp_dict():
     """
     Fetch a direct mapping of DOIDs to Ensembl protein IDs from the
@@ -789,6 +845,8 @@ def build_doid_ensp_dict():
     }
     doid_ensp_dict = {}
     total = None
+
+    # todo scrolling results using biothings client fetch-all
 
     while total is None or params["from"] < total:
         request_url = api_url + "?" + urlencode(params)
@@ -897,6 +955,39 @@ def build_gene_lookup_from_uniprot(obo_filename, humsavar_filename, disease_onto
     return gene_lookup, doid_mim_dict, create_gs_abstract
 
 
+def build_gene_lookup_from_merged_annotations(obo_filename, humsavar_filename, disease_ontology):
+    """
+    Build a MyGene lookup object using both direct DOID -> Ensembl protein
+    mappings and DOID -> MIM -> Swiss-Prot mappings.
+
+    Returns:
+    gene_lookup -- Populated MyGeneLookup object
+    annotation_dict -- Dictionary used to build abstracts
+    abstract_builder -- Function used to generate gene set abstracts
+    """
+    doid_ensp_dict = build_doid_ensp_dict()
+    ensp_set = add_term_ensp_annotations(doid_ensp_dict, disease_ontology)
+
+    doid_mim_dict = build_doid_mim_dict(obo_filename)
+    mim_uniprot_dict = build_mim_uniprot_dict(humsavar_filename)
+    doid_uniprot_dict = {}
+
+    for doid, mim_ids in doid_mim_dict.items():
+        for mim_id in mim_ids:
+            if mim_id not in mim_uniprot_dict:
+                continue
+            doid_uniprot_dict.setdefault(doid, set()).update(mim_uniprot_dict[mim_id])
+
+    uniprot_set = add_term_uniprot_annotations(doid_mim_dict, disease_ontology, mim_uniprot_dict)
+
+    gene_lookup = MyGeneLookup(TAX_ID)
+    gene_lookup.query_mygene(sorted(ensp_set), "ensembl.protein")
+    gene_lookup.query_mygene(sorted(uniprot_set), "uniprot")
+
+    annotation_dict = {"ensp": doid_ensp_dict, "uniprot": doid_uniprot_dict}
+    return gene_lookup, annotation_dict, create_gs_merged_annotation_abstract
+
+
 # Based on `process_do_terms()` in "annotation-refinery/process_do.py".
 # See https://github.com/greenelab/annotation-refinery
 # Changed from a regular function to generator to work with Biothings SDK.
@@ -907,15 +998,30 @@ def get_genesets(obo_filename, genemap_filename=None, humsavar_filename=None):
     if obo_is_loaded is False:
         logging.error("Failed to load OBO file.")
 
+    # Method 1: legacy DOID -> MIM -> Entrez pathway via genemap2.txt
     # gene_lookup, annotation_dict, abstract_builder = build_gene_lookup_from_mim(
     #     obo_filename, genemap_filename, disease_ontology
     # )
-    gene_lookup, annotation_dict, abstract_builder = build_gene_lookup_from_uniprot(
-        obo_filename, humsavar_filename, disease_ontology
+
+    # Method 2: direct DOID -> ENSP pathway from the BioThings disease API
+    gene_lookup, annotation_dict, abstract_builder = build_gene_lookup_from_direct_annotations(
+        disease_ontology
     )
-    # gene_lookup, annotation_dict, abstract_builder = build_gene_lookup_from_direct_annotations(
-    #     disease_ontology
+
+
+    # Method 3: DOID -> MIM -> Swiss-Prot pathway via humsavar.txt
+    # gene_lookup, annotation_dict, abstract_builder = build_gene_lookup_from_uniprot(
+    #     obo_filename, humsavar_filename, disease_ontology
     # )
+
+    # Method 4: merged direct DOID -> ENSP and DOID -> MIM -> Swiss-Prot annotations
+    # gene_lookup, annotation_dict, abstract_builder = (
+    #     build_gene_lookup_from_merged_annotations(
+    #         obo_filename, humsavar_filename, disease_ontology
+    #     )
+    # )
+
+
 
     disease_ontology.populated = True
     disease_ontology.propagate()
@@ -994,3 +1100,4 @@ if __name__ == "__main__":
     # Everything 6058 vs only ENSP: 5985
     # with 2025-08-29 genemap2.txt: 5261
     # with uniprot only: 4604
+    # with ensemble AND uniprot : 8042
