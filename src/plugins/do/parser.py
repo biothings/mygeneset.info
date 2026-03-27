@@ -778,7 +778,8 @@ def build_doid_ensp_dict():
     from urllib.parse import urlencode
     from urllib.request import urlopen
 
-    api_url = "https://biothings.ci.transltr.io/diseases/query"
+    # prefer production over ci
+    api_url = "https://biothings.transltr.io/diseases/query"
     query = "_exists_:DISEASES.doid AND _exists_:DISEASES.associatedWith.ensembl"
     params = {
         "q": query,
@@ -812,13 +813,10 @@ def build_doid_ensp_dict():
             for association in associations:
                 ensembl_id = association.get("ensembl")
 
-                # todo
                 if not ensembl_id or not ensembl_id.startswith("ENSP"):
                     continue
 
                 doid_ensp_dict.setdefault(doid, set()).add(str(ensembl_id))
-
-
 
         params["from"] += params["size"]
 
