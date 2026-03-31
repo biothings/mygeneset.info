@@ -1033,8 +1033,11 @@ def get_genesets(obo_filename, genemap_filename=None, humsavar_filename=None):
             my_geneset["do"] = {"id": term_id, "abstract": do_abstract}
 
             # Add the gene lookup info to the geneset.
-            genes = [str(gid) for gid in gid_set]
-            lookup_results = gene_lookup.get_results(genes)
+            lookup_ids = [str(gid) for gid in gid_set]
+            lookup_results = gene_lookup.get_results(lookup_ids)
+            lookup_results = normalize_lookup_result_source_ids(
+                gene_lookup, lookup_results, lookup_ids
+            )
             my_geneset.update(lookup_results)
 
             my_geneset = dict_sweep(my_geneset, vals=[None], remove_invalid_list=True)
