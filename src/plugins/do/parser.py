@@ -975,6 +975,31 @@ def build_gene_lookup_from_merged_annotations(obo_filename, humsavar_filename, d
     return gene_lookup, annotation_dict, create_gs_merged_annotation_abstract
 
 
+def normalize_lookup_result_source_ids(gene_lookup, lookup_results, lookup_ids):
+    """
+    Restrict source_id values to the lookup IDs used for the current term.
+
+    MyGeneLookup may return source_id values that include IDs from other terms
+    after duplicate genes are merged. Keep only the lookup IDs that were
+    actually used for the current term.
+    """
+    del gene_lookup
+    lookup_id_set = set(lookup_ids)
+
+    for gene_doc in lookup_results.get("genes", []):
+        source_ids = gene_doc.get("source_id")
+        if source_ids is None:
+            continue
+        if not isinstance(source_ids, list):
+            source_ids = [source_ids]
+        source_ids = [source_id for source_id in source_ids if source_id in lookup_id_set]
+        if not source_ids:
+            continue
+        gene_doc["source_id"] = source_ids[0] if len(source_ids) == 1 else source_ids
+
+    return lookup_results
+
+
 # Based on `process_do_terms()` in "annotation-refinery/process_do.py".
 # See https://github.com/greenelab/annotation-refinery
 # Changed from a regular function to generator to work with Biothings SDK.
@@ -991,9 +1016,9 @@ def get_genesets(obo_filename, genemap_filename=None, humsavar_filename=None):
     # )
 
     # Method 2: direct DOID -> ENSP pathway from the BioThings disease API
-    gene_lookup, annotation_dict, abstract_builder = build_gene_lookup_from_direct_annotations(
-        disease_ontology
-    )
+    # gene_lookup, annotation_dict, abstract_builder = build_gene_lookup_from_direct_annotations(
+    #     disease_ontology
+    # )
 
 
     # Method 3: DOID -> MIM -> Swiss-Prot pathway via humsavar.txt
@@ -1002,11 +1027,11 @@ def get_genesets(obo_filename, genemap_filename=None, humsavar_filename=None):
     # )
 
     # Method 4: merged direct DOID -> ENSP and DOID -> MIM -> Swiss-Prot annotations
-    # gene_lookup, annotation_dict, abstract_builder = (
-    #     build_gene_lookup_from_merged_annotations(
-    #         obo_filename, humsavar_filename, disease_ontology
-    #     )
-    # )
+    gene_lookup, annotation_dict, abstract_builder = (
+        build_gene_lookup_from_merged_annotations(
+            obo_filename, humsavar_filename, disease_ontology
+        )
+    )
 
 
 
