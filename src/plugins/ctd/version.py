@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
 
-import re
-from datetime import datetime
-
 # todo @Apr 2 2026 Will & Everaldo
 # Human verification was added to https://ctdbase.org/about/dataStatus.go, so the version getter was failing.
 # We chose a quick fix by parsing the date and size info from the FTP page to produce a unique identifier to serve as the version string.
@@ -11,6 +8,8 @@ from datetime import datetime
 
 def get_release(self):
     import requests
+    import re
+    from datetime import datetime
 
     target_url = "https://ctdbase.org/reports/"
     target_file = "CTD_chem_gene_ixns.tsv.gz"
