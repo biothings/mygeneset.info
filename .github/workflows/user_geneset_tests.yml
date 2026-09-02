@@ -72,18 +72,8 @@ jobs:
         env:
           ORCID_CLIENT_ID: ${{ secrets.ORCID_CLIENT_ID }}
           ORCID_CLIENT_SECRET: ${{ secrets.ORCID_CLIENT_SECRET }}
-      - name: Install PyTest
-        run: pip install pytest
-      - name: Install Selenium
-        run: pip install selenium
-      - name: Install Selenium Wire
-        run: pip install selenium-wire
-      - name: Install Webdriver Manager
-        run: pip install webdriver-manager
-      - name: Install Blinker
-        run: pip install blinker==1.7.0
-      - name: Install/Upgrade setuptools
-        run: pip install --upgrade setuptools
+      - name: Install test dependencies
+        run: pip install pytest selenium webdriver-manager
       - name: Run App Tests
         run: pytest test_user_genesets.py
         working-directory: src/tests
