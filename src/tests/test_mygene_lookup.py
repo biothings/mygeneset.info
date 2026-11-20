@@ -1,14 +1,67 @@
 # Test MyGeneset utils
 
+import multiprocessing
 import os
 import sys
+from concurrent.futures import ProcessPoolExecutor
+from types import SimpleNamespace
+from unittest.mock import Mock, patch
 
+import httpx
 import pytest
+import requests
 
 _path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append("{}/..".format(_path))
 
-from utils.mygene_lookup import MyGeneLookup
+from utils.mygene_lookup import MyGeneLookup, MyGeneQueryError
+
+
+def _raise_mygene_error_in_worker():
+    request = httpx.Request("POST", "https://mygene.info/v3/query")
+    response = httpx.Response(503, text="service unavailable", request=request)
+    error = httpx.HTTPStatusError("query failed", request=request, response=response)
+    with patch("mygene.MyGeneInfo") as client:
+        client.return_value.querymany.side_effect = error
+        MyGeneLookup("9606").query_mygene(["ABL1"], "symbol")
+
+
+@pytest.mark.parametrize("client_type", ["httpx", "requests"])
+def test_bad_query_retries_alternative_identifiers(monkeypatch, client_type):
+    if client_type == "httpx":
+        request = httpx.Request("POST", "https://mygene.info/v3/query")
+        response = httpx.Response(400, text="bad query", request=request)
+        error = httpx.HTTPStatusError("bad query", request=request, response=response)
+    else:
+        response = requests.Response()
+        response.status_code = 400
+        response._content = b"bad query"
+        error = requests.HTTPError("bad query", response=response)
+    querymany = Mock(
+        side_effect=[
+            error,
+            {
+                "out": [{"query": "25", "_id": "25", "entrezgene": 25, "taxid": 9606}],
+                "missing": [],
+            },
+        ]
+    )
+    monkeypatch.setattr("mygene.MyGeneInfo", lambda: SimpleNamespace(querymany=querymany))
+    ids = [("bad_symbol", "25")]
+    lookup = MyGeneLookup("9606")
+    lookup.query_mygene(ids, ["symbol", "entrezgene"])
+    assert querymany.call_count == 2
+    assert querymany.call_args_list[1].kwargs["scopes"] == "entrezgene"
+    result = lookup.get_results(ids)
+    assert result["count"] == 1
+    assert result["genes"][0]["mygene_id"] == "25"
+
+
+def test_http_failure_keeps_worker_pool_usable():
+    with ProcessPoolExecutor(max_workers=1, mp_context=multiprocessing.get_context("spawn")) as pool:
+        with pytest.raises(MyGeneQueryError, match="HTTP 503.*service unavailable"):
+            pool.submit(_raise_mygene_error_in_worker).result(timeout=30)
+        assert pool.submit(sum, [1, 2]).result(timeout=10) == 3
 
 
 class TestMyGeneLookup:

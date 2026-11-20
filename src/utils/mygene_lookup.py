@@ -3,7 +3,12 @@ from collections import namedtuple
 
 import mygene
 from biothings.utils.dataload import dict_sweep, unlist
+from httpx import HTTPStatusError
 from requests.exceptions import HTTPError
+
+
+class MyGeneQueryError(RuntimeError):
+    """A MyGene HTTP failure that can be returned from an upload worker."""
 
 
 class MyGeneLookup:
@@ -167,12 +172,19 @@ class MyGeneLookup:
                     species=taxid_query,
                     returnall=True,
                 )
-            except HTTPError as e:
+            except (HTTPError, HTTPStatusError) as e:
                 if e.response.status_code == 400:
                     current_try += 1
                     continue
                 else:
-                    raise
+                    # HTTPStatusError requires request/response arguments when
+                    # unpickling, so sending it through a process pool breaks
+                    # the pool and hides the original HTTP failure.
+                    raise MyGeneQueryError(
+                        f"MyGene query failed with HTTP {e.response.status_code} "
+                        f"(species={taxid_query}, scopes={scopes}): "
+                        f"{e.response.text.strip()[:1000]}"
+                    ) from e
             # Format successful queries
             for out in response["out"]:
                 query = out["query"]
