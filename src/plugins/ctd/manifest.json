@@ -1,6 +1,6 @@
 {
   "version": "0.2",
-  "requires" : ["lxml", "mygene", "requests"],
+  "requires" : ["mygene", "requests"],
   "__metadata__": {
     "license_url": "https://ctdbase.org/about/legal.jsp",
     "url": "https://ctdbase.org/",

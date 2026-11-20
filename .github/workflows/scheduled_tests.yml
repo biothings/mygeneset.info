@@ -25,14 +25,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ "3.14" ]
+        python-version: [ "3.14t" ]
 
     steps:
       - name: Checkout source
         uses: actions/checkout@v3
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -48,7 +48,7 @@ jobs:
           pip install .
           cd ..
 
-          pip install .venv/lib/python${{ matrix.python-version }}/site-packages/biothings/tests/slack_test_notification
+          pip install "$(python -c 'from pathlib import Path; import biothings; print(Path(biothings.__file__).parent / "tests/slack_test_notification")')"
 
       - name: Force weekly run to bypass the version check
         if: github.event.schedule == '0 14 * * 1'

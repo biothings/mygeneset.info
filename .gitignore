@@ -104,6 +104,8 @@ celerybeat.pid
 # Environments
 .env
 .venv
+.venv314t
+.venv_gil_*
 env/
 venv/
 ENV/

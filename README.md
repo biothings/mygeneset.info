@@ -7,7 +7,7 @@ MyGeneset.info is a web API for storing, searching, and accessing geneset data.
 
 ### 1. BioThings Hub: Pre-requisites
 
-- Python 3.14
+- Free-threaded Python 3.14 (`python3.14t`)
 - Git
 - MongoDB
 - Elasticsearch>=6.0.0
@@ -29,7 +29,7 @@ Elasticsearch:
 ### 3. Setup a Python virtual environment (optional, but highly recommended)
 
     mkdir -p ~/venvs
-    python3.14 -m venv ~/venvs/mygeneset
+    python3.14t -m venv ~/venvs/mygeneset
     source ~/venvs/mygeneset/bin/activate
 
 ### 4. Install required Python modules
@@ -45,20 +45,19 @@ Elasticsearch:
    >from config_hub import *
    >\# Add additional customizations
 
-### 6. Generate SSH keys
-
-    # from src folder:
-    ssh-keygen -f bin/ssh_host_key
-
-### 7. Start BioThings Hub
+### 6. Start BioThings Hub
 
     # from src folder:
     python -m bin.hub
 
-### 8. Connect to the Hub from web interface (BioThings Studio)
+### 7. Connect to the Hub from web interface (BioThings Studio)
 
 Navigate to "https://studio.biothings.io/" and create a connection to `http://localhost:HUB_API_PORT`,
 in which `HUB_API_PORT` is the port number specified in your configuration (default is 19480).
+
+Run `runtime_info()` in Studio's hub console, or request `http://localhost:19480/runtime`,
+to verify the running hub reports `free_threaded: true` and `gil_enabled: false`.
+Startup fails if the interpreter has the GIL enabled after loading the hub's components.
 
 ## Setting up the Web Server
 
@@ -66,13 +65,13 @@ in which `HUB_API_PORT` is the port number specified in your configuration (defa
 
 MongoDB is not required for running the web server
 
-- Python 3.14
+- Free-threaded Python 3.14 (`python3.14t`)
 - Git
 - Elasticsearch>=6.0.0 (See installation steps above)
 
 ### 2. Install requirements
 
-    python3.14 -m venv ~/venvs/mygeneset-web
+    python3.14t -m venv ~/venvs/mygeneset-web
     source ~/venvs/mygeneset-web/bin/activate
     pip install -r ./requirements_web.txt
 

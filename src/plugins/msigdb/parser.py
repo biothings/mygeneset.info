@@ -2,7 +2,7 @@ import logging
 import os
 import re
 
-import lxml.etree as ET
+import xml.etree.ElementTree as ET
 
 # Some imports for running parser from file
 if __name__ == "__main__":
@@ -96,7 +96,7 @@ def parse_msigdb(data_folder):
     for f in ["human_genesets.xml"]:
         data_file = os.path.join(data_folder, f)
         # File contains newline-delimited XML documents. Each document is a single geneset.
-        # Documents have been sorted by their ORGANISM attribute using sort_genesets.xsl in post_dump() of dump.py
+        # Documents have been sorted by their ORGANISM attribute in post_dump() of dump.py.
         with open(data_file, "r") as f:
             current_organism = ""
             geneset_index = 0  # Keep track of current line for logging/debugging purposes

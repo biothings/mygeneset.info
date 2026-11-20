@@ -4,8 +4,8 @@ import os
 import biothings
 import config
 import re
+import xml.etree.ElementTree as ET
 
-import lxml.etree as ET
 import requests
 
 biothings.config_for_app(config)
@@ -135,12 +135,12 @@ class msigdbDumper(HTTPDumper):
         original_xml = ET.fromstring(fixed_xml_bytes)
 
         logging.info(f"Sorting documents in XML file: {file}")
-        # Use XSLT file to sort XML file
-        xslt = ET.parse(os.path.join(os.path.dirname(__file__), "sort_genesets.xsl"))
-        transform = ET.XSLT(xslt)
-        new_xml = transform(original_xml)
+        # Preserve the MSIGDB attributes and stable ordering within each organism.
+        new_xml = ET.Element(original_xml.tag, original_xml.attrib)
+        new_xml.extend(sorted(original_xml.findall("GENESET"), key=lambda node: node.get("ORGANISM", "")))
+        ET.indent(new_xml, space="  ")
         with open(output_file, "wb") as f:
-            new_xml.write(f, pretty_print=True, encoding="utf-8")
+            ET.ElementTree(new_xml).write(f, encoding="utf-8", xml_declaration=True)
 
     def post_dump(self, *args, **kwargs):
         """Create a new XML file with genesets sorted by organism."""
