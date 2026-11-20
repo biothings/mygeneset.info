@@ -29,7 +29,7 @@ TAX_ID = "9606"  # Taxonomy ID of human being
 
 # Varibles when searching MIM Disease ID from "Phenotypes" column
 # in "genemap2.txt"
-FIND_MIMID = re.compile("\, [0-9]* \([1-4]\)")  # Regex pattern
+FIND_MIMID = re.compile(r"\, [0-9]* \([1-4]\)")  # Regex pattern
 PHENOTYPE_FILTER = "(3)"
 
 
@@ -107,8 +107,8 @@ class GO:
             elif inside and fields[0] == "name:":
                 fields.pop(0)
                 name = "_".join(fields)
-                name = re.sub("[^\w\s_-]", "_", name).strip().lower()
-                name = re.sub("[-\s_]+", "_", name)
+                name = re.sub(r"[^\w\s_-]", "_", name).strip().lower()
+                name = re.sub(r"[-\s_]+", "_", name)
                 gterm.name = name
                 gterm.full_name = " ".join(fields)
             elif inside and fields[0] == "namespace:":

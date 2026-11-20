@@ -7,7 +7,7 @@ MyGeneset.info is a web API for storing, searching, and accessing geneset data.
 
 ### 1. BioThings Hub: Pre-requisites
 
-- Python>=3.6 (Python versions lower than 3.8 also require PyPI package `singledispatchmethod`)
+- Python 3.14
 - Git
 - MongoDB
 - Elasticsearch>=6.0.0
@@ -29,7 +29,7 @@ Elasticsearch:
 ### 3. Setup a Python virtual environment (optional, but highly recommended)
 
     mkdir -p ~/venvs
-    virtualenv ~/venvs/mygeneset
+    python3.14 -m venv ~/venvs/mygeneset
     source ~/venvs/mygeneset/bin/activate
 
 ### 4. Install required Python modules
@@ -66,12 +66,14 @@ in which `HUB_API_PORT` is the port number specified in your configuration (defa
 
 MongoDB is not required for running the web server
 
-- Python>=3.6  (Python versions lower than 3.8 also require PyPI package `singledispatchmethod`)
+- Python 3.14
 - Git
 - Elasticsearch>=6.0.0 (See installation steps above)
 
 ### 2. Install requirements
 
+    python3.14 -m venv ~/venvs/mygeneset-web
+    source ~/venvs/mygeneset-web/bin/activate
     pip install -r ./requirements_web.txt
 
 ### 3. Configure the Web Component

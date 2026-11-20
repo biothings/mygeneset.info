@@ -1,5 +1,5 @@
+from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
-from seleniumwire import webdriver
 from webdriver_manager.firefox import GeckoDriverManager
 
 
@@ -7,9 +7,10 @@ class Bot:
     def start(self):
         """Start a selenium web driver"""
         firefox_options = webdriver.FirefoxOptions()
-        firefox_options.headless = True
+        firefox_options.add_argument("-headless")
         self.driver = webdriver.Firefox(
-            executable_path=GeckoDriverManager().install(), options=firefox_options
+            service=webdriver.FirefoxService(executable_path=GeckoDriverManager().install()),
+            options=firefox_options,
         )
         self.driver.implicitly_wait(20)
 
